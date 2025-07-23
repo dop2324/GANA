@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.cmmncd.service.impl.CmmnCdMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		INSERT INTO WEB_CmmnCd
+		VALUE (
+			IF(#{code_sn} = -1, NULL, #{code_sn})
+			, #{code_uprSn}
+			, #{code_nm}
+			, #{code_val}
+			, #{code_ty}
+			, (SELECT code_level FROM (SELECT IFNULL(MIN(code_level), -1) + 1 AS code_level FROM WEB_CmmnCd WHERE code_sn = #{code_uprSn}) L )
+			, (SELECT code_sort FROM (SELECT IFNULL(MAX(code_sort), 0) + 1 AS code_sort FROM WEB_CmmnCd WHERE IFNULL(code_uprSn, 0) = #{code_uprSn}) O )
+			, #{code_sttus}
+			, #{code_mdfcnID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			code_nm				= #{code_nm}
+			, code_val 			= #{code_val}
+			, code_ty 			= #{code_ty}
+			, code_sttus 		= #{code_sttus}
+			, code_mdfcnID 		= #{code_mdfcnID}
+			, code_mdfcnDt 		= SYSDATE()
+	]]>
+	</update>
+	
+	<update id="updateSttus" parameterType="int">
+	<![CDATA[
+		UPDATE WEB_CmmnCd SET code_sttus = #{code_sttus}  
+		WHERE code_sn IN (	
+							WITH RECURSIVE cte As 
+							( 
+								SELECT code_sn, 1 AS level 
+								FROM WEB_CmmnCd 
+								WHERE code_uprSn = #{code_sn}
+							
+								UNION ALL 
+								SELECT p.code_sn, 1+level as level 
+								FROM WEB_CmmnCd p 
+								INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+							) 
+							SELECT code_sn FROM cte
+						 )
+	]]>
+	</update>
+	
+	<update id="delete" parameterType="int">
+	<![CDATA[
+		DELETE FROM WEB_CmmnCd WHERE code_sn = #{code_sn}
+	]]>
+	</update>
+	
+	<update id="deleteOrder" parameterType="int">
+	<![CDATA[
+		UPDATE WEB_CmmnCd SET code_sort = code_sort - 1  
+		WHERE code_uprSn = (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn})  
+		AND code_sort > (SELECT code_sort FROM WEB_CmmnCd WHERE code_sn = #{code_sn})
+	]]>
+	</update>
+	
+	<select id="deleteRtnValue" parameterType="int" resultType="int">
+	<![CDATA[
+		SELECT 	IFNULL(A.code_sn, B.code_uprSn) As code_sn
+		FROM 
+		(	SELECT code_sn, code_uprSn
+			FROM WEB_CmmnCd
+			WHERE code_uprSn = (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn})
+			AND code_sn != #{code_sn} AND code_sort = 1
+		) A
+		RIGHT OUTER JOIN (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn}) B
+		ON A.code_uprSn = B.code_uprSn
+	]]>
+	</select>
+	
+	<update id="setOrder" parameterType="int">
+	<![CDATA[
+		UPDATE WEB_CmmnCd SET code_sort = IF(#{UPDN} = 'UP', code_sort - 1, code_sort + 1) 
+		WHERE code_sn = #{code_sn} 
+		AND EXISTS (SELECT * FROM 
+							(SELECT code_sn, code_sort FROM WEB_CmmnCd 
+							WHERE code_uprSn = (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn} )) A, 
+							(SELECT code_sn, code_sort FROM WEB_CmmnCd 
+							WHERE code_uprSn = (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn} )) B 
+					WHERE (( #{UPDN} = 'UP' AND A.code_sort = B.code_sort - 1) OR ( #{UPDN} = 'DN' AND A.code_sort = B.code_sort + 1)) 
+					AND B.code_sn = #{code_sn} );
+		
+		UPDATE WEB_CmmnCd SET code_sort = IF(#{UPDN} = 'UP', code_sort + 1, code_sort - 1) 
+		WHERE code_uprSn = (SELECT code_uprSn FROM WEB_CmmnCd WHERE code_sn = #{code_sn} ) 
+		AND code_sort = (SELECT code_sort FROM WEB_CmmnCd WHERE code_sn = #{code_sn} ) 
+		AND code_sn != #{code_sn};
+	]]>
+	</update>
+	
+	<select id="selectTree" parameterType="int" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT code_sn, code_val, code_nm, code_uprSn, 1 AS level 
+					, code_sttus, code_sort
+			FROM WEB_CmmnCd 
+			WHERE code_sn = #{code_sn}
+			
+			UNION ALL 
+			SELECT p.code_sn, p.code_val, p.code_nm, p.code_uprSn, 1+level as level 
+					, p.code_sttus, p.code_sort
+			FROM WEB_CmmnCd p 
+			INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+		) 
+		SELECT code_sn, IFNULL( code_uprSn, -1) as code_uprSn ,code_nm, code_val, code_sttus, code_sort, level As code_level
+				, (SELECT COUNT(1) FROM WEB_CmmnCd WHERE code_uprSn = cte.code_sn) AS code_childCnt 
+		FROM cte
+		ORDER BY code_sort
+	]]>
+	</select>
+	
+	<select id="selectExcludeTree" parameterType="int" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT code_sn, code_val, code_nm, code_uprSn, 1 AS level 
+					, code_sttus, code_sort
+			FROM WEB_CmmnCd 
+			WHERE code_uprSn = #{code_sn}
+			
+			UNION ALL 
+			SELECT p.code_sn, p.code_val, p.code_nm, p.code_uprSn, 1+level as level 
+					, p.code_sttus, p.code_sort
+			FROM WEB_CmmnCd p 
+			INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+		) 
+		SELECT code_sn, IFNULL( code_uprSn, -1) as code_uprSn ,code_nm, code_val, code_sttus, code_sort, level As code_level
+				, (SELECT COUNT(1) FROM WEB_CmmnCd WHERE code_uprSn = cte.code_sn) AS code_childCnt 
+		FROM cte
+		ORDER BY code_sort
+	]]>
+	</select>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		SELECT code_sn
+				, code_uprSn
+				, code_nm
+				, code_val
+				, code_ty
+				, code_level
+				, code_sort
+				, code_sttus
+				, code_mdfcnID
+				, code_mdfcnDt
+		FROM WEB_CmmnCd
+		WHERE code_sn = #{code_sn}
+	]]>
+	</select>
+	
+
+	<select id="selectValTree" parameterType="String" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT code_sn, code_val, code_nm, code_uprSn, 1 AS level 
+					, code_sttus, code_sort
+			FROM WEB_CmmnCd 
+			WHERE code_val = #{code_val}
+			
+			UNION ALL 
+			SELECT p.code_sn, p.code_val, p.code_nm, p.code_uprSn, 1+level as level 
+					, p.code_sttus, p.code_sort
+			FROM WEB_CmmnCd p 
+			INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+		) 
+		SELECT code_sn, IFNULL( code_uprSn, -1) as code_uprSn ,code_nm, code_val, code_sttus, code_sort, level As code_level
+				, (SELECT COUNT(1) FROM WEB_CmmnCd WHERE code_uprSn = cte.code_sn) AS code_childCnt 
+		FROM cte
+		ORDER BY code_sort
+	]]>
+	</select>
+	
+	<select id="selectExcludeValTree" parameterType="String" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT code_sn, code_val, code_nm, code_uprSn, 1 AS level 
+					, code_sttus, code_sort
+			FROM WEB_CmmnCd 
+			WHERE code_uprSn = (SELECT code_sn FROM WEB_CmmnCd WHERE code_val = #{code_val})
+			
+			UNION ALL 
+			SELECT p.code_sn, p.code_val, p.code_nm, p.code_uprSn, 1+level as level 
+					, p.code_sttus, p.code_sort
+			FROM WEB_CmmnCd p 
+			INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+		) 
+		SELECT code_sn, IFNULL( code_uprSn, -1) as code_uprSn ,code_nm, code_val, code_sttus, code_sort, level As code_level
+				, (SELECT COUNT(1) FROM WEB_CmmnCd WHERE code_uprSn = cte.code_sn) AS code_childCnt 
+		FROM cte
+		ORDER BY code_sort
+	]]>
+	</select>
+	
+	<select id="selectValList" parameterType="Map" resultType="egovframework.dnworks.cms.cmmncd.service.CmmnCdVo">
+	<![CDATA[
+		SELECT code_sn
+				, code_uprSn
+				, code_nm
+				, code_val
+				, code_ty
+				, code_level
+				, code_sort
+				, code_sttus
+				, code_mdfcnID
+				, code_mdfcnDt
+		FROM WEB_CmmnCd
+		WHERE code_uprSn IN ( 
+								WITH RECURSIVE cte As 
+								( 
+									SELECT code_sn, 1 AS level 
+									FROM WEB_CmmnCd 
+									WHERE code_val = #{cd_se}
+								
+									UNION ALL 
+									SELECT p.code_sn, 1+level as level 
+									FROM WEB_CmmnCd p 
+									INNER JOIN cte ON p.code_uprSn = cte.code_sn 
+								) 
+								SELECT code_sn FROM cte
+								WHERE code_val = #{code_val}
+							)
+	]]>
+	</select>
+	
+</mapper>

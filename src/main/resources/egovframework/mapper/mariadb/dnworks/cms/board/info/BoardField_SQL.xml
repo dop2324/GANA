@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardFieldMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.info.service.BoardFieldVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardField
+		VALUE (
+			#{bfd_id}
+			, #{mnu_code}
+			, #{bfd_nm}
+			, #{bfd_width}
+			, #{bfd_maxLen}
+			, #{bfd_isMandatory}
+			, #{bfd_encYn}
+			, (SELECT IFNULL(MAX(bfd_sort), 0) + 1 FROM WEB_BoardField A WHERE mnu_code = #{mnu_code})
+			, #{bfd_sttus}
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			bfd_nm				= #{bfd_nm}
+			, bfd_width			= #{bfd_width}
+			, bfd_maxLen		= #{bfd_maxLen}
+			, bfd_isMandatory	= #{bfd_isMandatory}
+			, bfd_sttus			= #{bfd_sttus}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_BoardField WHERE bfd_id = #{bfd_id}
+	</delete>
+	
+	<update id="afterDelete" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_BoardField
+		SET bfd_sort = bfd_sort - 1
+		WHERE mnu_code = (SELECT mnu_code FROM (SELECT mnu_code FROM WEB_BoardField WHERE bfd_id = #{bfd_id}) A)
+		AND bfd_sort > (SELECT bfd_sort FROM (SELECT bfd_sort FROM WEB_BoardField WHERE bfd_id = #{bfd_id}) B)
+	]]>
+	</update>
+	
+	<update id="setOrder" parameterType="Map">
+	<![CDATA[
+		UPDATE WEB_BoardField SET 
+			bfd_sort = CASE 
+							WHEN #{updn} = 'UP' THEN bfd_sort - 1
+							ELSE bfd_sort + 1
+						END
+		WHERE bfd_id = #{bfd_id}
+		AND EXISTS (SELECT *
+						 FROM (	SELECT B0.bfd_id FROM WEB_BoardField B0
+								WHERE B0.bfd_id = (	SELECT B0.bfd_id FROM WEB_BoardField B1
+													WHERE B0.mnu_code = B1.mnu_code
+													  AND ((#{updn} = 'UP' AND B0.bfd_sort = B1.bfd_sort -1) OR (#{updn} = 'DN' AND B0.bfd_sort = B1.bfd_sort +1 ))
+													  AND B1.bfd_id = #{bfd_id}
+												  )
+							  ) T
+					  );
+		
+		UPDATE WEB_BoardField SET 
+			bfd_sort = CASE 
+							WHEN #{updn} = 'UP' THEN bfd_sort + 1
+							ELSE bfd_sort - 1
+						END
+		WHERE mnu_code = (SELECT mnu_code FROM (SELECT mnu_code FROM WEB_BoardField WHERE bfd_id = #{bfd_id} ) T)
+		AND bfd_sort = (SELECT bfd_sort FROM (SELECT bfd_sort FROM WEB_BoardField WHERE bfd_id = #{bfd_id} ) T)
+		AND bfd_id != #{bfd_id};
+	]]>
+	</update>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardFieldVo">
+		SELECT 	bfd_id
+				, mnu_code
+				, bfd_nm
+				, bfd_width
+				, bfd_maxLen
+				, bfd_isMandatory
+				, bfd_encYn
+				, bfd_sort
+				, bfd_sttus
+		FROM WEB_BoardField A 
+		WHERE bfd_id = #{bfd_id}
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.board.info.service.BoardFieldVo">
+		SELECT bfd_id
+				, mnu_code
+				, bfd_nm
+				, bfd_width
+				, bfd_maxLen
+				, bfd_isMandatory
+				, bfd_encYn
+				, bfd_sort
+				, bfd_sttus
+		FROM WEB_BoardField
+		WHERE mnu_code = #{mnu_code}
+		
+		<if test="bfd_sttus != '' and bfd_sttus != null">
+			AND bfd_sttus = #{bfd_sttus}
+		</if>
+
+		ORDER BY bfd_sort
+	</select>
+	
+</mapper>

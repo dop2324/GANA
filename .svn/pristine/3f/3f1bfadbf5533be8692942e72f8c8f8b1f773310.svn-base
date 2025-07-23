@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardFieldValueMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardFieldValueVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardFieldValue
+		VALUE (
+			#{bod_sn}
+			, #{bfd_id}
+			, #{bfd_val}
+			, #{bfd_encYn}
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			bfd_val		= #{bfd_val}
+			, bfd_encYn	= #{bfd_encYn}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardFieldValue WHERE bod_sn = #{bod_sn}
+	</delete>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardFieldValueVo">
+		SELECT bod_sn, A.bfd_id
+				, bfd_val, A.bfd_encYn
+				, bfd_nm
+		FROM WEB_BoardFieldValue A
+		JOIN WEB_BoardField B ON A.bfd_id = B.bfd_id
+		WHERE bod_sn = #{bod_sn}
+		AND bfd_sttus = 1
+		ORDER BY B.bfd_sort
+	</select>
+	
+</mapper>

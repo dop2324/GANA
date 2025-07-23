@@ -1,0 +1,60 @@
+@charset "utf-8";
+
+/* LNB */
+.pathbox{position: relative; border-top: 1px solid #0e9bbe; border-bottom: 1px solid #0e9bbe; background-color: #0e9bbe;}
+.pathbox:before{position: absolute; top: 0; right: 0; content: ""; display: block; width: 50%; height: 100%;  background-color: #e9f7fa;}
+.pathbox .path{width: 100%; max-width: 1450px; margin: 0 auto; background-color: #e9f7fa;}
+.pathbox .path>ul{display: flex; height: 60px;}
+.pathbox .path li.home{width: 65px; height: 100%; background-color: #0e9bbe;}
+.pathbox .path li.home a{display: block; width: 100%; height: 100%; background: url(../img/sub/i_home.png) no-repeat center;}
+
+.pathbox .path li.list{position: relative; width: 300px;}
+.pathbox .path li.list .path_btn{display: block; width: 100%; height: 100%; padding: 0 25px; text-align: left; background-color: #fff; border-right: 1px solid #d7d7d7;}
+.pathbox .path li.list .path_btn:focus{box-shadow: 0 0 0 3px #256ef4 inset; outline: 0;}
+.pathbox .path li.list .path_btn span{position: relative; display: block; width: 100%;}
+.pathbox .path li.list .path_btn span:before{position: absolute; top: 8px; right: 0; display: block; content: ""; width: 12px; height: 7px; background-image: url(../img/sub/select_arrow_02.png)}
+.pathbox .path li.list.active .path_btn span:before{transform: rotateX(180deg);}
+
+.pathbox .path li.list .layer{position: absolute; top: 60px; left: 0; display: none; width: 100%; background-color: #fff; border: 1px solid #ddd; z-index: 1;}
+.pathbox .path li.list .layer ul li{border-bottom: 1px solid #ddd;}
+.pathbox .path li.list .layer ul li:last-child{border-bottom: 0;}
+.pathbox .path li.list .layer ul li a{display: block; padding: 10px 20px; font-size: 16px; transition: all 0.1s;}
+.pathbox .path li.list .layer ul li a:hover{color: #0056ad; background-color: #f4f4f4;}
+
+/* 서브타이틀 */
+.det1-tit{position: relative; padding-top: 45px; padding-bottom: 27px; margin-bottom: 30px; font-size: 34px; font-weight: 400; text-align: center;}
+.det1-tit:before{position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); content: ""; display: block; width: 32px; height: 22px; background: url(../img/sub/dep1_tit.png) no-repeat top center; background-size: contain;}
+
+
+/***********************************************/
+/* 화면 1450px 이하 */
+@media screen and (max-width: 1450px) {}
+
+/***********************************************/
+/* 화면 1240px 이하 */
+@media screen and (max-width: 1240px) {
+    /* 서브타이틀 */
+    .det1-tit{font-size: 30px;}
+    .det1-tit:before{width: 27px;}
+}
+
+/***********************************************/
+/* 화면 640px 이하 */
+@media screen and (max-width: 640px) {
+    /* LNB */
+    .pathbox .path>ul{height: 45px;}
+    .pathbox .path li.home{width: 40px;}
+    .pathbox .path li.home a{background-size: 16px;}
+    .pathbox .path li.list{width: calc(50% - 20px);}
+    .pathbox .path li.list .path_btn{padding: 0 10px; font-size: 15px;}
+    .pathbox .path li.list .layer{top: 45px;}
+    .pathbox .path li.list .layer ul li a{padding: 8px 10px; font-size: 14px;}
+    
+    /* 서브타이틀 */
+    .det1-tit{padding-top: 25px; padding-bottom: 23px; margin-bottom: 20px; font-size: 24px;}
+    .det1-tit:before{width: 21px;}
+    
+    
+    
+}
+

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.member.service.impl.GroupMemberMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.member.service.GroupMemberVo">
+	<![CDATA[
+		INSERT INTO WEB_GroupMember
+		VALUES (
+			#{grp_id}
+			, #{mem_id}
+			, #{gmb_mdfcnID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY UPDATE
+			grp_id				= #{grp_id}
+			, gmb_mdfcnID		= #{gmb_mdfcnID}
+			, gmb_mdfcnDt		= SYSDATE()
+	]]>
+	</update>
+	
+	<update id="insert" parameterType="egovframework.dnworks.cms.member.service.GroupMemberVo">
+	<![CDATA[
+		INSERT INTO WEB_GroupMember
+		VALUES (
+			#{grp_id}
+			, #{mem_id}
+			, #{gmb_mdfcnID}
+			, SYSDATE()
+		)
+	]]>
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.member.service.GroupMemberVo">
+	<![CDATA[
+		UPDATE WEB_GroupMember SET
+			grp_id				= #{grp_id}
+			, gmb_mdfcnID		= #{gmb_mdfcnID}
+			, gmb_mdfcnDt		= SYSDATE()
+		WHERE mem_id = #{mem_id}
+	]]>
+	</update>
+	
+	<delete id="deleteUser" parameterType="String">
+	<![CDATA[
+		DELETE FROM WEB_GroupMember WHERE mem_id = #{mem_id}
+	]]>
+	</delete>
+	
+	<delete id="deleteGroup" parameterType="String">
+	<![CDATA[
+		DELETE FROM WEB_GroupMember WHERE grp_id = #{grp_id}
+	]]>
+	</delete>
+	
+	<select id="selectExists" parameterType="egovframework.dnworks.cms.member.service.GroupMemberVo" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+		FROM WEB_GroupMember
+		WHERE grp_id = #{grp_id}
+		AND mem_id = #{mem_id}
+	]]>
+	</select>
+	
+		<select id="selectUser" parameterType="String" resultType="String">
+	<![CDATA[
+		SELECT grp_id
+		FROM WEB_GroupMember
+		WHERE mem_id = #{mem_id}
+	]]>
+	</select>
+	
+	<select id="selectGroupList" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupMemberVo">
+	<![CDATA[
+		SELECT grp_id
+		FROM WEB_GroupMember
+		WHERE grp_id = #{grp_id}
+	]]>
+	</select>
+	
+</mapper>

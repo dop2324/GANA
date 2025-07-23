@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.org.service.impl.DeptMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.org.service.DeptVo">
+		MERGE INTO WEB_Dept A
+		USING DUAL ON ( A.dept_id = #{dept_id} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			upper_deptID		= #{upper_deptID}
+			, dept_nm			= #{dept_nm}
+			, dept_fullNm		= #{dept_fullNm}
+		<if test="dept_se != null 	and dept_se != ''">		, dept_se		= #{dept_se}</if>
+		<if test="dept_sort != null and dept_sort != ''">	, dept_sort		= #{dept_sort}</if>
+		<if test="dept_rank != null and dept_rank != ''">	, dept_rank		= #{dept_rank}</if>
+			, dept_telno		= #{dept_telno}
+			, dept_fax			= #{dept_fax}
+			, dept_biz			= #{dept_biz}
+			, dept_useYn		= #{dept_useYn}			
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			#{dept_id}
+			, #{upper_deptID}
+			, #{dept_nm}
+			, #{dept_fullNm}
+			, #{dept_se}
+			, #{dept_sort}
+			, #{dept_rank}
+			, #{dept_telno}
+			, #{dept_fax}
+			, #{dept_biz}
+			, #{dept_useYn}
+			, SYSDATE
+			, NULL
+		)
+	</update>
+	
+	<delete id="delete" parameterType="string">
+		DELETE FROM WEB_Dept WHERE dept_id = #{dept_id}
+	</delete>
+	
+	<delete id="truncate">
+		TRUNCATE TABLE WEB_Dept
+	</delete>
+	
+	<select id="selectChild" parameterType="string" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_Dept
+		WHERE dept_id IN  (
+							SELECT 
+							    dept_id
+							    -- , LEVEL AS level
+							    -- , SYS_CONNECT_BY_PATH(LPAD(dept_rank, 7, '0'), '-') AS ord  -- 필요 시 사용
+							FROM 
+							    WEB_Dept
+							START WITH 
+							    upper_deptID = #{dept_id}
+							CONNECT BY 
+							    PRIOR dept_id = upper_deptID							
+						)
+	</select>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.org.service.DeptVo">
+		SELECT dept_id, upper_deptID
+				, dept_nm, dept_fullNm
+				, dept_se, dept_sort, dept_rank
+				, dept_telno, dept_fax, dept_biz
+				, dept_useYn
+				, dept_regDt, dept_mdfcnDt
+		FROM WEB_Dept
+		WHERE dept_id = #{dept_id}
+	</select>
+	
+	<select id="selectTree" resultType="egovframework.dnworks.cms.org.service.DeptVo">
+		SELECT 
+		    dept_id,
+		    upper_deptID,
+		    dept_nm,
+		    dept_fullNm,
+		    dept_se,
+		    dept_sort,
+		    dept_rank,
+		    dept_telno,
+		    dept_fax,
+		    dept_biz,
+		    dept_useYn,
+		    dept_regDt,
+		    dept_mdfcnDt,
+		    SYS_CONNECT_BY_PATH(LPAD(dept_rank, 7, '0'), '-') AS ord
+		FROM WEB_Dept
+		START WITH dept_id = NVL(#{dept_id}, 'ROOT')
+		CONNECT BY PRIOR dept_id = upper_deptID
+		ORDER BY ord, dept_sort 		
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.org.service.DeptVo"> 
+		SELECT 
+		    dept_id,
+		    upper_deptID,
+		    dept_nm,
+		    dept_fullNm,
+		    dept_se,
+		    dept_sort,
+		    dept_rank,
+		    dept_telno,
+		    dept_fax,
+		    dept_biz,
+		    dept_useYn,
+		    dept_regDt,
+		    dept_mdfcnDt,
+		    LEVEL AS dept_level
+		FROM WEB_Dept
+		WHERE upper_deptID IS NOT NULL
+		<if test="dept_rank != null and dept_rank != ''">
+			AND dept_rank = #{dept_rank}
+		</if>
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				dept_nm LIKE '%'||#{srchKwd}||'%'
+				OR dept_fullNm LIKE '%'||#{srchKwd}||'%'  
+				OR dept_biz LIKE '%'||#{srchKwd}||'%'  
+			)
+		</if>		
+	</select>
+	
+</mapper>

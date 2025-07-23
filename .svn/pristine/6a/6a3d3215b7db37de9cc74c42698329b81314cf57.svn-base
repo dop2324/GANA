@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.org.service.impl.DeptMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.org.service.DeptVo">
+		INSERT INTO WEB_Dept
+		VALUES 
+		(
+			#{dept_id}
+			, #{upper_deptID}
+			, #{dept_nm}
+			, #{dept_fullNm}
+			, #{dept_se}
+			, #{dept_sort}
+			, #{dept_rank}
+			, #{dept_telno}
+			, #{dept_fax}
+			, #{dept_biz}
+			, #{dept_useYn}
+			, SYSDATE()
+			, NULL
+		)
+		ON DUPLICATE KEY UPDATE
+			upper_deptID		= #{upper_deptID}
+			, dept_nm			= #{dept_nm}
+			, dept_fullNm		= #{dept_fullNm}
+		<if test="dept_se != null 	and dept_se != ''">		, dept_se		= #{dept_se}</if>
+		<if test="dept_sort != null and dept_sort != ''">	, dept_sort		= #{dept_sort}</if>
+		<if test="dept_rank != null and dept_rank != ''">	, dept_rank		= #{dept_rank}</if>
+			, dept_telno		= #{dept_telno}
+			, dept_fax			= #{dept_fax}
+			, dept_biz			= #{dept_biz}
+			, dept_useYn		= #{dept_useYn}
+	</update>
+	
+	<delete id="delete" parameterType="string">
+		DELETE FROM WEB_Dept WHERE dept_id = #{dept_id}
+	</delete>
+	
+	<delete id="truncate">
+		TRUNCATE TABLE WEB_Dept
+	</delete>
+	
+	<select id="selectChild" parameterType="string" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_Dept
+		WHERE dept_id IN  (
+							WITH RECURSIVE cte As 
+							( 
+								SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+								FROM WEB_Dept 
+								WHERE upper_deptID = #{dept_id}
+							
+								UNION ALL 
+								SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+								FROM WEB_Dept p 
+								INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+							) 
+							SELECT dept_id
+							FROM cte A
+						)
+	</select>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.org.service.DeptVo">
+		SELECT dept_id, upper_deptID
+				, dept_nm, dept_fullNm
+				, dept_se, dept_sort, dept_rank
+				, dept_telno, dept_fax, dept_biz
+				, dept_useYn
+				, dept_regDt, dept_mdfcnDt
+		FROM WEB_Dept
+		WHERE dept_id = #{dept_id}
+	</select>
+	
+	<select id="selectTree" resultType="egovframework.dnworks.cms.org.service.DeptVo">
+		WITH RECURSIVE cte As 
+		( 
+			SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+			FROM WEB_Dept 
+			WHERE dept_id = IF(#{dept_id} IS NULL, 'ROOT', #{dept_id})
+		
+			UNION ALL 
+			SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+			FROM WEB_Dept p 
+			INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+		)  
+		SELECT dept_id, upper_deptID
+				, dept_nm, dept_fullNm
+				, dept_se, dept_sort, dept_rank
+				, dept_telno, dept_fax, dept_biz
+				, dept_useYn
+				, dept_regDt, dept_mdfcnDt
+		FROM cte A
+		ORDER BY ord
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.org.service.DeptVo"> 
+		WITH RECURSIVE cte As
+		( 
+			SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+			FROM WEB_Dept 
+			WHERE upper_deptID IS NULL
+		
+			UNION ALL 
+			SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+			FROM WEB_Dept p 
+			INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+		)  
+		SELECT dept_id, upper_deptID
+				, dept_nm, dept_fullNm
+				, dept_se, dept_sort, dept_rank
+				, dept_telno, dept_fax, dept_biz
+				, dept_useYn
+				, dept_regDt, dept_mdfcnDt
+		FROM cte A
+		WHERE upper_deptID IS NOT NULL
+		
+		<if test="dept_rank != null and dept_rank != ''">
+			AND dept_rank = #{dept_rank}
+		</if>
+		
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				dept_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR dept_fullNm LIKE CONCAT('%',#{srchKwd},'%')  
+				OR dept_biz LIKE CONCAT('%',#{srchKwd},'%')  
+			)
+		</if>
+		ORDER BY dept_rank, dept_sort
+	</select>
+	
+</mapper>

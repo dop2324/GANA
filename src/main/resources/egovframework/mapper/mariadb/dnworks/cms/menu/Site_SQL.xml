@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.SiteMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.menu.service.SiteVo">
+	<![CDATA[
+		INSERT INTO WEB_Site
+		VALUES 
+		(
+			#{site_code}
+			, #{site_nm}
+			, #{site_directory}
+			, #{site_domain1}
+			, #{site_domain2}
+			, #{site_cmsUrl}
+			, #{site_locale}
+			, #{site_isMobile}
+			, #{site_mngYn}
+			, #{site_accessIpYn}
+			, #{site_useYn}
+			, #{dept_id}
+			, #{site_se}
+			, SYSDATE() 
+			, NULL			
+		)
+		ON DUPLICATE KEY UPDATE
+			site_nm				= #{site_nm}
+			, site_directory	= #{site_directory}
+			, site_domain1		= #{site_domain1}
+			, site_domain2		= #{site_domain2}
+			, site_cmsUrl		= #{site_cmsUrl}
+			, site_locale		= #{site_locale}
+			, site_isMobile		= #{site_isMobile}
+			, site_mngYn		= #{site_mngYn}
+			, site_accessIpYn	= #{site_accessIpYn}
+			, site_useYn		= #{site_useYn}
+			, dept_id			= #{dept_id}
+			, site_se			= #{site_se}
+			, site_mdfcnDt		= SYSDATE()
+	]]>
+	</update>
+	
+	<update id="deleteUseYn" parameterType="String">
+		UPDATE WEB_Site SET
+			site_useYn = 0
+		WHERE site_code = #{site_code}
+	</update>
+	
+	<update id="deleteSiteUseYn" parameterType="String">
+		UPDATE WEB_Site SET
+			site_useYn = 9
+		WHERE site_code = #{site_code}
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_Site
+		WHERE site_code = #{site_code}
+	</delete>
+	
+	<select id="existNm" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+		FROM WEB_Site
+		WHERE site_useYn = 1
+		AND site_nm = #{site_nm}
+	]]>
+	</select>
+	
+	<select id="existDir" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+		FROM WEB_Site
+		WHERE site_useYn = 1
+		AND site_directory = #{site_directory}
+	]]>
+	</select>
+	
+	<select id="existMngYn" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+		FROM WEB_Site
+		WHERE site_useYn = 1
+		AND site_mngYn = 1
+	]]>
+	</select>
+	
+	<select id="selectDir" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.SiteVo">
+	<![CDATA[
+		SELECT S.site_code
+			 , S.site_nm
+			 , S.site_directory
+			 , S.site_domain1
+			 , S.site_domain2
+			 , S.site_cmsUrl
+			 , S.site_locale
+			 , S.site_isMobile
+			 , S.site_mngYn
+			 , S.site_accessIpYn
+			 , S.site_useYn
+			 , S.dept_id
+			 , S.site_se
+			 , M.mnu_code
+			 , M.mnu_nm
+		FROM WEB_Site S
+		JOIN WEB_Menu M ON S.site_code = M.site_code
+		WHERE M.mnu_uprCode IS NULL
+		AND S.site_directory = #{site_directory}
+		AND S.site_useYn = 1
+	]]>
+	</select>
+	
+	<select id="select" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.SiteVo">
+		SELECT S.site_code
+			 , S.site_nm
+			 , S.site_directory
+			 , S.site_domain1
+			 , S.site_domain2
+			 , S.site_cmsUrl
+			 , S.site_locale
+			 , S.site_isMobile
+			 , S.site_mngYn
+			 , S.site_accessIpYn
+			 , S.site_useYn
+			 , S.dept_id
+			 , (SELECT dept_nm FROM WEB_Dept WHERE dept_id = S.dept_id) As dept_nm
+			 , S.site_se
+			 , S.site_regDt
+			 , S.site_mdfcnDt
+			 , M.mnu_code
+			 , M.mnu_nm
+		FROM WEB_Site S
+		JOIN WEB_Menu M ON S.site_code = M.site_code
+		WHERE M.mnu_uprCode IS NULL
+		
+		<if test="site_code != null and site_code != ''">
+			AND S.site_code = #{site_code}
+		</if>
+		<if test="site_domain != null and site_domain != ''">
+			AND S.site_domain1 LIKE  '%'||#{site_domain}||'%'
+		</if>
+		
+		<if test="site_directory != null and site_directory != ''">
+			AND S.site_directory = #{site_directory}
+		</if>
+		
+		<if test="site_useyn != null and site_useyn != ''">
+			AND S.site_useyn = #{site_useyn}
+		</if>
+		
+		<if test="site_mngYn != null and site_mngYn != ''">
+			AND S.site_mngYn = #{site_mngYn}
+		</if>
+	</select>
+	
+	<select id="selectPrmList"  parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.SiteVo">
+	
+		SELECT S.site_code
+			 , S.site_nm
+			 , S.site_directory
+			 , S.site_domain1
+			 , S.site_domain2
+			 , S.site_cmsUrl
+			 , S.site_locale
+			 , S.site_isMobile
+			 , S.site_mngYn
+			 , S.site_accessIpYn
+			 , S.site_useYn
+			 , S.dept_id
+			 , (SELECT dept_nm FROM WEB_Dept WHERE dept_id = S.dept_id) As dept_nm
+			 , S.site_se
+		FROM WEB_Site S
+		WHERE site_code IS NOT NULL
+		
+		<if test="site_useYn != null and site_useYn != ''">
+			AND site_useYn = #{site_useYn} 
+		</if>
+		
+		<!-- 폐쇄 제외 목록 -->
+		<if test="site_deleteYn == 1">
+			AND site_useYn != 9
+		</if>
+
+		<if test="site_mngYn != null and site_mngYn != ''">
+			AND site_mngYn = #{site_mngYn} 
+		</if>
+		<![CDATA[
+
+		AND site_code IN (	
+							SELECT DISTINCT M.site_code
+							FROM	(	
+										SELECT	mnu_code
+												, (MAX(prm_alwAdm) &  ~MAX(prm_dnyAdm)) AS PrmAdm
+										FROM WEB_Permission
+										WHERE (
+												prm_id IN (#{usr_id}, #{dpt_id})
+												OR 
+												prm_id IN (
+															SELECT grp_id
+															FROM WEB_Group
+															WHERE grp_sttus = 1
+															AND grp_id IN (	SELECT grp_id 
+																			FROM WEB_GroupMember 
+																			WHERE mem_id IN (#{usr_id}, #{dpt_id})
+																			UNION
+																			SELECT #{grp_id} AS grp_id FROM DUAL
+																		)
+														 )
+												OR prm_id IN (
+											        			WITH RECURSIVE cte As 
+																( 
+																	SELECT grp_id, grp_uprID, grp_nm, 1 AS level 
+																			, grp_sttus, grp_sort
+																	FROM WEB_Group 
+																	WHERE grp_id = #{grp_id}
+																	UNION ALL 
+																	SELECT p.grp_id, p.grp_uprID, p.grp_nm, 1+level as level 
+																			, p.grp_sttus, p.grp_sort
+																	FROM WEB_Group p 
+																	INNER JOIN cte ON p.grp_id = cte.grp_uprID
+																	where p.grp_uprID is not null
+																) 
+																SELECT grp_id
+																FROM cte
+															)
+										)
+										GROUP BY mnu_code
+										HAVING PrmAdm = 1
+									) P
+							JOIN WEB_Menu M ON M.mnu_code = P.mnu_code
+							WHERE (M.mnu_ty = #{mnu_ty} OR 1 = IF(#{mnu_ty} = 'all', 1, 0))
+						)
+						
+		ORDER BY site_mngYn DESC
+				, (CASE WHEN ASCII(SUBSTRING(site_nm,1)) > 123 THEN 1 ELSE 2 END)
+				, (CASE 
+						WHEN site_useYn = 1 THEN 1
+						WHEN site_useYn = 0 THEN 2 
+					ELSE 3 END)
+    			, site_nm
+		]]>
+	</select>
+	
+	<select id="selectList"  parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.SiteVo">
+		SELECT S.site_code
+			 , S.site_nm
+			 , S.site_directory
+			 , S.site_domain1
+			 , S.site_domain2
+			 , S.site_cmsUrl
+			 , S.site_locale
+			 , S.site_isMobile
+			 , S.site_mngYn
+			 , S.site_accessIpYn
+			 , S.site_useYn
+			 , S.dept_id
+			 , (SELECT dept_nm FROM WEB_Dept WHERE dept_id = S.dept_id) As dept_nm
+			 , S.site_se
+			 , S.site_regDt
+			 , S.site_mdfcnDt
+		FROM WEB_Site S
+		WHERE site_code IS NOT NULL
+		<if test="srchSe != null and srchSe != ''">
+			AND site_se = #{srchSe} 
+		</if>
+		<if test="srchUseYn != null and srchUseYn != ''">
+			AND site_useYn = #{srchUseYn} 
+		</if>
+		
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				site_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR
+				site_code LIKE CONCAT('%',#{srchKwd},'%')
+				)
+		</if>
+		<![CDATA[
+		ORDER BY site_mngYn DESC
+				, (CASE WHEN ASCII(SUBSTRING(site_nm,1)) > 123 THEN 1 ELSE 2 END)
+				, (CASE 
+						WHEN site_useYn = 1 THEN 1
+						WHEN site_useYn = 0 THEN 2 
+					ELSE 3 END)
+    			, site_nm
+		]]>
+	</select>
+	
+	<update id="memberDisable" parameterType="String">
+		UPDATE WEB_Member SET
+			mem_sttus = 0
+		WHERE site_code = #{site_code}
+	</update>
+</mapper>

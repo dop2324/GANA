@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardShareMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.board.info.service.BoardShareVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardShare
+		VALUES (
+			#{mnu_code}
+			, #{shr_code}
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="egovframework.dnworks.cms.board.info.service.BoardShareVo">
+		DELETE FROM WEB_BoardShare WHERE mnu_code = #{mnu_code} AND shr_code = #{shr_code}
+	</delete>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardShareVo">
+		SELECT mnu_code
+				, shr_code
+				, (SELECT mnu_nm FROM WEB_Menu WHERE mnu_code = A.shr_code) As site_nm
+				, FUNC_GetMenuPath(A.shr_code)  As mnu_path
+		FROM WEB_BoardShare A 
+		WHERE mnu_code = #{mnu_code}
+	</select>
+	
+</mapper>

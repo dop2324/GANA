@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.festvl.service.impl.FestvlInfoMapper">
+
+	<sql id="whereList">
+		FROM TN_FESTVL_INFO A
+		WHERE 1=1
+		<if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+			AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+		</if>
+	</sql>
+
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+	]]>
+	<include refid="whereList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.festvl.service.FestvlVO">
+		SELECT T.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY FSV_UNQ_ID DESC) AS RNUM,
+				FSV_UNQ_ID AS fsvUnqId
+				, TTL AS ttl
+				, PLC_NM AS plcNm
+				, ZIP AS zip
+				, ADDR AS addr
+				, DTL_ADDR AS dtlAddr
+				, FESTVL_BGNG_YMD AS festvlBgngYmd
+				, FESTVL_END_YMD AS festvlEndYmd
+				, FESTVL_BGNG_HM AS festvlBgngHm
+				, FESTVL_END_HM AS festvlEndHm
+				, INQ_EML_ADDR AS inqEmlAddr
+				, INQ_TELNO AS inqTelno
+				, FREEM_YN AS freemYn
+				, VW_GD AS vwGd
+				, PRGRM_CN AS prgrmCn
+				, HMPG_URL AS hmpgUrl
+				, MAP_LO AS mapLo
+				, MAP_LA AS mapLa
+				, USE_YN AS useYn
+				, REG_DT AS regDt
+				, REG_ID AS regId
+				, MDFCN_DT AS mdfcnDt
+				, MDFCN_ID AS mdfcnId
+			<include refid="whereList" />
+		) T
+	<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+	]]>
+	</select>
+	
+	<select id="select" parameterType="Map" resultType="egovframework.dnworks.func.festvl.service.FestvlVO">
+	<![CDATA[
+		SELECT
+			FSV_UNQ_ID AS fsvUnqId
+			, TTL AS ttl
+			, PLC_NM AS plcNm
+			, ZIP AS zip
+			, ADDR AS addr
+			, DTL_ADDR AS dtlAddr
+			, FESTVL_BGNG_YMD AS festvlBgngYmd
+			, FESTVL_END_YMD AS festvlEndYmd
+			, FESTVL_BGNG_HM AS festvlBgngHm
+			, FESTVL_END_HM AS festvlEndHm
+			, INQ_EML_ADDR AS inqEmlAddr
+			, INQ_TELNO AS inqTelno
+			, FREEM_YN AS freemYn
+			, VW_GD AS vwGd
+			, PRGRM_CN AS prgrmCn
+			, HMPG_URL AS hmpgUrl
+			, MAP_LO AS mapLo
+			, MAP_LA AS mapLa
+			, USE_YN AS useYn
+			, REG_DT AS regDt
+			, REG_ID AS regId
+			, MDFCN_DT AS mdfcnDt
+			, MDFCN_ID AS mdfcnId
+			, ATCH_FILE_ID AS atchFileId
+		FROM TN_FESTVL_INFO
+		WHERE FSV_UNQ_ID = #{fsvUnqId}
+	]]>
+	</select>
+
+	<insert id="insert" parameterType="egovframework.dnworks.func.festvl.service.FestvlVO">
+	<![CDATA[
+		INSERT INTO TN_FESTVL_INFO (
+			FSV_UNQ_ID
+			, TTL
+			, PLC_NM
+			, ZIP
+			, ADDR
+			, DTL_ADDR
+			, FESTVL_BGNG_YMD
+			, FESTVL_END_YMD
+			, FESTVL_BGNG_HM
+			, FESTVL_END_HM
+			, INQ_EML_ADDR
+			, INQ_TELNO
+			, FREEM_YN
+			, VW_GD
+			, PRGRM_CN
+			, HMPG_URL
+			, MAP_LO
+			, MAP_LA
+			, USE_YN
+			, REG_DT
+			, REG_ID
+			, ATCH_FILE_ID
+		) VALUES (
+			#{fsvUnqId}
+			, #{ttl}
+			, #{plcNm}
+			, #{zip}
+			, #{addr}
+			, #{dtlAddr}
+			, #{festvlBgngYmd}
+			, #{festvlEndYmd}
+			, #{festvlBgngHm}
+			, #{festvlEndHm}
+			, #{inqEmlAddr}
+			, #{inqTelno}
+			, #{freemYn}
+			, #{vwGd}
+			, #{prgrmCn}
+			, #{hmpgUrl}
+			, #{mapLo}
+			, #{mapLa}
+			, #{useYn}
+			, SYSDATE
+			, #{regId}
+			, #{atchFileId}
+		)
+	]]>
+	</insert>
+	
+	<update id="update" parameterType="egovframework.dnworks.func.festvl.service.FestvlVO">
+	<![CDATA[
+		UPDATE TN_FESTVL_INFO SET 
+			TTL=#{ttl}
+			, PLC_NM=#{plcNm}
+			, ZIP=#{zip}
+			, ADDR=#{addr}
+			, DTL_ADDR=#{dtlAddr}
+			, FESTVL_BGNG_YMD=#{festvlBgngYmd}
+			, FESTVL_END_YMD=#{festvlEndYmd}
+			, FESTVL_BGNG_HM=#{festvlBgngHm}
+			, FESTVL_END_HM=#{festvlEndHm}
+			, INQ_EML_ADDR=#{inqEmlAddr}
+			, INQ_TELNO=#{inqTelno}
+			, FREEM_YN=#{freemYn}
+			, VW_GD=#{vwGd}
+			, PRGRM_CN=#{prgrmCn}
+			, HMPG_URL=#{hmpgUrl}
+			, MAP_LO=#{mapLo}
+			, MAP_LA=#{mapLa}
+			, USE_YN=#{useYn}
+			, MDFCN_DT=SYSDATE
+			, MDFCN_ID=#{mdfcnId}
+			, ATCH_FILE_ID = #{atchFileId}
+		WHERE FSV_UNQ_ID = #{fsvUnqId}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="egovframework.dnworks.func.festvl.service.FestvlVO">
+	<![CDATA[
+		DELETE FROM TN_FESTVL_INFO WHERE FSV_UNQ_ID = #{fsvUnqId}
+	]]>
+	</delete>
+	
+</mapper>

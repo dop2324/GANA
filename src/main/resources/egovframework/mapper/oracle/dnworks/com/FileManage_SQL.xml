@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.com.cmm.service.impl.FileManageMapper">
+	
+	<insert id="insertFileMaster" parameterType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		INSERT INTO TN_FILE (
+			ATCH_FILE_ID, CREAT_DT, USE_YN
+		) VALUES (
+			#{atchFileId}
+			, SYSDATE
+			, 'Y'
+		)
+	]]>
+	</insert>
+	
+	<insert id="insertFileDetail" parameterType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		INSERT INTO TN_FILEDETAIL (
+			ATCH_FILE_ID, FILE_SN, FILE_STRE_COURS, STRE_FILE_NM, ORIGNL_FILE_NM, FILE_EXTSN, FILE_CN, FILE_SIZE
+		) VALUES (
+			#{atchFileId}
+			, #{fileSn}
+			, #{fileStreCours}
+			, #{streFileNm}
+			, #{orignlFileNm}
+			, #{fileExtsn}
+			, #{fileCn}
+			, #{fileSize}
+		)
+	]]>
+	</insert>
+	
+	<select id="getMaxFileSN" parameterType="egovframework.com.cmm.service.FileVO" resultType="java.lang.Integer">
+	<![CDATA[
+		SELECT 
+			NVL(MAX(FILE_SN),0)+1 AS FILE_SN
+		FROM TN_FILEDETAIL
+		WHERE ATCH_FILE_ID =  #{atchFileId}	
+	]]>
+	</select>
+	
+	<select id="selectFileInfs" parameterType="egovframework.com.cmm.service.FileVO" resultType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		SELECT 
+			a.ATCH_FILE_ID AS atchFileId
+			, b.FILE_CN AS fileCn
+			, b.FILE_SN AS fileSn
+			, b.FILE_STRE_COURS AS fileStreCours
+			, b.STRE_FILE_NM AS streFileNm
+			, b.FILE_EXTSN AS fileExtsn
+			, b.ORIGNL_FILE_NM AS orignlFileNm
+			, b.FILE_SIZE AS fileSize
+			, a.CREAT_DT AS creatDt
+		FROM
+			TN_FILE a, TN_FILEDETAIL b
+		WHERE
+			a.ATCH_FILE_ID = #{atchFileId}
+		AND 
+			a.ATCH_FILE_ID = b.ATCH_FILE_ID
+		AND 
+			a.USE_YN = 'Y'
+		ORDER BY b.FILE_SN
+	]]>
+	</select>
+	
+	<select id="selectFileInf" parameterType="egovframework.com.cmm.service.FileVO" resultType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		SELECT 
+			ATCH_FILE_ID AS atchFileId
+			, FILE_CN AS fileCn
+			, FILE_SN AS fileSn
+			, FILE_STRE_COURS AS fileStreCours
+			, STRE_FILE_NM AS streFileNm
+			, FILE_EXTSN AS fileExtsn
+			, ORIGNL_FILE_NM AS orignlFileNm
+			, FILE_SIZE AS fileSize
+		FROM
+			TN_FILEDETAIL
+		WHERE
+			ATCH_FILE_ID = #{atchFileId}
+		AND 
+			FILE_SN = #{fileSn}	
+	]]>
+	</select>
+	
+	<delete id="deleteFileInf" parameterType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		DELETE FROM TN_FILEDETAIL
+		WHERE
+			ATCH_FILE_ID = #{atchFileId}
+		AND	
+			FILE_SN = #{fileSn}
+	]]>
+	</delete>
+	
+	<delete id="deleteFileInfs" parameterType="egovframework.com.cmm.service.FileVO">
+	<![CDATA[
+		DELETE FROM TN_FILE
+		WHERE
+			ATCH_FILE_ID = #{atchFileId}
+	]]>
+	</delete>
+	
+</mapper>

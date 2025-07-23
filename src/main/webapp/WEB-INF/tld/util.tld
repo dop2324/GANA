@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+
+	<description>JSTL 1.1 functions library</description>
+  	<display-name>JSTL XML</display-name>
+  	<tlib-version>1.1</tlib-version>
+  	<short-name>util</short-name>
+  	
+  	<function>
+		<description>hasPermission</description>
+		<name>hasPermission</name>
+   		<function-class>egovframework.dnworks.cmm.util.Util</function-class>
+   		<function-signature>boolean hasPermission(int, int)</function-signature>
+   		<example>
+   			${util:hasPermission(int, int)}
+   		</example>
+	</function>
+	
+ 	<function>
+		<description>html encode</description>
+		<name>htmlEncode</name>
+   		<function-class>egovframework.dnworks.cmm.util.Util</function-class>
+   		<function-signature>java.lang.String htmlEncode(java.lang.String)</function-signature>
+   		<example>
+   			${util:htmlEncode(str)}
+   		</example>
+	</function>
+	
+	<function>
+		<description>get ImgTag</description>
+		<name>getImgTag</name>
+   		<function-class>egovframework.dnworks.cmm.util.ImageUtil</function-class>
+   		<function-signature>java.lang.String getImgTag(java.lang.String, java.lang.String, int, java.lang.String)</function-signature>
+   		<example>
+   			${util:getImgTag(String, String, int, String)}
+   		</example>
+	</function>
+	
+	<function>
+		<description>getImgSrc</description>
+		<name>getImgSrc</name>
+   		<function-class>egovframework.dnworks.cmm.util.ImageUtil</function-class>
+   		<function-signature>java.lang.String getImgSrc(java.lang.String, java.lang.String)</function-signature>
+   		<example>
+   			${util:getImgSrc(String, String)}
+   		</example>
+	</function>
+	
+	<function>
+		<description>getImgTagStyle</description>
+		<name>getImgTagStyle</name>
+   		<function-class>egovframework.dnworks.cmm.util.ImageUtil</function-class>
+   		<function-signature>java.lang.String getImgTagStyle(java.lang.String, java.lang.String, java.lang.String, java.lang.String)</function-signature>
+   		<example>
+   			${util:getImgTagStyle(String, String, String, String)}
+   		</example>
+	</function>
+	
+	<function>
+		<description>getFileFullName</description>
+		<name>getFileFullName</name>
+   		<function-class>egovframework.dnworks.cmm.util.Util</function-class>
+   		<function-signature>java.lang.String getFileFullName(java.lang.String)</function-signature>
+   		<example>
+   			${util:getFileFullName(str)}
+   		</example>
+	</function>
+	
+	<function>
+		<description>isMediaFile</description>
+		<name>isMediaFile</name>
+   		<function-class>egovframework.dnworks.cmm.util.Util</function-class>
+   		<function-signature>java.lang.String isMediaFile(java.lang.String)</function-signature>
+   		<example>
+   			${util:isMediaFile(str)}
+   		</example>
+	</function>
+	
+	
+</taglib>
+

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.link.service.impl.LinkGroupMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.link.service.LinkGroupVo">
+	<![CDATA[
+		MERGE INTO WEB_LinkGroup A
+		USING DUAL ON ( A.lgp_sn = #{lgp_sn} )	
+		WHEN MATCHED THEN	
+		UPDATE SET	
+			lgp_nm			= #{lgp_nm}
+			, lgp_sort		= #{lgp_sort}
+			, lgp_se 		= #{lgp_se}
+			, lgp_sttus		= #{lgp_sttus}
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			CASE
+				WHEN #{lgp_sn} IN (0, -1) THEN SEQ_LinkGroup.nextval
+    			ELSE #{lgp_sn}
+			END			
+			, #{lgp_nm}
+			, #{lgp_sort}
+			, #{lgp_se}
+			, #{lgp_sttus}
+			, #{site_code}
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_LinkGroup WHERE lgp_sn = #{lgp_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.link.service.LinkGroupVo">
+		SELECT lgp_sn, lgp_nm, lgp_sort, lgp_se, lgp_sttus
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+		FROM WEB_LinkGroup A
+		WHERE lgp_sn = #{lgp_sn}
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkGroupVo">
+		SELECT lgp_sn, lgp_nm, lgp_sort, lgp_se, lgp_sttus
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+		FROM WEB_LinkGroup A
+		WHERE site_code = #{site_code}
+		
+		<if test="lgp_sttus != '' and lgp_sttus != null">
+			AND lgp_sttus = #{lgp_sttus}
+		</if>
+		ORDER BY lgp_sort
+	</select>
+	
+</mapper>

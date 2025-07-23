@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardMapper">
+
+	<select id="save" parameterType="Map" statementType="CALLABLE">
+	<![CDATA[
+		{CALL PROC_BoardSave(
+			#{cmd}
+			, #{mnu_code}
+			, #{bod_sn}
+			, #{bod_ttl}
+			, #{bod_readCnt}
+			, #{bod_startDate}
+			, #{bod_endDate}
+			, #{bod_lock}
+			, #{bod_notice}
+			, #{bod_sttus}
+			, #{bgp_sn}
+			, #{dept_id}
+			, #{dept_nm}
+			, #{bod_pushGroup}
+			, #{bod_regIP}
+			, #{bod_regID}
+			, #{con_id}
+			, #{con_nm}
+			, #{con_pw}
+			, #{con_eml}
+			, #{con_telno}
+			, #{con_regip}
+			, #{con_cn}
+			, #{con_addCn}
+			, #{con_point}
+			, #{con_html}
+			, #{con_zip}
+			, #{con_addr}
+			, #{con_regDI}
+			, #{con_linkUrl}
+			, #{con_regDt}
+			, #{rtnBodSn, javaType=int, jdbcType=INTEGER, mode=INOUT}
+		)}
+	]]>
+	</select>
+	
+	<update id="updateSttus" parameterType="int">
+	<![CDATA[
+		UPDATE WEB_Board SET
+				bod_sttus = IF(bod_sttus=1, 0, 1)
+		WHERE bod_sn = #{bod_sn}
+	]]>
+	</update>
+	
+	<update id="deleteSttus" parameterType="Map">
+	<![CDATA[
+		UPDATE WEB_Board SET
+				bod_delDt			= IF(bod_delSttus = 1, NULL, SYSDATE())
+				, bod_delUserId 	= IF(bod_delSttus = 1, NULL, #{bod_delUserId})
+				, bod_delReason		= IF(bod_delSttus = 1, NULL, #{bod_delReason})
+				, bod_delSttus 		= IF(bod_delSttus = 1, 0, 1)
+		WHERE bod_sn = #{bod_sn}
+	]]>
+	</update>
+	
+	<select id="delete" parameterType="int" statementType="CALLABLE">
+	<![CDATA[
+		{CALL PROC_BoardDelete(#{bod_sn})}
+	]]>
+	</select>
+	
+	<update id="updateReadCnt" parameterType="int">
+	<![CDATA[
+		UPDATE WEB_Board SET
+				bod_readCnt = bod_readCnt + 1
+		WHERE bod_sn = #{bod_sn}
+	]]>
+	</update>
+	
+	<update id="updateCommentCnt" parameterType="Map">
+	<![CDATA[
+		UPDATE WEB_Board SET
+				bod_commentCnt = bod_commentCnt + #{val}
+		WHERE bod_sn = #{bod_sn}
+	]]>
+	</update>
+	
+	<select id="select" parameterType="int" resultType="HashMap">
+	<![CDATA[
+		SELECT A.mnu_code
+				, A.bod_sn
+				, bod_ttl, bod_readCnt, bod_commentCnt, bod_replyCnt, bod_lock, bod_notice
+				, DATE_FORMAT(bod_startDate, '%Y-%m-%d') As bod_startDate
+				, DATE_FORMAT(bod_endDate, '%Y-%m-%d') As bod_endDate
+				, bod_sttus, bod_delSttus
+				, bod_ref, bod_level, bod_sort, bod_uprSn
+				, bod_delDt, bod_delUserId, bod_delReason
+				, bod_pushGroup
+				, A.bgp_sn, bgp_nm
+				, dept_id, dept_nm
+				, con_sn, con_id, con_nm, con_pw
+				, con_eml, con_telno, con_regip
+				, con_cn
+				, con_ty
+				, con_point, con_html
+				, con_zip, con_addr
+				, con_regDI
+				, con_linkUrl
+				, con_regDt
+				, con_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = B.con_sn AND vote_ty = 1) As con_yesCnt
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = B.con_sn AND vote_ty = 0) As con_noCnt
+				
+		FROM WEB_Board 						A
+		JOIN WEB_BoardContent 				B ON A.bod_sn = B.bod_sn
+		LEFT OUTER JOIN WEB_BoardGroup		C ON A.bgp_sn = C.bgp_sn
+		WHERE A.bod_sn = #{bod_sn}
+		AND con_ty = 1
+	]]>
+	</select>
+	
+	<sql id="whereBoardList">
+		FROM 
+		(
+			<!-- 게시판 목록 -->
+			SELECT mnu_code As board_menu, A.*
+			FROM VIEW_BoardList A
+			
+			<!-- 게시물 공유 목록 -->
+			UNION ALL
+			SELECT shr_code As board_menu, B.*
+			FROM WEB_BoardShareMember A
+			JOIN VIEW_BoardList B ON A.mnu_code = B.mnu_code and A.bod_sn = B.bod_sn
+			WHERE shr_code = #{mnu_code}
+			
+			<!-- 게시물 통합 목록 -->
+			UNION ALL
+			SELECT A.mnu_code As board_menu, B.*
+			FROM WEB_BoardPublic A
+			JOIN VIEW_BoardList B ON A.pub_code = B.mnu_code
+			WHERE A.mnu_code = #{mnu_code}
+			AND bod_notice = 0
+		) BL
+		WHERE	1=1
+		
+		<!-- 필수 -->
+		<!-- 게시판 공지구분-->
+		AND bod_notice = #{srchNotice}
+		
+		<!-- 메뉴 -->
+		<if test="mnu_code != null and mnu_code != ''">
+			AND board_menu = #{mnu_code}
+		</if>
+		
+		<!-- 전체 게시판 -->
+		<if test="srchBodAll == '1'">
+			AND mnu_code IN (SELECT mnu_code FROM WEB_BoardInfo WHERE inf_fncAllBoard == 1)
+		</if>
+
+		<!-- 게시판상태 -->
+		<if test="srchSttus != null and srchSttus != ''">
+			AND bod_sttus = #{srchSttus}
+		</if>
+		
+		<!-- 게시판 삭제구분 -->
+		<if test="srchDelete != null and srchDelete != ''">
+			AND bod_delSttus = #{srchDelete}
+		</if>
+		
+		<!-- 비필수 -->
+		<!-- 게시판 분류-->
+		<if test="srchBgpSn != null and srchBgpSn != ''">
+			AND bgp_sn = #{srchBgpSn}
+		</if>
+		
+		<!-- 관리권한 작성자 id로 검색 -->
+		<if test="hasPrmAdm != null and hasPrmAdm == true">
+			<if test="srchMemId != null and srchMemId != ''">
+				AND con_id = #{srchMemId}
+			</if>
+			
+			<if test="srchGrpId != null and srchGrpId != ''">
+				AND con_id IN (SELECT mem_id FROM WEB_GroupMember WHERE grp_id = #{srchGrpId})
+			</if>
+		</if>
+		
+		<!-- 관리권한 없을때 -->
+		<if test="hasPrmAdm != null and hasPrmAdm == false">
+			<if test="writerOnly != null and writerOnly == 1">
+			
+				<!-- 본인 확인 기능 -->
+				<if test="UsrCheckAuth != null and UsrCheckAuth == 1">
+					<if test="sessionDI != null and sessionDI != ''">
+					AND con_regDI = #{sessionDI}
+					</if>
+				</if>
+				
+				<!-- 회원 인증 기능 -->
+				<if test="MbrCheckAuth != null and MbrCheckAuth == 1">
+					<if test="sessionID != null and sessionID != ''">
+					AND con_id = #{sessionID}
+					</if>
+				</if>
+			</if>
+			
+			<!--기간설정, 구분이 기간, 당일설정은 제외 -->
+			<if test="infFncAdmTerm != null and infFncAdmTerm == 1">
+				<!-- 기간 -->
+				<if test="infFncAdmTermTy != null and infFncAdmTermTy == 1">
+					AND SYSDATE() BETWEEN bod_startDate AND bod_endDate
+				</if>
+				<!-- 당일 -->
+				<if test="infFncAdmTermTy != null and infFncAdmTermTy == 0">
+					AND (
+						DATE_FORMAT(bod_startDate, '%Y-%m-%d') = '2000-01-01'
+						OR
+						DATE_FORMAT(SYSDATE(), '%Y-%m-%d') = DATE_FORMAT(bod_startDate, '%Y-%m-%d')
+					)
+					
+				</if>
+			</if>
+		</if>
+		
+		<!-- 기간 검색-->
+		<if test="srchSDate != null and srchSDate != ''">
+			AND DATE_FORMAT(con_regDt, '%Y-%m-%d') >= #{srchSDate}
+		</if>
+		<if test="srchEDate != null and srchEDate != ''">
+		<![CDATA[
+			AND DATE_FORMAT(con_regDt, '%Y-%m-%d') <= #{srchEDate}
+		]]>	
+		</if>
+
+		<!-- 달력 -->
+		<if test="srchCalTy != null and srchCalTy != ''">
+			<if test="srchCalTy == 'day' and srchDate != null and srchDate != ''">
+				<!-- 년월 -->
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_startDate, '%Y%m') 
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_endDate, '%Y%m')
+					
+				<!-- srchDate -->
+				AND (
+					DATE_FORMAT(#{srchDate}, '%Y%m%d') BETWEEN bod_startDate AND bod_endDate
+					OR	DATE_FORMAT(#{srchDate}, '%Y%m%d') = bod_startDate
+				)
+			</if>
+			<if test="srchCalTy == 'month'">
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_startDate, '%Y%m') 
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_endDate, '%Y%m')
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') BETWEEN DATE_FORMAT(bod_startDate, '%Y%m') AND DATE_FORMAT(bod_endDate, '%Y%m')
+			</if>
+			<!-- 
+			<if test="srchCalTy == 'month' and srchDate != null and srchDate != ''">
+
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_startDate, '%Y%m') 
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') = DATE_FORMAT(bod_endDate, '%Y%m')
+
+				AND DATE_FORMAT(#{srchDate}, '%Y%m') BETWEEN DATE_FORMAT(bod_startDate, '%Y%m') AND DATE_FORMAT(bod_endDate, '%Y%m')
+			</if>
+			 -->
+		</if>
+		
+		<!-- 검색어 -->
+		<if test="srchKwd != null and srchKwd != ''">
+			<choose>
+				<when test="srchColumn == 'bod_ttl'">
+					AND bod_ttl LIKE CONCAT('%',#{srchKwd},'%')
+				</when>
+				<when test="srchColumn == 'con_cn'">
+					AND con_cn LIKE CONCAT('%',#{srchKwd},'%')
+				</when>
+				<when test="srchColumn == 'con_nm'">
+					AND con_nm LIKE CONCAT('%',#{srchKwd},'%')
+				</when>
+				<otherwise>
+					AND ( 
+							bod_ttl LIKE CONCAT('%',#{srchKwd},'%')
+							OR con_cn LIKE CONCAT('%',#{srchKwd},'%')
+							OR con_nm LIKE CONCAT('%',#{srchKwd},'%')
+						)
+				</otherwise>
+			</choose>
+		</if>
+			
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT 	COUNT(1)
+		]]>
+		<include refid="whereBoardList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="HashMap">
+		SELECT BL.*
+				, DATEDIFF(SYSDATE(), con_regDt) As bod_dateDiff
+				, (SELECT COUNT(1) FROM WEB_BoardFile WHERE bod_sn = BL.bod_sn) As file_fileCnt
+				, (SELECT COUNT(1) FROM WEB_BoardDept WHERE bod_sn = BL.bod_sn) As bod_deptCnt
+				, (SELECT IF(file_thumbFileNm IS NOT NULL, file_thumbFileNm, file_phyFileNm)
+					FROM WEB_BoardFile
+					WHERE bod_sn = BL.bod_sn
+					ORDER BY file_firstYn DESC, file_sn
+					LIMIT 1
+				) As bod_listFileNm
+		<include refid="whereBoardList" />
+		ORDER BY bod_ref DESC, bod_sort ASC
+		LIMIT #{pageSize} OFFSET  #{offset}
+	</select>
+	
+	<select id="selectPreNxt" parameterType="Map" statementType="CALLABLE">
+		<![CDATA[
+			{CALL PROC_BoardPrvNxt( #{bod_sn		, javaType=int		, jdbcType=DECIMAL	, mode=IN}
+									, #{bod_sttus	, javaType=int		, jdbcType=INTEGER	, mode=IN}
+									, #{bgp_sn		, javaType=int		, jdbcType=INTEGER	, mode=IN}
+									, #{hasAdm		, javaType=int		, jdbcType=INTEGER	, mode=IN}
+									, #{next_sn		, javaType=long		, jdbcType=DECIMAL	, mode=INOUT}
+									, #{next_ttl	, javaType=String	, jdbcType=VARCHAR	, mode=INOUT}
+									, #{prev_sn		, javaType=long		, jdbcType=DECIMAL	, mode=INOUT}
+									, #{prev_ttl	, javaType=String	, jdbcType=VARCHAR	, mode=INOUT}
+			)}
+		]]>
+	</select>
+	
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.dnworks.func.memb.service.impl.MembLogMapper">
+
+	<sql id="whereMembLogList">
+		FROM TM_MEMB_LGN_LOG A
+		WHERE 1=1
+		<if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+			AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+		</if>
+		
+		<if test=" srchUseOrg != null and srchUseOrg != '' ">
+			AND USE_ORG_ID = #{srchUseOrg}
+		</if>
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND LGN_DT BETWEEN TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEdate}||' 23:59:59.999' ,'YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND LGN_DT >= TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+		</if>
+		
+		<if test=" srchLoginYn != null and srchLoginYn != '' ">
+			AND LGN_SUCCS_YN = #{srchLoginYn}
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+	]]>
+		<include refid="whereMembLogList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembLogVO">
+		SELECT T.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY MEMB_UNQ_ID DESC) AS RNUM,
+				MEMB_UNQ_ID AS membUnqId
+				, MEMB_ID AS membId
+				, USE_ORG_ID AS useOrgId
+				, LGN_SUCCS_YN AS lgnSuccsYn
+				, LGN_FAIL_RS AS lgnFailRs
+				, LGN_DT AS lgnDt
+				, LGN_YY AS lgnYy
+				, LGN_MM AS lgnMm
+				, LGN_DD AS lgnDd
+				, LGN_IP AS lgnIp
+			<include refid="whereMembLogList" />
+			ORDER BY LGN_DT DESC
+		) T
+	<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+	]]>	
+	</select>
+
+	<insert id="insert" parameterType="egovframework.dnworks.func.memb.service.MembLogVO">
+	<![CDATA[
+		INSERT INTO TM_MEMB_LGN_LOG (
+			MEMB_UNQ_ID, MEMB_ID, USE_ORG_ID, LGN_SUCCS_YN, LGN_FAIL_RS, LGN_DT, LGN_YY, LGN_MM, LGN_DD, LGN_IP
+		) VALUES (
+			#{membUnqId}
+			, #{membId}
+			, #{useOrgId}
+			, #{lgnSuccsYn}
+			, #{lgnFailRs}
+			, SYSDATE
+			, TO_CHAR(SYSDATE, 'YYYY')
+			, TO_CHAR(SYSDATE, 'MM')
+			, TO_CHAR(SYSDATE, 'DD')
+			, #{lgnIp}
+		)
+	]]>
+	</insert>
+	
+	<delete id="removeLogData" parameterType="Map">
+    <![CDATA[
+        DELETE FROM TM_MEMB_LGN_LOG
+        WHERE LGN_DT < TRUNC(SYSDATE) - #{retntnDt}
+    ]]>
+	</delete>
+
+</mapper>

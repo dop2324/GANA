@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.LogMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.menu.service.LogVo">
+		<![CDATA[
+			INSERT INTO WEB_Log
+			VALUES 
+			(
+				SEQ_Log.nextval
+				, #{mnu_code}
+				, systimestamp
+				, #{log_who}
+				, #{log_where}
+				, #{log_what}
+				, #{log_how}
+				, #{log_privacy}
+				, #{log_ip}
+			)
+		]]>
+	</update>
+	
+	<sql id="whereLogList">
+		FROM WEB_Log A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE 1 = 1 
+		
+		<if test="site_code != null and site_code != ''">
+			AND site_code = #{site_code}
+		</if> 
+		
+		<if test="mnu_code != null and mnu_code != ''">
+			AND A.mnu_code IN (
+								SELECT mnu_code
+									FROM WEB_Menu
+								START WITH mnu_code = #{mnu_code}
+								CONNECT BY PRIOR mnu_code = mnu_uprCode
+							)
+		</if> 
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND log_when BETWEEN TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEdate}||' 23:59:59.999' ,'YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND log_when >= TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3')
+			</if>
+		</if>
+		
+		<if test="srchHow != null and srchHow != ''">
+			AND log_how = #{srchHow}
+		</if> 
+		
+		<if test="srchHow != null and srchHow != ''">
+			AND log_how = #{srchHow}
+		</if> 
+		
+		<if test="srchPrivacy != null and srchPrivacy != ''">
+			AND log_privacy = #{srchPrivacy}
+		</if> 
+	
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		log_who LIKE CONCAT('%'||#{srchKwd}||'%'  
+				OR log_where LIKE '%'||#{srchKwd}||'%' 
+				OR log_what LIKE '%'||#{srchKwd}||'%' 
+				OR log_how LIKE '%'||#{srchKwd}||'%' 
+				OR mnu_nm  LIKE '%'||#{srchKwd}||'%'
+				)
+		</if>
+
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			
+		]]>
+		<include refid="whereLogList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.LogVo">
+		SELECT T.*
+		FROM (
+			SELECT ROW_NUMBER() OVER (ORDER BY log_when DESC) AS RNUM , log_sn, A.mnu_code
+				, log_when, log_who, log_where, log_what, log_how
+				, log_privacy, log_ip
+				, mnu_nm
+			<include refid="whereLogList" />
+		) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select>
+		
+</mapper>

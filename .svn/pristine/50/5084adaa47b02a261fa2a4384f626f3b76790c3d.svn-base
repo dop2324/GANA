@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveyMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveyVo">
+		MERGE INTO WEB_Survey A
+		USING DUAL ON ( A.survey_sn = #{survey_sn} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			survey_ttl			= #{survey_ttl}
+			, survey_startDt	= #{survey_startDt}
+			, survey_endDt		= #{survey_endDt}
+			, survey_authYn		= #{survey_authYn}
+			, survey_sttus		= #{survey_sttus}
+			, survey_cn			= #{survey_cn}
+			, survey_regID		= #{survey_regID}
+			, survey_regIP		= #{survey_regIP}
+			, survey_regDt		= SYSDATE
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			  CASE
+					WHEN #{survey_sn} IN (0, -1) THEN SEQ_Survey.nextval
+	    			ELSE #{survey_sn}
+			  END			
+			, #{site_code}
+			, #{survey_ttl}
+			, #{survey_startDt}
+			, #{survey_endDt}
+			, #{survey_authYn}
+			, #{survey_sttus}
+			, #{survey_cn}
+			, #{survey_regID}
+			, #{survey_regIP}
+			, SYSDATE
+		)
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_Survey WHERE survey_sn = #{survey_sn}
+	</delete>
+	
+	<!-- 
+	<sql id="selSurveyCol">
+	<![CDATA[
+		survey_sn, site_code, survey_ttl
+		, survey_startDt, survey_endDt
+		, survey_authYn, survey_sttus, survey_cn
+		, survey_regID, survey_regIP, survey_regDt
+		, (SELECT COUNT(1) FROM WEB_SurveyUser WHERE survey_sn = A.survey_sn) As survey_userCnt
+		,  CASE 
+				WHEN ( DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H') < survey_startDt ) THEN 0
+				WHEN ( DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H') BETWEEN survey_startDt  AND survey_endDt ) THEN 1
+				WHEN ( DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H') > survey_endDt ) THEN 2
+		END As survey_dateEnd
+	]]>
+	</sql>
+	-->
+	
+	<sql id="selSurveyCol">
+	<![CDATA[
+		survey_sn, site_code, survey_ttl
+		, survey_startDt, survey_endDt
+		, survey_authYn, survey_sttus, survey_cn
+		, survey_regID, survey_regIP, survey_regDt
+		, (SELECT COUNT(1) FROM WEB_SurveyUser WHERE survey_sn = A.survey_sn) As survey_userCnt
+		,  CASE 
+				WHEN ( TO_TIMESTAMP(TO_CHAR(SYSDATE,'YYYY-MM-DD HH24'),'YYYY-MM-DD HH24') < survey_startDt ) THEN 0
+				WHEN ( TO_TIMESTAMP(TO_CHAR(SYSDATE,'YYYY-MM-DD HH24'),'YYYY-MM-DD HH24') >= survey_startDt  AND survey_endDt > TO_TIMESTAMP(TO_CHAR(SYSDATE,'YYYY-MM-DD HH24'),'YYYY-MM-DD HH24') ) THEN 1
+				WHEN ( TO_TIMESTAMP(TO_CHAR(SYSDATE,'YYYY-MM-DD HH24'),'YYYY-MM-DD HH24') >= survey_endDt ) THEN 2
+		END As survey_dateEnd
+	]]>
+	</sql>
+	
+	<sql id="whereSurveyList">
+		FROM WEB_Survey A
+		WHERE 1 = 1
+		AND site_code = #{site_code}
+	</sql>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveyVo">
+		SELECT 
+		<include refid="selSurveyCol" />
+		FROM WEB_Survey A
+		WHERE survey_sn = #{survey_sn}
+	</select>
+
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		
+		<include refid="whereSurveyList"/>
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.survey.service.SurveyVo">
+		SELECT T.* FROM (
+		SELECT ROW_NUMBER() OVER (ORDER BY survey_startDt DESC) AS RNUM ,
+			<include refid="selSurveyCol" />
+			<include refid="whereSurveyList"/>
+		) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select>
+	
+</mapper>

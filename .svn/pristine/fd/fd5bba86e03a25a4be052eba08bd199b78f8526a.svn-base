@@ -1,0 +1,206 @@
+package egovframework.dnworks.base;
+
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import egovframework.com.cmm.service.EgovProperties;
+import egovframework.dnworks.cmm.Code;
+import egovframework.dnworks.cmm.util.IPUtil;
+import egovframework.dnworks.cmm.util.Util;
+import egovframework.dnworks.cms.menu.service.MenuService;
+import egovframework.dnworks.cms.menu.service.MenuVo;
+import egovframework.dnworks.cms.menu.service.SiteService;
+import egovframework.dnworks.cms.menu.service.SiteVo;
+import egovframework.dnworks.cms.stats.service.SessionService;
+import egovframework.dnworks.cms.stats.service.SessionVo;
+
+@Service
+public class WebBaseService 
+{
+	@Autowired
+	private SiteService siteService;
+	
+	@Autowired
+	private MenuService menuService;
+	
+	@Autowired
+	private SessionService sessionService;
+	
+	public SiteVo selectSiteVo(HttpServletRequest request) throws Exception {
+		SiteVo siteVo = null;
+		String WebRootDir = ""; 
+		URL url = new URL(String.format("%s?%s", request.getRequestURL(), request.getQueryString()));
+		String Path = url.getPath();
+		Path = Path.replaceFirst(request.getContextPath(), "");
+		String[] arrPath = Path.split("/");
+
+		if(arrPath != null && arrPath.length > 0) {
+			Map<String, Object> map = new HashMap<>();
+			//도매인, 디렉토리 확인
+			if(arrPath.length > 3) {
+				WebRootDir 	= String.format("/%s/%s"
+						, Util.replaceRegex(arrPath[1], "\\w*\\.\\w*", "")
+						, Util.replaceRegex(arrPath[2], "\\w*\\.\\w*", "")
+						);
+				map.put("site_directory", WebRootDir);
+			}else{
+				WebRootDir 	= arrPath[1];
+				WebRootDir 	= String.format("/%s", Util.replaceRegex(WebRootDir, "\\w*\\.\\w*", ""));
+				
+				if(WebRootDir == null || WebRootDir.equals("/")) WebRootDir = EgovProperties.getProperty("Globals.SitePath");
+				
+				//관리자는 도매인 구분 없이
+				if(WebRootDir.equals(EgovProperties.getProperty("Globals.AdminPath"))) {
+					map.remove("site_domain");
+				}
+				map.put("site_directory", WebRootDir);
+			}
+
+			siteVo = siteService.select(map);
+		}
+		
+		return siteVo;
+	}
+	
+	public Map<String, Object> webBase(HttpServletRequest request,  HttpSession session) throws Exception {
+		
+		Map<String, Object> rtnMap = new HashMap<>();
+		SiteVo siteVo 				= null;
+		MenuVo menuVo 				= null;
+		MenuVo tmnuVo 				= null;
+		MenuVo pmnuVo 				= null;
+		List<MenuVo> menuPath 		= null;
+		List<String> prmAdmMenuList = null;
+		List<String> prmSelMenuList = null;
+		LinkedHashMap<String, MenuVo> siteMenuTree = null;
+
+		//site
+		siteVo = this.selectSiteVo(request);
+		
+		if(siteVo == null) {
+			rtnMap.put("siteVo", null);
+			return rtnMap;
+		}else {
+			//사이트 사용유무 확인 (1 : 사용 0:중지 9:폐쇄)
+			if(siteVo.getSite_useYn() != 1) {
+				rtnMap.put("siteVo", null);
+				return rtnMap;
+			}
+		}
+		
+		//세션정보 저장
+		this.saveSession(request, session, siteVo.getSite_code());
+		
+		//메뉴정보
+		String mnu_code = Util.nvl(request.getParameter("mnu_code"), siteVo.getMnu_code());
+		menuVo = menuService.select(mnu_code);
+
+		if(menuVo != null) {
+
+			Map<String, Object> prmMap = new HashMap<>();
+			prmMap.put("usr_id", Util.getSession(session, "USR_ID") );
+			prmMap.put("dpt_id", Util.getSession(session, "DPT_ID") );
+			prmMap.put("grp_id", Util.getSession(session, "GRP_ID") );
+			//메뉴 관리권한 목록
+			prmAdmMenuList = menuService.selectPrmAdminList(prmMap);
+			//메뉴 보기권한 확인
+			prmSelMenuList = menuService.selectPrmUserList(prmMap);
+
+			if(menuVo.getMnu_ty().equals(Code.MnuType.Root.getText()) ||  menuVo.getMnu_ty().equals(Code.MnuType.Menu.getText())) {
+				
+				Map<String, Object> menusMap = new HashMap<>();
+				menusMap.put("site_code", menuVo.getSite_code() );
+				menusMap.put("mnu_code"	, mnu_code );
+				siteMenuTree = menuService.selectTree(menusMap);
+				
+				for(MenuVo m:siteMenuTree.values()) {
+					if(!prmSelMenuList.contains(m.getMnu_code()))	continue;	// 사용자 보기권한이 없으면 continue
+					
+					if(!m.getMnu_ty().equals(Code.MnuType.Menu.getText()) 
+							&& !m.getMnu_ty().equals(Code.MnuType.Root.getText())
+							&& m.getMnu_sttus() == 1)
+					{
+						menuVo = m;
+						break;
+					}
+				}
+			}
+			
+			//현재메뉴의 1차레벨 메뉴, 부모레벨 메뉴를 가져온다.
+			if(menuVo.getMnu_uprCode() != null) {
+				Map<String, Object> pathMap = new HashMap<>();
+				pathMap.put("mnu_code", menuVo.getMnu_code() );
+				pathMap.put("mnu_sttus"	, 1);
+				menuPath = menuService.selectPath(pathMap);
+				for(MenuVo m:menuPath) {
+					if(m.getMnu_level() == 1) {
+						tmnuVo = m; break;
+					}
+				}
+
+				pmnuVo = menuService.select(menuVo.getMnu_uprCode());
+			}
+		}
+		
+		rtnMap.put("site_code"		, menuVo.getSite_code());
+		rtnMap.put("mnu_code"		, menuVo.getMnu_code());
+		rtnMap.put("siteVo"			, siteVo);
+		rtnMap.put("menuVo"			, menuVo);
+		rtnMap.put("tmnuVo"			, tmnuVo);
+		rtnMap.put("pmnuVo"			, pmnuVo);
+		rtnMap.put("menuPath"		, menuPath);
+		rtnMap.put("prmSelMenuList"	, prmSelMenuList);
+		rtnMap.put("prmAdmMenuList"	, prmAdmMenuList);
+		rtnMap.put("siteMenuTree"	, siteMenuTree);
+		
+		return rtnMap;
+	}
+	
+	private void saveSession(HttpServletRequest request,  HttpSession session, String site_code) throws Exception {
+		
+		SessionVo sessionVo	= null;
+		
+		if(Util.getSession(session, "USR_ID").equals("") ) {
+			Util.setSession(session, "USR_ID"		, "guest");
+			Util.setSession(session, "USR_NM"		, "미인증 사용자");
+			Util.setSession(session, "GRP_ID"		, EgovProperties.getProperty("Site.grp.GuestID"));
+			Util.setSession(session, "ADM_FLAG"		, "false");
+			Util.setSession(session, "CSRF_TOKEN"	, UUID.randomUUID().toString());
+			
+			sessionVo	= new SessionVo();
+			sessionVo.setSes_id(session.getId());
+			sessionVo.setSite_code(site_code);
+			sessionVo.setSes_sesID(Util.getSession(session, "USR_ID"));
+			sessionVo.setSes_agent(request.getHeader("user-agent"));
+			sessionVo.setSes_clientIP(Util.getFormatIP(IPUtil.getXForwardedFor(request)));
+			sessionVo.setSes_serverIP(Util.getFormatIP(InetAddress.getLocalHost().getHostAddress()));
+			sessionVo.setSes_referer(request.getHeader("referer"));
+			sessionVo.setSes_lang(request.getHeader("Accept-Language"));
+			sessionService.insert(sessionVo);
+		}
+		
+		String curr_menu = Util.nvl(request.getParameter("mnu_code"));
+		String session_menu = Util.nvl(Util.getSession(session, "mnu_code"));
+		
+		if(!curr_menu.equals("") && (!curr_menu.equals(session_menu))) {
+			SessionVo sessionTrackVo = new SessionVo();
+			sessionTrackVo.setMnu_code(curr_menu);
+			sessionTrackVo.setSes_id(session.getId());
+			int rtnTrack = sessionService.insertTrack(sessionTrackVo);
+			
+			if(rtnTrack != -1) Util.setSession(session, "mnu_code", curr_menu); 
+			
+		}
+	}
+}

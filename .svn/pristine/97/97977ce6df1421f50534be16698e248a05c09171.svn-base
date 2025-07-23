@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.MenuGratifyMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.menu.service.MenuGratifyVo">
+		<![CDATA[
+			INSERT INTO WEB_MenuGratify
+			VALUES 
+			(
+				SEQ_MenuGratify.nextval
+				, #{mnu_code}
+				, #{gra_point5}
+				, #{gra_point4}
+				, #{gra_point3}
+				, #{gra_point2}
+				, #{gra_point1}
+				, #{gra_commt}
+				, #{gra_like}
+				, #{gra_rcmnd}
+				, #{gra_regID}
+				, SYSDATE
+			)
+		]]>
+	</update>
+	
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.MenuGratifyVo">
+		SELECT *
+		FROM
+		(
+			SELECT T.*
+					, ((gra_point5*5)+(gra_point4*4)+(gra_point3*3)+(gra_point2*2)+(gra_point1*1)) As gra_total
+			FROM
+			(
+				SELECT site_nm
+						, mnu_nm
+						, SUM(gra_point5) As gra_point5
+						, SUM(gra_point4) As gra_point4
+						, SUM(gra_point3) As gra_point3
+						, SUM(gra_point2) As gra_point2
+						, SUM(gra_point1) As gra_point1 
+				FROM WEB_MenuGratify A 
+				JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+				JOIN WEB_Site C ON B.site_code = C.site_code
+				WHERE B.site_code = #{site_code}
+				
+				<if test="mnu_code != null and mnu_code != ''">
+				AND A.mnu_code IN (SELECT mnu_code
+									 FROM WEB_Menu
+									START WITH mnu_code = #{mnu_code}
+									CONNECT BY PRIOR mnu_code = mnu_uprCode									
+								)
+				</if> 
+				GROUP BY mnu_nm, site_nm
+			) T
+		) TT
+		ORDER BY gra_total DESC
+	</select> 
+	
+	<sql id="whereMenuGratifyList">
+		WHERE B.site_code = #{site_code} 
+		AND gra_commt IS NOT NULL
+		
+		<if test="mnu_code != null and mnu_code != ''">
+		AND A.mnu_code IN (	SELECT mnu_code
+							FROM WEB_Menu
+							START WITH mnu_code = #{mnu_code}
+							CONNECT BY PRIOR mnu_code = mnu_uprCode									
+						)
+		</if> 
+
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND gra_regDt BETWEEN TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEdate}||' 23:59:59.000' ,'YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND gra_regDt >= TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3')
+			</if>
+		</if>	
+		
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND gra_commt LIKE '%'||#{srchKwd}||'%'  
+		</if>
+
+	</sql>
+	
+	<select id="selectCmmntListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			FROM WEB_MenuGratify A 
+			JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+			JOIN WEB_Site C ON B.site_code = C.site_code
+		]]>
+		<include refid="whereMenuGratifyList" />
+	</select>
+	
+	<select id="selectCmmntList" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.MenuGratifyVo">
+		SELECT T.* FROM (
+			SELECT ROW_NUMBER() OVER (ORDER BY gra_regDt DESC) AS RNUM , site_nm, A.mnu_code, mnu_nm
+				, gra_sn
+				, gra_point5, gra_point4, gra_point3, gra_point2, gra_point1
+				, gra_commt, gra_like, gra_rcmnd
+				, gra_regID, gra_regDt
+		FROM WEB_MenuGratify A 
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		JOIN WEB_Site C ON B.site_code = C.site_code
+		
+		<include refid="whereMenuGratifyList" />
+		) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select> 
+		
+</mapper>

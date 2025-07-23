@@ -1,0 +1,358 @@
+<%@ include file="/library/lib_base.jsp"%>
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+
+<div class="container">
+<form name="writeForm" id="writeForm" method="post" action="<c:url value='/member/page.do' />?mnu_code=<c:out value='${mnu_code }' />" onsubmit="return frm_validate();">
+<input type="hidden" name="step" value="step03" />
+<input type="hidden" name="membType" value="<c:out value='${membType }' />" />
+
+	<div class="txt-box bg-white">
+		<div class="conts-area terms-type">
+			<h3 class="sec-tit">약관동의</h3>
+
+			<div class="terms-agree-all">
+				<div class="krds-form-check large">
+					<input type="checkbox" id="check-agree-all">
+					<label for="check-agree-all">모두 동의합니다.</label>
+				</div>
+				<p class="conts-desc">
+				민감정보 수집이용, 개인정보의 수집 및 이용, 온라인신청 서비스 정책, 고유식별정보 수집 및 이용 항목에 대해 모두 동의합니다.
+				<br class="m-hide">
+				각 사항에 대한 동의 여부를 개별적으로 선택하실 수 있으며, 선택 동의 사항에 대한 동의를 거부하여도 서비스를 이용하실 수 있습니다.
+				</p>
+			</div>
+
+			<div class="txt-box bg-white">
+				<ul class="terms-agree-ul">
+					<li>
+						<h4 class="agree-tit">
+						  [필수] 이용약관
+						  <button type="button" class="krds-btn small secondary open-modal" data-target="trmsAgre">약관읽기</button>
+						</h4>
+						<div class="agree-box bg-gray">
+						  <span class="txt">이용약관에 대한 안내 사항을 읽고 동의합니다.</span>
+						  <div class="krds-check-area">
+							<div class="krds-form-check">
+							  <input type="radio" name="trmsAgre" id="trmsAgre_Y" value="Y">
+							  <label for="trmsAgre_Y">동의함</label>
+							</div>
+							<div class="krds-form-check">
+							  <input type="radio" name="trmsAgre" id="trmsAgre_N" value="N" />
+							  <label for="trmsAgre_N">동의안함</label>
+							</div>
+						  </div>
+						</div>
+					</li>
+					<li>
+						<h4 class="agree-tit">
+						  [필수] 개인정보 수집동의
+						  <button type="button" class="krds-btn small secondary open-modal" data-target="prsnlInfoClctAgre">약관읽기</button>
+						</h4>
+						<div class="agree-box bg-gray">
+						  <span class="txt">개인정보 수집 및 이용에 대한 안내 사항을 읽고 동의합니다.</span>
+						  <div class="krds-check-area">
+							<div class="krds-form-check">
+							  <input type="radio" name="prsnlInfoClctAgre" id="prsnlInfoClctAgre_Y" value="Y" />
+							  <label for="prsnlInfoClctAgre_Y">동의함</label>
+							</div>
+							<div class="krds-form-check">
+							  <input type="radio" name="prsnlInfoClctAgre" id="prsnlInfoClctAgre_N" value="N" />
+							  <label for="prsnlInfoClctAgre_N">동의안함</label>
+							</div>
+						  </div>
+						</div>
+					</li>
+					<li>
+						<h4 class="agree-tit">
+						  [필수] 수집한 개인정보의 제3자 제공 동의
+						  <button type="button" class="krds-btn small secondary open-modal" data-target="thrdpInfoProvAgre">약관읽기</button>
+						</h4>
+						<div class="agree-box bg-gray">
+						  <span class="txt">수집한 개인정보의 제3자 제공에 대한 안내 사항을 읽고 동의합니다.</span>
+						  <div class="krds-check-area">
+							<div class="krds-form-check">
+							  <input type="radio" name="thrdpInfoProvAgre" id="thrdpInfoProvAgre_Y" value="Y" />
+							  <label for="thrdpInfoProvAgre_Y">동의함</label>
+							</div>
+							<div class="krds-form-check">
+							  <input type="radio" name="thrdpInfoProvAgre" id="thrdpInfoProvAgre_N" value="N" />
+							  <label for="thrdpInfoProvAgre_N">동의안함</label>
+							</div>
+						  </div>
+						</div>
+					</li>
+
+				</ul>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="page-btn-wrap both">
+		<button type="button" class="krds-btn xlarge tertiary">가입취소</button>
+		<button type="submit" class="krds-btn xlarge primary">다음으로</button>
+	</div>
+
+</form>
+</div>
+
+<%-- 모달 --%>
+<!-- modal -->
+<section id="trmsAgre" class="krds-modal fade" role="dialog" aria-labelledby="tit_trmsAgre">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- modal title -->
+      <div class="modal-header">
+        <h2 id="tit_trmsAgre" class="modal-title">
+          이용약관
+        </h2>
+      </div>
+      <!-- //modal title -->
+      <!-- modal contents -->
+      <div class="modal-conts">
+        <div class="conts-area">
+<h5>제1장 총칙</h5>
+<h6>제1조(목적)</h6>
+<p>이 약관은 울산광역시청(이하 "시청"이라 합니다)과 시청 인터넷서비스(이하 "서비스"라 합니다)의 이용을 원하는 자 (이하 "이용고객"이라 합니다)간에 서비스의 이용조건 및 절차에 관한 기본적인 사항을 정함을 목적으로 합니다.</p>
+
+<h6>제2조(용어의 정의)</h6>
+<p>이 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+
+<ul>
+	<li>1. 이용고객(이용자) : 서비스에 접속하여 시청이 제공하는 서비스를 받는 회원 및 비회원</li>
+	<li>2. 비회원 : 회원가입을 하지 않고 시청이 제공하는 서비스를 이용하는 자</li>
+	<li>3. ID(고유번호) : 회원 식별과 회원의 서비스 이용을 위하여 이용자가 선정하고 시청이 승인하는 영문자와 숫자의 조합(한명의 이용자에 하나의 ID만 발급, 이용 가능합니다)</li>
+	<li>4. PASSWORD(비밀번호) : 회원의 정보 보호를 위해 이용자 자신이 설정한 문자와 숫자의 조합</li>
+	<li>5. 이용해지 : 시청 또는 회원이 서비스 이용 이후 그 이용계약을 종료시키는 의사표시</li>
+</ul>
+
+<h6>제3조(이용약관의 명시와 개정)</h6>
+
+<ul>
+	<li>① 이 약관의 내용과 기관명 및 소재지 주소, 전화번호, 모사전송번호, 전자우편주소, 개인정보보호책임자 등을 이용고객이 쉽게 알 수 있도록 서비스 초기화면에 게시합니다. 다만, 약관의 내용은 이용고객이 연결화면을 통하여 볼 수 있도록 할 수 있습니다.</li>
+	<li>② 전자상거래 등에서의 소비자보호에 관한 법률, 약관의 규제에 관한 법률, 전자서명법, 정보통신망 이용촉진 및 정보보호 등에 관한 법률, 방문판매 등에 관한 법률, 소비자기본법 등 관련법에 위배하지 않는 범위에서 이 약관을 개정할 수 있습니다.</li>
+	<li>③ 이 약관을 개정할 경우에는 적용일자 및 개정사유를 명시하여 현행약관과 함께 서비스 초기화면에 그 적용일자 7일 이전부터 적용일자 전일까지 공지합니다. 다만, 이용고객에게 불리하게 약관내용을 변경하는 경우에는 최소한 30일 이상의 사전 유예기간을 두고 공지합니다. 이 경우 개정전 내용과 개정후 내용을 명확하게 비교하여 이용고객이 알기 쉽도록 표시합니다.</li>
+</ul>
+
+<h6>제4조(약관의 적용)</h6>
+
+<ul>
+	<li>① 서비스 이용에 관하여는 이 약관을 적용하며, 이 약관에 명시되지 아니한 사항에 대하여는 관계법령 및 개별 이용계약서(세부 약정서 등)를 적용합니다.</li>
+	<li>② 제1항에서 정한 개별 이용계약서(세부 약정서 등)에는 고객의 이익을 침해하거나 부당한 내용을 규정할 수 없습니다.</li>
+</ul>
+
+<h5>제2장 서비스 이용계약</h5>
+
+<h6>제5조(이용계약의 성립)</h6>
+<p>이용계약은 이용자의 약관내용에 대한 동의와 이용자의 이용신청에 대한 시청의 이용승낙으로 성립합니다.</p>
+
+<h6>제6조(이용신청)</h6>
+<p>이용고객은 서비스의 회원정보 화면을 통해 반드시 자신의 본명으로 신청하여야 하며, 시청에서 요구하는 가입신청 양식에 개인의 신상정보를 기록하는 방식으로 신청합니다.</p>
+
+<h6>제7조(이용신청의 승낙)</h6>
+
+<ul>
+	<li>① 시청은 제6조에서 정한 사항을 정확히 기재하여 이용신청을 하였을 경우 특별한 사정이 없는 한 서비스 이용신청을 승낙합니다.</li>
+	<li>
+		② 시청은 다음 각 호에 해당하는 경우에 대하여는 그 신청에 대한 제한 사유가 해소될 때까지 승낙을 유보 또는 일부 서비스 이용을 제한할 수 있습니다.
+		<dl>
+			<dd>1. 내용이 허위(차명, 비실명, 주민등록번호 도용 등)인 것으로 판명되거나, 그러하다고 의심할만한 합리적인 사유가 발생할 경우</dd>
+			<dd>2. 기타 시청이 공익상 필요하다고 인정되는 경우</dd>
+		</dl>
+	</li>
+	<li>
+		③ 시청은 다음에 해당하는 경우에는 이용신청을 승낙하지 아니할 수 있습니다.
+		<dl>
+			<dd>1. 본인의 실명으로 신청하지 않았을 때</dd>
+			<dd>2. 다른 사람의 명의를 사용하여 신청하였을 때</dd>
+			<dd>3. 사회의 안녕 질서 또는 미풍양속을 저해할 목적으로 신청하였을 때</dd>
+			<dd>4. 기타 시청이 정한 이용신청 요건이 미비 되었을 때</dd>			
+		</dl>
+	</li>
+</ul>
+
+<h6>제8조(마일리지 점수의 제공 및 사용)</h6>
+<p>시청은 회원가입 및 홈페이지상의 활동여부 등에 따라 일정한 마일리지 점수를 부여할 수 있으며 마일리지 점수의 적립 및 사용기준에 대해서는 별도 통지 또는 게시하기로 합니다. 다만, 비정상적인 방법으로 취득한 마일리지 점수라고 판단되는 경우 시청은 해당 이용고객에게 그 내용을 통보하고 비정상적으로 적립된 마일리지 점수를 삭감할 수 있습니다.</p>
+
+<h5>제3장 계약당사자의 권리 및 의무</h5>
+
+<h6>제9조(시청의 의무)</h6>
+
+<ul>
+	<li>① 시청은 특별한 사정이 없는 한 회원이 신청한 서비스 제공 개시일에 서비스를 이용할 수 있도록 합니다.</li>
+	<li>② 시청은 이용고객으로부터 제기되는 의견이나 불만이 정당하다고 인정할 경우에는 즉시 처리하여야 합니다. 다만, 즉시 처리가 곤란한 경우에는 이용고객에게 그 사유와 처리일정을 서면 또는 전화 등으로 통보하여야 합니다.</li>
+	<li>③ 시청이 제공하는 서비스로 인하여 회원에게 손해가 발생한 경우 그러한 손해가 시청의 고의나 중과실에 기해 발생한 경우에 한하여 시청에서 책임을 부담하며, 그 책임의 범위는 통상손해에 한합니다.</li>
+	<li>④ 시청은 계속적이고 안정적인 서비스의 제공을 위하여 설비에 장애가 생기거나 멸실된 때에는 지체없이 이를 수리 또는 복구를 하여야 합니다. 다만, 천재지변, 비상사태 또는 그밖에 부득이한 경우에는 그 서비스를 일시 중단하거나 중지할 수 있습니다.</li>
+	<li>⑤ 시청은 이용계약의 체결, 계약사항의 변경 및 해지 등 이용고객과의 계약관련 절차 및 내용 등에 있어 이용고객에게 편의를 제공하도록 노력합니다.</li>
+	<li>⑥ 시청은 관련법령이 정하는 바에 따라서 회원 등록정보를 포함한 회원의 개인정보를 보호하기 위하여 노력합니다. 회원의 개인정보보호에 관해서는 관련법령 및 제 11조에 제시된 내용을 지킵니다.</li>
+</ul>
+
+제10조 (이용고객의 의무 및 정보보안)
+① 회원은 서비스 이용을 위해 가입할 경우 현재의 사실과 일치하는 완전한 정보(이하 "가입정보"라 한다)를 제공하셔야 합니다. 또한 가입정보에 변경이 발생할 경우 즉시 갱신하셔야 합니다. 회원이 서비스 사용을 위한 가입절차를 완료하시면 아이디와 비밀 번호를 받게 됩니다. 회원의 아이디, 비밀번호 관리를 위해
+1. 회원의 승인 없이 비밀번호, 아이디가 사용되는 문제가 발생되면 즉시 시청에 신고하셔야 하고
+2. 매 접속 종료 시 확실히 로그아웃을 하셔야 합니다.
+② 회원은 서비스를 이용하면서 다음과 같은 행위를 하지 않기로 동의합니다.
+1. 타인(소수를 포함)에게 위해를 가하는 행위 타인의 ID, PASSWORD, 주민등록번호 도용 및 타인으로 가장하는 행위
+가. 타인과의 관계를 허위로 명시하는 행위
+나. 타인을 비방할 목적으로 사실 또는 허위의 사실을 적시하여 명예를 훼손하는 행위
+다. 자기 또는 타인에게 재산상의 이익을 주거나 타인에게 손해를 가할 목적으로 허위의 정보를 유통시키는 행위
+라. 수치심이나 혐오감 또는 공포심을 일으키는 말이나 음향, 글이나 화상 또는 영상을 계속하여 상대방에게 도달하게 하여 상대방의 일상적 생활을 방해하는 행위
+마. 시청의 사전 승낙 없이 서비스를 이용한 영리행위
+바. 타인의 정보통신서비스 이용명의를 도용하여 사용하는 행위
+2. 불필요하거나 승인되지 않은 광고, 판촉물을 게재하거나, "스팸(spam)", " 행운의 편지(chain letters)", "도배글", "피라미드 조직" 등을 권유하거나 게시, 게재 또는 전자우편으로 보내는 행위
+3. 저속 또는 음란한 데이터, 텍스트, 소프트웨어, 음악, 사진, 그래픽, 비디오 메시지 등(이하 "콘텐츠")을 게시, 게재 또는 전자우편으로 보내는 행위
+4. 권리(지적재산권을 포함한 모든 권리)가 없는 콘텐츠를 게시, 게재 또는 전자우편으로 보내는 행위
+5. 컴퓨터 소프트웨어, 하드웨어, 전기통신 장비를 파괴, 방해 또는 기능을 제한하기 위한 소프트웨어 바이러스를 게시, 게재 또는 전자우편으로 보내는 행위
+6. 다른 컴퓨터 코드, 파일, 프로그램을 포함하고 있는 자료를 게시, 게재, 전자우편으로 보내는 행위 등 다른 사용자의 개인정보를 수집 또는 저장하는 행위
+7. 재물을 걸고 도박하거나 사행행위를 하는 행위
+8. 윤락행위를 알선하거나 음행을 매개하는 내용의 정보를 유통시키는 행위
+9. 기타 불법적이거나 부당한 행위
+③ 회원은 이 약관 및 관계법령에서 규정한 사항을 준수하여야 합니다.
+제11조 (개인정보보호정책)
+① 시청은 이용 신청 시 회원이 제공하는 정보를 통하여 회원에 관한 정보를 수집하며, 회원의 개인정보는 본 이용계약의 이행과 본 이용계약상의 서비스제공을 위한 목적으로 이용합니다.
+② 시청은 서비스 제공과 관련하여 취득한 회원의 정보를 본인의 승낙 없이 제3자에게 누설 또는 배포할 수 없으며 상업적 목적으로 사용할 수 없습니다. 다만, 다음의 각 호의 경우에는 그러하지 아니합니다.
+1. 관계 법령에 의하여 수사상의 목적으로 관계기관으로부터 요구가 있는 경우
+2. 방송통신심의위원회의 요청이 있는 경우
+3. 기타 관계법령에서 정한 절차에 따른 요청이 있는 경우
+        </div>
+      </div>
+      <!-- //modal contents -->
+      <!-- modal btn -->
+      <div class="modal-btn btn-wrap">
+        <button type="button" class="krds-btn medium tertiary close-modal">닫기</button>
+      </div>
+      <!-- //modal btn -->
+      <!-- close button -->
+      <button type="button" class="krds-btn medium icon btn-close close-modal">
+        <span class="sr-only">닫기</span>
+        <i class="svg-icon ico-popup-close"></i>
+      </button>
+      <!-- //close button -->
+    </div>
+  </div>
+  <div class="modal-back"></div>
+</section>
+<!-- //modal -->
+
+<section id="prsnlInfoClctAgre" class="krds-modal fade" role="dialog" aria-labelledby="tit_prsnlInfoClctAgre">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- modal title -->
+      <div class="modal-header">
+        <h2 id="tit_prsnlInfoClctAgre" class="modal-title">
+          개인정보 수집동의
+        </h2>
+      </div>
+      <!-- //modal title -->
+      <!-- modal contents -->
+      <div class="modal-conts">
+        <div class="conts-area">
+<h5>제1장 총칙</h5>
+<h6>제1조(목적)</h6>
+<p>이 약관은 울산광역시청(이하 "시청"이라 합니다)과 시청 인터넷서비스(이하 "서비스"라 합니다)의 이용을 원하는 자 (이하 "이용고객"이라 합니다)간에 서비스의 이용조건 및 절차에 관한 기본적인 사항을 정함을 목적으로 합니다.</p>
+
+<h6>제2조(용어의 정의)</h6>
+<p>이 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+
+<ul>
+	<li>1. 이용고객(이용자) : 서비스에 접속하여 시청이 제공하는 서비스를 받는 회원 및 비회원</li>
+	<li>2. 비회원 : 회원가입을 하지 않고 시청이 제공하는 서비스를 이용하는 자</li>
+	<li>3. ID(고유번호) : 회원 식별과 회원의 서비스 이용을 위하여 이용자가 선정하고 시청이 승인하는 영문자와 숫자의 조합(한명의 이용자에 하나의 ID만 발급, 이용 가능합니다)</li>
+	<li>4. PASSWORD(비밀번호) : 회원의 정보 보호를 위해 이용자 자신이 설정한 문자와 숫자의 조합</li>
+	<li>5. 이용해지 : 시청 또는 회원이 서비스 이용 이후 그 이용계약을 종료시키는 의사표시</li>
+</ul>
+        </div>
+      </div>
+      <!-- //modal contents -->
+      <!-- modal btn -->
+      <div class="modal-btn btn-wrap">
+        <button type="button" class="krds-btn medium tertiary close-modal">닫기</button>
+      </div>
+      <!-- //modal btn -->
+      <!-- close button -->
+      <button type="button" class="krds-btn medium icon btn-close close-modal">
+        <span class="sr-only">닫기</span>
+        <i class="svg-icon ico-popup-close"></i>
+      </button>
+      <!-- //close button -->
+    </div>
+  </div>
+  <div class="modal-back"></div>
+</section>
+<!-- //modal -->
+
+<section id="thrdpInfoProvAgre" class="krds-modal fade" role="dialog" aria-labelledby="tit_thrdpInfoProvAgre">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- modal title -->
+      <div class="modal-header">
+        <h2 id="tit_thrdpInfoProvAgre" class="modal-title">
+          이용약관
+        </h2>
+      </div>
+      <!-- //modal title -->
+      <!-- modal contents -->
+      <div class="modal-conts">
+        <div class="conts-area">
+<h5>제1장 총칙</h5>
+<h6>제1조(목적)</h6>
+<p>이 약관은 울산광역시청(이하 "시청"이라 합니다)과 시청 인터넷서비스(이하 "서비스"라 합니다)의 이용을 원하는 자 (이하 "이용고객"이라 합니다)간에 서비스의 이용조건 및 절차에 관한 기본적인 사항을 정함을 목적으로 합니다.</p>
+
+<h6>제2조(용어의 정의)</h6>
+<p>이 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+
+<ul>
+	<li>1. 이용고객(이용자) : 서비스에 접속하여 시청이 제공하는 서비스를 받는 회원 및 비회원</li>
+	<li>2. 비회원 : 회원가입을 하지 않고 시청이 제공하는 서비스를 이용하는 자</li>
+	<li>3. ID(고유번호) : 회원 식별과 회원의 서비스 이용을 위하여 이용자가 선정하고 시청이 승인하는 영문자와 숫자의 조합(한명의 이용자에 하나의 ID만 발급, 이용 가능합니다)</li>
+	<li>4. PASSWORD(비밀번호) : 회원의 정보 보호를 위해 이용자 자신이 설정한 문자와 숫자의 조합</li>
+	<li>5. 이용해지 : 시청 또는 회원이 서비스 이용 이후 그 이용계약을 종료시키는 의사표시</li>
+</ul>
+        </div>
+      </div>
+      <!-- //modal contents -->
+      <!-- modal btn -->
+      <div class="modal-btn btn-wrap">
+        <button type="button" class="krds-btn medium tertiary close-modal">닫기</button>
+      </div>
+      <!-- //modal btn -->
+      <!-- close button -->
+      <button type="button" class="krds-btn medium icon btn-close close-modal">
+        <span class="sr-only">닫기</span>
+        <i class="svg-icon ico-popup-close"></i>
+      </button>
+      <!-- //close button -->
+    </div>
+  </div>
+  <div class="modal-back"></div>
+</section>
+<!-- //modal -->
+
+<script type="text/javascript">
+//<![CDATA[
+	
+	krds_modal.init();
+
+	function frm_validate() {
+		const f = document.forms.writeForm;
+		const requiredRadios = [
+			{ name: 'trmsAgre',            label: '[필수] 이용약관' },
+			{ name: 'prsnlInfoClctAgre',   label: '[필수] 개인정보 수집·이용' },
+			{ name: 'thrdpInfoProvAgre',   label: '[필수] 개인정보 제3자 제공' }
+		];
+
+		for (const item of requiredRadios) {
+			const checked = Array.from(f[item.name]).find(r => r.checked);
+
+			if (!checked || checked.value !== 'Y') {
+				alert(`${item.label}에 동의해 주셔야 가입을 진행할 수 있습니다.`);
+				f[item.name][0].focus();
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+//]]>
+</script>

@@ -1,0 +1,25 @@
+package egovframework.dnworks.func.org.service;
+
+import java.util.List;
+import java.util.Map;
+
+public interface OrgInfoService {
+	
+    OrgInfoVO select(String orgUnqId) throws Exception;
+    
+    List<OrgInfoVO> selectList(Map<String, Object> param) throws Exception;
+    
+    int selectListCnt(Map<String, Object> param) throws Exception;
+    
+    public void insert(OrgInfoVO vo) throws Exception;
+    
+    public void update(OrgInfoVO vo) throws Exception;
+
+    public void delete(OrgInfoVO vo) throws Exception;
+    
+    /**
+     * API Key가 존재하는 기관 목록 조회 (스케줄러용)
+     */
+    List<OrgInfoVO> selectListWithApiKeys() throws Exception;
+    
+}

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.stats.service.impl.StatsMapper">
+
+	<select id="selectSite" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		SELECT A.site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+				, SUM(sts_countTot) AS sts_countTot
+				, SUM(sts_countMber) AS sts_countMber
+				, SUM(sts_countGuest) AS sts_countGuest
+		FROM WEB_Stats A
+		WHERE sts_joinDt BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		
+		GROUP BY A.site_code
+	</select>
+	
+	<select id="selectYear" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		SELECT A.site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+				, DATE_FORMAT(sts_joinDt, '%Y') AS sts_joinDt
+				, SUM(sts_countTot) AS sts_countTot
+				, SUM(sts_countMber) AS sts_countMber
+				, SUM(sts_countGuest) AS sts_countGuest
+				, DATE_FORMAT(sts_joinDt, '%Y') As sts_yyyy
+		FROM WEB_Stats A
+		
+		WHERE DATE_FORMAT(sts_joinDt, '%Y') BETWEEN DATE_FORMAT(DATE_FORMAT(#{srchSDate}, '%Y-%m-%d'),'%Y') AND DATE_FORMAT(DATE_FORMAT(#{srchEDate}, '%Y-%m-%d'),'%Y')
+
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		
+		GROUP BY DATE_FORMAT(sts_joinDt, '%Y')
+		ORDER BY DATE_FORMAT(sts_joinDt, '%Y')
+	</select>
+	
+	<select id="selectMonth" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		SELECT A.site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+				, DATE_FORMAT(sts_joinDt, '%Y-%m') AS sts_joinDt
+				, SUM(sts_countTot) AS sts_countTot
+				, SUM(sts_countMber) AS sts_countMber
+				, SUM(sts_countGuest) AS sts_countGuest
+				, DATE_FORMAT(sts_joinDt, '%Y') As sts_yyyy
+				, DATE_FORMAT(sts_joinDt, '%m') As sts_mm
+		FROM WEB_Stats A
+		WHERE sts_joinDt BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		GROUP BY DATE_FORMAT(sts_joinDt, '%Y-%m')
+		ORDER BY DATE_FORMAT(sts_joinDt, '%Y-%m')
+	</select>
+	
+	<select id="selectDay" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		SELECT A.site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+				, DATE_FORMAT(sts_joinDt, '%Y-%m-%d') AS sts_joinDt
+				, SUM(sts_countTot) AS sts_countTot
+				, SUM(sts_countMber) AS sts_countMber
+				, SUM(sts_countGuest) AS sts_countGuest
+				, DATE_FORMAT(sts_joinDt, '%Y') As sts_yyyy
+				, DATE_FORMAT(sts_joinDt, '%m') As sts_mm
+				, DATE_FORMAT(sts_joinDt, '%d') As sts_dd
+		FROM WEB_Stats A
+		WHERE sts_joinDt BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		GROUP BY DATE_FORMAT(sts_joinDt, '%Y-%m-%d')
+		ORDER BY DATE_FORMAT(sts_joinDt, '%Y-%m-%d')
+	</select>
+	
+	<select id="selectTime" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		SELECT A.site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+				, DATE_FORMAT(sts_joinDt, '%Y-%m-%d %H') AS sts_joinDt
+				, SUM(sts_countTot) AS sts_countTot
+				, SUM(sts_countMber) AS sts_countMber
+				, SUM(sts_countGuest) AS sts_countGuest
+				, DATE_FORMAT(sts_joinDt, '%Y') As sts_yyyy
+				, DATE_FORMAT(sts_joinDt, '%m') As sts_mm
+				, DATE_FORMAT(sts_joinDt, '%d') As sts_dd
+				, DATE_FORMAT(sts_joinDt, '%H') As sts_hh
+		FROM WEB_Stats A
+		WHERE sts_joinDt BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		GROUP BY DATE_FORMAT(sts_joinDt, '%Y-%m-%d %H')
+		ORDER BY DATE_FORMAT(sts_joinDt, '%Y-%m-%d %H')
+	</select>
+	
+	<select id="selectMenu" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.StatsVo">
+		<![CDATA[
+		SELECT T.*
+		FROM
+		(
+			SELECT C.mnu_nm As upr_nm
+					, B.mnu_nm
+					, SUM(tpd_joinCnt) AS tpd_joinCnt 
+			FROM WEB_StatsTrackDay A
+			JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+			JOIN WEB_Menu C ON C.mnu_code = B.mnu_uprCode 
+			WHERE B.mnu_sttus = 1
+			AND B.mnu_ty <> 'root'
+			AND tpd_date BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		]]>
+			<if test="site_code != null and site_code != ''">
+				AND B.site_code = #{site_code}
+			</if>
+			GROUP BY C.mnu_nm, B.mnu_nm
+			ORDER BY C.mnu_nm, B.mnu_nm
+		) T
+		ORDER BY tpd_joinCnt DESC
+	</select>
+	
+</mapper>

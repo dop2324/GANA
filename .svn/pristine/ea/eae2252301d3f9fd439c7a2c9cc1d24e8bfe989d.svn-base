@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardFileMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardFileVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardFile
+		VALUE (
+			IF(#{file_sn} = -1, NULL, #{file_sn})
+			, #{bod_sn}
+			, NVL(#{file_srcFileNm}, '')
+			, NVL(#{file_phyFileNm}, '')
+			, NVL(#{file_thumbFileNm}, '')
+			, NVL(#{file_phyFileSize}, 0)
+			, #{file_desc}
+			, #{file_ext}
+			, #{file_ty}
+			, #{file_path}
+			, #{file_firstYn}
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			file_srcFileNm		= NVL(#{file_srcFileNm}	, file_srcFileNm)
+			, file_phyFileNm	= NVL(#{file_phyFileNm}	, file_phyFileNm)
+			, file_thumbFileNm	= NVL(#{file_thumbFileNm}, file_thumbFileNm)
+			, file_phyFileSize	= NVL(#{file_phyFileSize}, file_phyFileSize)
+			, file_ext			= NVL(#{file_ext}		, file_ext)
+			, file_ty			= NVL(#{file_ty}		, file_ty)
+			, file_path			= NVL(#{file_path}		, file_path)
+			, file_firstYn		= NVL(#{file_firstYn}	, file_firstYn)
+			, file_desc			= #{file_desc}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardFile WHERE file_sn = #{file_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardFileVo">
+		SELECT file_sn, bod_sn
+				, file_srcFileNm, file_phyFileNm, file_thumbFileNm, file_phyFileSize
+				, file_desc, file_ext, file_ty, file_path, file_firstYn
+		FROM WEB_BoardFile A 
+		WHERE file_sn = #{file_sn}
+	</select>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardFileVo">
+		SELECT file_sn, bod_sn
+				, file_srcFileNm, file_phyFileNm, file_thumbFileNm, file_phyFileSize
+				, file_desc, file_ext, file_ty, file_path, file_firstYn
+		FROM WEB_BoardFile
+		WHERE bod_sn = #{bod_sn}
+		ORDER BY file_firstYn DESC, file_sn
+	</select>
+	
+</mapper>

@@ -1,0 +1,196 @@
+@charset "utf-8";
+
+.joinstep {display:none;}
+
+.join_cont {background:#f2f4f7; padding:60rem; text-align:center;}
+.join_cont h4 {margin-top:0;color:#323232;font-size: 38rem;}
+@media all and (max-width:1240px){
+  .join_cont {padding:60rem 40rem;}
+}
+@media all and (max-width:599px){
+  .join_cont {padding:40rem 30rem;}
+}
+@media all and (max-width:376px){
+  .join_cont {padding:40rem 25rem;}
+}
+
+.dep01.list {padding:25rem; background:#f2f4f7; box-shadow:0 0 20px rgba(204,211,220,1); border-radius:20rem; border:1px solid #c6d4ea; text-align:left;}
+.dep01.list li {position:relative; padding-left:25rem;}
+.dep01.list li:before {content:''; position:absolute; top:12rem; left:5rem; width:5rem; height:5rem; background:#6f6f6f;}
+
+.userID {background:#fff; text-align:left;}
+.userID dl {display:flex; align-items:center; border-bottom:1px dashed #ddd; padding:30rem 40rem;}
+.userID dl:last-child {border-bottom:0;}
+.userID dl dt {width:200rem; font-weight:600;}
+.userID dl dd {display:flex; align-items:center; flex-wrap:wrap; width:calc(100% - 200rem);}
+.userID dl dd input[type="text"],
+.userID dl dd input[type="password"],
+.userID dl dd a {height:45rem; line-height:45rem; padding:0 10rem; margin:3rem;}
+.userID dl dd a {background:#275cab; color:#fff; padding:0 15rem; font-size:16rem;}
+.userID dl dd input[type="radio"],
+.userID dl dd input[type="checkbox"] {display:inline-block; vertical-align:middle;}
+.userID dl dd label {vertical-align:middle; display:inline-block;}
+.userID dl dd input[type="radio"] {margin-left:7rem;}
+.userID dl dd input[type="checkbox"] {margin-left:10rem}
+.userID dl dd input[type="checkbox"]+label {margin-left:7rem;}
+.userID dl dd p {margin-left:3rem; width:100%;}
+.userID .info_list {width:100%; color:#5a5a5a; font-size:16rem; margin-top:10rem; margin-left:3rem;}
+.userID .div_list {display:flex; width:100%; margin-left:3rem; margin-top:10rem; background:#f6f6f6; padding:15rem 25rem;}
+.userID .div_list span {display:inline-block; width:150rem; font-weight:600;}
+.userID .div_list div {width:calc(100% - 150rem);}
+.userID .div_list ul {display:flex; align-items:center; flex-wrap:wrap; margin:0 -10rem;}
+.userID .div_list ul li {display:flex; align-items:center; margin:3rem 10rem; line-height:1.4;}
+@media all and (max-width:1240px){
+  .userID dl dt {width:150rem;}
+  .userID dl dd {width:calc(100% - 150rem);}
+}
+@media all and (max-width:768px){
+  .userID dl {flex-wrap:wrap;}
+  .userID dl dt {width:100%; margin-bottom:10rem;}
+  .userID dl dd {width:100%;}
+  .userID .div_list span {width:100rem;}
+  .userID .div_list div {width:calc(100% - 100rem);}
+}
+@media all and (max-width:599px){
+  .userID dl {padding:30rem 25rem;}
+  .userID dl dd input[type="text"],
+  .userID dl dd input[type="password"],
+  .userID dl dd a {width:100%;}
+  .userID dl dd a {text-align:center;}
+  .userID dl dd input[type="checkbox"] {margin-left:3rem}
+  .userID .div_list {flex-wrap:wrap;}
+  .userID .div_list span {width:100%; margin-bottom:6rem;}
+  .userID .div_list div {width:100%; margin:0;}
+  .userID .div_list ul li input[type="checkbox"] {margin-left:3rem;}
+}
+
+.com_box {position:relative; padding:190rem 0 0 0; text-align: center; margin-top:40rem;}
+.com_box:before {content:''; position:absolute; top:0; left:50%; width:130rem; height:165rem; margin-left:-65rem; background:url('/design/member/img/cer_icon04.png') 0 0/contain;}
+.com_box.error {padding-top:160rem;}
+.com_box.error:before {width:156rem; height:154rem; margin-left:-78rem; background:url('/design/member/img/cer_icon05.png') 0 0/contain;}
+@media all and (max-width:1240px){
+  .com_box {padding:160rem 0 0 0; margin-top:30rem;}
+  .com_box:before {width:100rem; height:127rem; margin-left:-50rem;}
+  .com_box.error {padding:100rem 0 0 0;}
+  .com_box.error:before {width:100rem; height:99rem; margin-left:-50rem;}
+}
+
+.agree-btn {text-align:center; margin-top:40rem;}
+.agree-btn a {display:inline-block; background:#464646; padding:7rem 21rem; margin:2rem !important; font-weight:500; margin-top:20rem; border-radius:6rem; color:#fff;}
+.agree-btn a:first-child {background:#275cab;}
+@media all and (max-width:599px){
+.agree-btn a {padding:7rem 20rem;}
+}
+
+/*통합로그인*/
+.log_inf_wrap {max-width:500rem; margin:0 auto;}
+.log_inf_wrap .log_inpt span {display:flex; align-items:center; position:relative; padding:0 30rem;; background:#f6f6f6; border-radius:10rem; margin:10rem 0; height:54rem;}
+.log_inf_wrap .log_inpt span label {position:absolute; left:30rem; font-weight:600; font-size:16rem;}
+.log_inf_wrap .log_inpt span input[type="text"],
+.log_inf_wrap .log_inpt span input[type="password"] {margin-left:100rem; border:0; background:#f7f7f7; width:calc(100% - 100rem); font-size:16px;}
+.log_inf_wrap .log_inpt span input[type="text"]::placeholder,
+.log_inf_wrap .log_inpt span input[type="password"]::placeholder {color:#3d3d3d; font-size:16rem;}
+.log_inf_wrap .ment {margin:0 0 25rem; font-size:16rem; color:#994141; text-align:right; margin-right:13rem;}
+.log_inf_wrap .log_btn a {display:block; height:54rem; line-height:54rem; padding:0 30rem; border-radius:10rem; margin:10rem 0; background:#fff; border:1px solid #275cab; color:#275cab; text-align:center; font-weight:600; font-size:16rem;}
+.log_inf_wrap .log_btn a:first-child {background:#275cab; color:#fff;}
+.log_inf_wrap .find_btn {display:flex; justify-content:center; font-size:16rem; color:#3d3d3d}
+.log_inf_wrap .find_btn a {position:relative; display:block; padding:10rem 20rem;}
+.log_inf_wrap .find_btn a:before {content:''; position:absolute; top:50%; right:0; width:1px; height:10px; background:#999; transform:translateY(-50%);}
+.log_inf_wrap .find_btn a:last-child:before {display:none;}
+@media all and (max-width:321px){
+  .log_inf_wrap .log_inpt span {flex-wrap:wrap; height:auto; padding:15rem 25rem;}
+  .log_inf_wrap .log_inpt span label {width:100%; position:static; margin:0 0 3rem 0;}
+  .log_inf_wrap .log_inpt span input[type="text"],
+  .log_inf_wrap .log_inpt span input[type="password"] {margin-left:0; width:100%;}
+}
+
+/*전자서명*/
+.log_inf_wrap.auth {max-width:100%; border:10rem solid #eee; padding:60rem; text-align:center;}
+.log_inf_wrap.auth .app {display:inline-block;}
+.log_inf_wrap.auth .app ul {display:flex; flex-wrap:wrap; margin:-10rem;}
+.log_inf_wrap.auth .app ul li {margin:10rem;}
+.log_inf_wrap.auth .app ul li img {width:70rem; box-shadow:3px 3px 10px rgba(0,0,0,0.1); border-radius:10rem;}
+.log_inf_wrap.auth .log_btn {max-width:180rem; margin:0 auto;}
+.log_inf_wrap.auth .log_btn a {margin-bottom:0; border-radius:40rem; font-size:17rem;}
+.log_inf_wrap.auth > ul {margin:30rem 0;}
+@media all and (max-width:1240px){
+  .log_inf_wrap.auth {padding:60rem 40rem;}
+}
+@media all and (max-width:1023px){
+  .log_inf_wrap.auth .app {max-width:340rem;}
+  .log_inf_wrap.auth .app ul li {width:calc(25% - 20rem);}
+  .log_inf_wrap.auth .app ul li img {width:100%;}
+}
+@media all and (max-width:599px){
+  .log_inf_wrap.auth {padding:40rem 30rem;}
+  .log_inf_wrap.auth > ul {text-align:left;}
+  .log_inf_wrap.auth .log_btn {max-width:140rem; }
+}
+@media all and (max-width:376px){
+  .log_inf_wrap.auth {padding:40rem 25rem;}
+  .log_inf_wrap.auth .app {max-width:200rem;}
+  .log_inf_wrap.auth .app ul {margin:-5rem;}
+  .log_inf_wrap.auth .app ul li {width:calc(33.333% - 10rem); margin:5rem;}
+}
+
+/* 입력폼 */
+.must{color: #cc3333;}
+.join_cont.form {text-align:left;}
+.join_cont.form h4 {font-size:27rem; margin-top:40rem;}
+
+/* 아이디 찾기, 비빌번호 찾기, 회원가입 완료 */
+.join_cont.find {border:10rem solid #ffeee2; background:#fff9f5;}
+.join_cont.find .dep01 li {font-size:19rem; color:#494949; line-height:1.5;}
+.join_cont.find .txt_box {margin:20rem 0 0 0;}
+.join_cont.find .txt_box li {font-size:31rem; font-weight:700; line-height:1.35;}
+.join_cont.find .txt_box li span {display:block; font-size:19rem; font-weight:400; margin-bottom:7rem;}
+.join_cont.find .agree-btn {margin-top:20rem;}
+.join_cont.find .userID {background:none; margin-top:20rem;}
+
+/*회원정보수정*/
+.join_cont.check {border:10rem solid #dfe5ee; background:#f2f4f7;}
+.join_cont.check dl {max-width:300rem; margin:0 auto; padding:0;}
+.join_cont.check dt {position:absolute; left:-9999rem;}
+.join_cont.check dd {width:100%;}
+.join_cont.check dd input[type="password"] {width:100%;}
+.join_cont.check ul li {font-size:19rem; color:#494949; line-height:1.5;}
+@media all and (max-width:599px){
+  .join_cont.check dl {max-width:100%;}
+}
+
+/* 약관동의 */
+.join_cont.step01 {text-align:left;}
+.join_cont.step01 h4 {font-size:27rem; margin-top:40rem;}
+.join_cont.step01 .terms_cont {background:#fff;  height:200rem; overflow-y:auto; padding:25rem;}
+.join_cont.step01 .check-label {padding:16rem 0; font-size:16rem; display:flex; align-items:center; justify-content:flex-end; border-bottom:1px solid #d1d6de;}
+.join_cont.step01 input[type="checkbox"] {margin-top:-4rem; margin-right:4rem;}
+
+/* 본인인증 */
+.certify {display:flex; justify-content:space-between; margin-top:50rem;}
+.certify > div {position:relative; width:50%; background:#fff; border:3px solid #f6f6f6; border-radius:20rem; padding:40rem 40rem 40rem 175rem; transition:all 0.5s; text-align:left;}
+.certify > div:before {content:''; position:absolute; top:40rem; left:50rem; width:86rem; height:87rem; background:url('/design/member/img/cer_icon03.png') no-repeat 0 0/200% auto;}
+.certify > div:first-child {margin-right:15rem;}
+.certify > div:last-child {margin-left:15rem;}
+.certify > div:first-child:before {background-position:100% 0;}
+.certify > div img {display:none;}
+.certify > div:hover {width:55%; border-color:#275cab;}
+.certify .tit {margin-bottom:15rem; font-size:25rem; font-weight:700; line-height:1.4; letter-spacing:-0.5rem;}
+.certify .call,
+.certify .link {color:#565656; padding-left:2rem;}
+.certify .link {display:block; color:#275cab; padding-left:3rem;}
+.certify .btn {display:inline-block; background:#275cab; padding:7rem 20rem; margin-left:3rem; font-weight:500; margin-top:20rem; font-size:16rem; border-radius:6rem; color:#fff;}
+@media all and (max-width:1240px){
+  .certify > div {padding:30rem 30rem 30rem 120rem;}
+  .certify > div:before {width:60rem; height:60rem; top:30rem; left:30rem;}
+  .certify > div:first-child {margin-right:10rem;}
+  .certify > div:last-child {margin-left:10rem;}
+}
+@media all and (max-width:1023px){
+  .certify > div {padding:120rem 30rem 30rem 30rem; text-align:center;}
+  .certify > div:before {top:30rem; left:50%; transform:translateX(-50%);}
+}
+@media all and (max-width:599px){
+  .certify {flex-wrap:wrap; margin:30rem 0 -5rem;}
+  .certify > div {width:100%; margin:5rem 0 !important;}
+  .certify > div:hover {width:100%;}
+}

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.link.service.impl.LinkClickMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.link.service.LinkClickVo">
+	<![CDATA[
+		INSERT INTO WEB_LinkClick
+		VALUES (
+			SYSDATE(3)
+			, #{lnk_sn}
+			, #{click_agent}
+			, #{click_ip}
+			, #{click_locale}
+			, #{click_referer}
+		)
+	]]>
+	</update>
+	
+	<sql id="whereLinkClickList">
+		FROM WEB_LinkClick A
+		WHERE 1=1
+		AND click_dt BETWEEN CONCAT(#{srchSDate}, ' 00:00:00') AND CONCAT(#{srchEDate}, ' 23:59:59')
+			
+		<if test="lnk_sn != '' and lnk_sn != null">
+			AND lnk_sn = #{lnk_sn}
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT 	COUNT(1)
+		<include refid="whereLinkClickList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkClickVo">
+		SELECT 	click_dt, lnk_sn, click_agent, click_ip, click_locale, click_referer
+		<include refid="whereLinkClickList" />
+		ORDER BY click_dt DESC
+		LIMIT #{pageSize} OFFSET  #{offset} 
+	</select>
+	
+	
+	<select id="selectYear" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkClickVo">
+		SELECT 	DATE_FORMAT(click_dt, '%Y-%m') as click_strDate
+				, COUNT(1) As click_cnt
+		FROM WEB_LinkClick A 
+		WHERE DATE_FORMAT(click_dt, '%Y') = DATE_FORMAT(#{srchDate}, '%Y')
+		AND lnk_sn = #{lnk_sn}
+		GROUP BY DATE_FORMAT(click_dt, '%Y_%m')
+	</select>
+	
+	<select id="selectMonth" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkClickVo">
+		SELECT 	DATE_FORMAT(click_dt, '%Y-%m-%d') as click_strDate
+				, COUNT(1) As click_cnt
+		FROM WEB_LinkClick A 
+		WHERE DATE_FORMAT(click_dt, '%Y-%m') = DATE_FORMAT(#{srchDate}, '%Y-%m')
+		AND lnk_sn = #{lnk_sn}
+		GROUP BY DATE_FORMAT(click_dt, '%Y-%m-%d')
+	</select>
+	
+	<select id="selectDay" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkClickVo">
+		SELECT 	DATE_FORMAT(click_dt, '%Y-%m-%d %H') as click_strDate
+				, COUNT(1) As click_cnt
+		FROM WEB_LinkClick A 
+		WHERE DATE_FORMAT(click_dt, '%Y-%m-%d') = #{srchDate}
+		AND lnk_sn = #{lnk_sn}
+		GROUP BY DATE_FORMAT(click_dt, '%Y-%m-%d %H')
+	</select>
+	
+	
+</mapper>

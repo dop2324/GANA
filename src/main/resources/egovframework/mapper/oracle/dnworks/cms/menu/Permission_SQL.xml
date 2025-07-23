@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.PermissionMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.menu.service.PermissionVo">
+	<![CDATA[
+		MERGE INTO WEB_Permission A
+		USING DUAL ON ( A.mnu_code = #{mnu_code} AND A.prm_id = #{prm_id}  )
+		WHEN MATCHED THEN
+		UPDATE SET
+			prm_alwAdm		= #{prm_alwAdm}
+			, prm_alwDel	= #{prm_alwDel}
+			, prm_alwUpd	= #{prm_alwUpd}
+			, prm_alwRpl	= #{prm_alwRpl}
+			, prm_alwIns	= #{prm_alwIns}
+			, prm_alwSel	= #{prm_alwSel}
+			, prm_alwLst	= #{prm_alwLst}
+			, prm_dnyAdm	= #{prm_dnyAdm}
+			, prm_dnyDel	= #{prm_dnyDel}
+			, prm_dnyUpd	= #{prm_dnyUpd}
+			, prm_dnyRpl	= #{prm_dnyRpl}
+			, prm_dnyIns	= #{prm_dnyIns}
+			, prm_dnySel	= #{prm_dnySel}
+			, prm_dnyLst	= #{prm_dnyLst}
+			, prm_mdfcnID	= #{prm_mdfcnID}
+			, prm_mdfcnDt	= SYSDATE
+		WHEN not matched THEN
+		INSERT VALUES (
+			#{mnu_code}
+			, #{prm_id}
+			, #{prm_alwAdm}
+			, #{prm_alwDel}
+			, #{prm_alwUpd}
+			, #{prm_alwRpl}
+			, #{prm_alwIns}
+			, #{prm_alwSel}
+			, #{prm_alwLst}
+			, #{prm_dnyAdm}
+			, #{prm_dnyDel}
+			, #{prm_dnyUpd}
+			, #{prm_dnyRpl}
+			, #{prm_dnyIns}
+			, #{prm_dnySel}
+			, #{prm_dnyLst}
+			, #{prm_mdfcnID}
+			, SYSDATE
+		)
+	]]>
+	</update>
+
+	<update id="saveSubPermission" parameterType="egovframework.dnworks.cms.menu.service.PermissionVo">
+	<![CDATA[
+	MERGE INTO WEB_Permission tgt
+	USING (
+	    SELECT
+	        m.mnu_code AS mnu_code
+	    FROM WEB_Menu m
+	    START WITH m.mnu_uprCode = #{mnu_code}
+	    CONNECT BY PRIOR m.mnu_code = m.mnu_uprCode
+	) src
+	ON (tgt.mnu_code = src.mnu_code AND tgt.prm_id = #{prm_id} )
+	WHEN MATCHED THEN
+	    UPDATE SET
+			prm_alwAdm		= #{prm_alwAdm}
+			, prm_alwDel	= #{prm_alwDel}
+			, prm_alwUpd	= #{prm_alwUpd}
+			, prm_alwRpl	= #{prm_alwRpl}
+			, prm_alwIns	= #{prm_alwIns}
+			, prm_alwSel	= #{prm_alwSel}
+			, prm_alwLst	= #{prm_alwLst}
+			, prm_dnyAdm	= #{prm_dnyAdm}
+			, prm_dnyDel	= #{prm_dnyDel}
+			, prm_dnyUpd	= #{prm_dnyUpd}
+			, prm_dnyRpl	= #{prm_dnyRpl}
+			, prm_dnyIns	= #{prm_dnyIns}
+			, prm_dnySel	= #{prm_dnySel}
+			, prm_dnyLst	= #{prm_dnyLst}
+			, prm_mdfcnID	= #{prm_mdfcnID}
+			, prm_mdfcnDt	= SYSDATE
+	WHEN NOT MATCHED THEN
+	    INSERT (
+	        mnu_code, prm_id, prm_alwAdm, prm_alwDel, prm_alwUpd, prm_alwRpl,
+	        prm_alwIns, prm_alwSel, prm_alwLst, prm_dnyAdm, prm_dnyDel, prm_dnyUpd,
+	        prm_dnyRpl, prm_dnyIns, prm_dnySel, prm_dnyLst, prm_mdfcnID, prm_mdfcnDt
+	    ) VALUES (
+	        src.mnu_code
+			, #{prm_id}
+			, #{prm_alwAdm}
+			, #{prm_alwDel}
+			, #{prm_alwUpd}
+			, #{prm_alwRpl}
+			, #{prm_alwIns}
+			, #{prm_alwSel}
+			, #{prm_alwLst}
+			, #{prm_dnyAdm}
+			, #{prm_dnyDel}
+			, #{prm_dnyUpd}
+			, #{prm_dnyRpl}
+			, #{prm_dnyIns}
+			, #{prm_dnySel}
+			, #{prm_dnyLst}
+			, #{prm_mdfcnID}
+			, SYSDATE
+	    )
+	]]>
+	</update>
+
+	<delete id="delete" parameterType="Map">
+		DELETE
+		FROM WEB_Permission
+		WHERE prm_id = #{prm_id}
+		AND mnu_code = #{mnu_code}
+	</delete>
+
+	<delete id="deleteSubPermission" parameterType="Map">
+		DELETE
+		FROM WEB_Permission
+		WHERE prm_id = #{prm_id}
+		AND mnu_code IN (
+							SELECT mnu_code
+							FROM WEB_Menu
+							START WITH mnu_uprCode = #{mnu_code}
+							CONNECT BY PRIOR mnu_code = mnu_uprCode						
+						)
+	</delete>
+
+	<delete id="deletePrmId" parameterType="String">
+		DELETE FROM WEB_Permission WHERE prm_id = #{prm_id}
+	</delete>
+
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.PermissionVo">
+		SELECT mnu_code
+			 , prm_id
+			 , prm_alwAdm
+			 , prm_alwDel
+			 , prm_alwUpd
+			 , prm_alwRpl
+			 , prm_alwIns
+			 , prm_alwSel
+			 , prm_alwLst
+			 , prm_dnyAdm
+			 , prm_dnyDel
+			 , prm_dnyUpd
+			 , prm_dnyRpl
+			 , prm_dnyIns
+			 , prm_dnySel
+			 , prm_dnyLst
+			 , prm_mdfcnID
+			 , prm_mdfcnDt
+			 , (SELECT mnu_nm FROM WEB_Menu M WHERE M.mnu_code = P.mnu_code AND ROWNUM = 1 ) AS mnu_name
+			 , B.org_name
+			 , B.org_type
+		FROM WEB_Permission P
+		LEFT JOIN (
+				SELECT
+					CASE
+						WHEN org_type = '직원' THEN CONCAT('emp_', org_id)
+						ELSE org_id
+					END
+					As org_id
+					, org_name, org_type
+				FROM VIEW_Organization
+		) B ON P.prm_id = B.org_id
+		WHERE mnu_code = #{mnu_code}
+		ORDER BY org_type ASC, prm_id ASC
+	</select>
+
+	<select id="getPermission" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT (PrmAdm+PrmDel+PrmUpd+PrmRpl+PrmIns+PrmSel+PrmLst) As prmVal
+		FROM
+		(
+			SELECT	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwAdm)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyAdm))))||'') * 64	AS PrmAdm
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwDel)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyDel))))||'') * 32	AS PrmDel
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwUpd)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyUpd))))||'') * 16	AS PrmUpd
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwRpl)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyRpl))))||'') * 8	AS PrmRpl
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwIns)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyIns))))||'') * 4	AS PrmIns
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwSel)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnySel))))||'') * 2	AS PrmSel
+				,	TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwLst)),  UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyLst))))||'') * 1	AS PrmLst
+			FROM WEB_Permission
+	]]>
+			WHERE mnu_code = #{mnu_code}
+			AND (
+				<!-- 통합회원 회원ID 권한은 여기서 체크된다 -->
+					prm_id IN (#{usr_id}, #{dpt_id} )
+					OR prm_id IN (
+									SELECT grp_id
+									FROM WEB_Group
+									WHERE grp_sttus = 1
+									AND grp_id IN (	SELECT grp_id
+													FROM WEB_GroupMember
+													WHERE mem_id IN (#{usr_id}, #{dpt_id} )
+													UNION
+													SELECT #{grp_id} AS grp_id
+													FROM DUAL
+												)
+							 )
+					<!-- 통합회원 그룹 상위 그룹 권한 확인-->
+					OR prm_id IN (
+									SELECT grp_id
+									FROM WEB_Group
+									START WITH grp_id = #{grp_id}
+									CONNECT BY PRIOR grp_uprID = grp_id
+								)
+			)
+		) T
+	</select>
+
+</mapper>

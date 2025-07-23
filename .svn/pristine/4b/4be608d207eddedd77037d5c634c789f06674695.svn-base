@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardDeptFileMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardDeptFileVo">
+	<![CDATA[
+		MERGE INTO WEB_BoardDeptFile A
+		USING DUAL ON ( A.file_sn = #{file_sn} )	
+		WHEN MATCHED THEN	
+		UPDATE SET	
+			file_srcFileNm		= NVL(#{file_srcFileNm}	, file_srcFileNm)
+			, file_phyFileNm	= NVL(#{file_phyFileNm}	, file_phyFileNm)
+			, file_phyFileSize	= NVL(#{file_phyFileSize}, file_phyFileSize)
+			, file_ext			= NVL(#{file_ext}		, file_ext)
+			, file_ty			= NVL(#{file_ty}		, file_ty)
+			, file_path			= NVL(#{file_path}		, file_path)
+			, file_desc			= #{file_desc}		
+		WHEN not matched THEN  					
+		INSERT VALUES (
+		  	CASE
+					WHEN #{file_sn} IN (0, -1) THEN SEQ_BoardDeptFile.nextval
+	    			ELSE #{file_sn}
+			  END			
+			, #{dept_sn}
+			, #{file_srcFileNm}
+			, #{file_phyFileNm}
+			, #{file_phyFileSize}
+			, #{file_desc}
+			, #{file_ext}
+			, #{file_ty}
+			, #{file_path}
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardDeptFile WHERE file_sn = #{file_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardDeptFileVo">
+		SELECT file_sn, dept_sn
+				, file_srcFileNm, file_phyFileNm, file_phyFileSize
+				, file_desc, file_ext, file_ty, file_path
+		FROM WEB_BoardDeptFile A 
+		WHERE file_sn = #{file_sn}
+	</select>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardDeptFileVo">
+		SELECT file_sn, dept_sn
+				, file_srcFileNm, file_phyFileNm, file_phyFileSize
+				, file_desc, file_ext, file_ty, file_path
+		FROM WEB_BoardDeptFile
+		WHERE dept_sn = #{dept_sn}
+		ORDER BY file_sn
+	</select>
+	
+</mapper>

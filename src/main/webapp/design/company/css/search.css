@@ -1,0 +1,110 @@
+@charset "UTF-8";
+
+#total_search {border-top:2px solid #284496;}
+#search_second {padding:10rem 0; background:#f4f7ff;}
+#search_second p {text-align:center; font-size:20rem;}
+#search_second p span {color:#df2d5a; font-weight:700;}
+@media (max-width:1023px){
+	#search_second p {font-size:18rem;}
+}
+@media (max-width:480px){
+	#search_second p {font-size:16rem;}
+}
+
+.cMain {width:1500rem; margin:0 auto; overflow:hidden;}
+@media (max-width:1500px){
+	.cMain {width:100%;}
+}
+.cMain .cMenu {position:relative; float:left; width:230rem;}
+.cMain .cMenu li {position:relative; font-size:18rem; border-bottom:1px solid #e6e6e6; color:#666; border-left:1px solid #e6e6e6;}
+.cMain .cMenu li a {display:block; box-sizing:border-box; padding:12rem 15rem; color:#333;}
+.cMain .cMenu li::after {content:''; position:absolute; right:15rem; top:50%; margin-top:-8rem; width:8rem; height:8rem; border-bottom:2rem solid #fff; border-left:2rem solid #fff; transform:rotate(-135deg) translate(0, -50%);}
+.cMain .cMenu .on {color:#fff; font-weight:600; background:linear-gradient(80deg, rgba(66,107,204,1) 0%, rgba(40,68,150,1) 100%);}
+.cMain .cMenu .on a {color:#fff;}
+.cMain .cMenu li a:hover {color:#fff; font-weight:600; background:linear-gradient(80deg, rgba(66,107,204,1) 0%, rgba(40,68,150,1) 100%);}
+.cMain .cLeft {float:left; width:calc(100% - 230rem); box-sizing:border-box; min-height:1150rem; padding:0 30rem 30rem 30rem; border-left:1px solid #ebebeb;}
+
+.cMain .nav-wrap {display:none; clear:both; position:relative; height:45rem; overflow:hidden; border-bottom:1px solid #e1e4e7; background:#fff;}
+.cMain .nav-wrap button {width:50rem; height:45rem; position:absolute; right:0; bottom:0; z-index:0; text-align:center; background:#fff; border:0;}
+.cMain .nav-wrap button span.dot {width:27rem; height:15rem; background-position:-6rem -96rem;}
+.cMain nav {padding-right:50rem;}
+.cMain nav:after {content:""; display:block; clear:both;}
+.cMain nav .gnb li {float:left; height:45rem; width:20%; text-align:center}
+.cMain nav .gnb li a {position:relative; display:block; color:#333; font-weight:600; line-height:45rem; letter-spacing:-1rem;}
+.cMain nav .gnb li a::before {content:''; position:absolute; right:0; top:50%; transform:translateY(-50%); width:1rem; height:15rem; background:#e1e4e7;}
+.cMain .nav-wrap button.open span.nav-close {display:none;}
+.cMain .nav-wrap button.open span.dot {display:inline-block;}
+.cMain .nav-wrap button.close span.nav-close {display:block; font-size:14rem;}
+.cMain .nav-wrap button.close span.dot {display:none;}
+span.ico-set {display:inline-block; vertical-align:middle; background-image:url('/design/keris/img/search/ico-set.png'); background-repeat:no-repeat;}
+span.ico-set.map-point {width:17rem; height:9rem; background-position:-6rem -27rem; margin-left:3rem; text-indent:-9999rem; vertical-align:top; display:inline-block;}
+span.ico-set.map-point a {display:block; width:17rem; height:14rem;}
+@media (max-width:1023px){
+	.cMenu {display:none;}
+	.cMain .nav-wrap {display:block;}
+	.cMain .cLeft {float:none; width:100%;}
+	.cMain nav .gnb li {width:25%}
+	.cMain .nav-wrap button span.dot {background-position:-6rem -100rem;}
+}
+@media screen and (max-width:650px){
+	.cMain nav .gnb li {width:33.3333%}
+	.cMain nav .gnb li a {font-size:15rem;}
+}
+
+
+.cMain .Cmenu_Title {color:#333; font-weight:bold;}
+.cMain .Cmenu_Title li {display:inline; font-size:22rem;}
+.cMain .Cmenu_Title li:nth-child(2){font-size:18rem; margin-left:5rem;}
+.cMain .Cmenu_Title span {color:#df2d5a; font-weight:700;}
+@media (max-width:480px){
+	.cMain .Cmenu_Title li {font-size:17rem;}
+}
+
+
+.cMain .more {overflow:hidden; text-align:right; margin-top:15rem;}
+.cMain .more a {position:relative; padding-right:15rem; color:#234799; font-size:16rem; font-weight:500;}
+.cMain .more a::after {content:''; position:absolute; right:0; top:50%; margin-top:-6rem; width:5rem; height:5rem; border-bottom:1rem solid #333; border-left:1rem solid #333; transform:rotate(-135deg) translate(0, -50%);}
+.cMain .more a, .cMain .more a:hover {color:#284793;}
+
+
+.cMain .cLeft .integration_sc {padding:30rem 0; border-top:1px solid #ebebeb; margin-top:-1rem;}
+.cMain .cLeft .integration_sc .integration_box {margin-top:10rem; padding:7rem; border:1px solid #e2e2e2; background:url('/design/keris/img/search/search_box.gif') repeat; border-radius:10rem;}
+.cMain .cLeft .integration_sc .integration_txt2 {overflow:hidden; background:#fff; padding:20rem; border-radius:10rem;}
+.cMain .cLeft .integration_sc .integration_txt2 li {position:relative; float:left; width:33%; line-height:30rem; padding-left:15rem;}
+.cMain .cLeft .integration_sc .integration_txt2 li::before {content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4rem; height:4rem; background:#555; border-radius:50%;}
+.cMain .cLeft .integration_sc .integration_txt2 a:link {color:#333;}
+.cMain .cLeft .integration_sc .integration_txt2 a:visited {color:#333;}
+@media screen and (max-width:768px){
+	.cMain .cLeft .integration_sc .integration_txt2 li {width:50%;}
+}
+@media screen and (max-width:520px){
+	.cMain .cLeft .integration_sc .integration_txt2 li {font-size:15rem;}
+}
+@media screen and (max-width:450px){
+	.cMain .cLeft .integration_sc .integration_txt2 li {width:100%;}
+}
+
+
+.cMain .cLeft .C_body {padding:30rem 0; border-top:1px solid #ebebeb; margin-top:-1rem;}
+.cMain .cLeft .C_body .C_Cts {margin-top:15rem; line-height:25rem; overflow:hidden;}
+.cMain .cLeft .C_body .C_Cts .keyword {color:#df2d5a;}
+.cMain .cLeft .C_body .txt{margin-bottom:5rem;}
+.cMain .cLeft .C_body .txt a{text-decoration:underline;}
+.cMain .cLeft .C_body .txt a:link{color:#234799 !important; font-size:18rem; font-weight:600;}
+.cMain .cLeft .C_body .txt a:visited {color:#234799 !important;}
+.cMain .cLeft .C_body .txt2{margin-bottom:5rem; line-height:23rem; overflow:hidden; text-overflow:ellipsis; white-space:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
+.cMain .cLeft .C_body .C_Cts .L_image {float:left; width:125rem; line-height:120rem; margin-right:10rem; border:1px solid #ddd;}
+.cMain .cLeft .C_body .C_Cts .L_image img {width:100%; vertical-align:middle;}
+.cMain .cLeft .C_body .txt3 {color:#777; font-style:normal; font-size:16rem;}
+.cMain .cLeft .C_body .txt4{font-size:14rem; color:#218d44; font-style:normal;margin-right:8px;}
+.cMain .cLeft .C_body .txt4 img {vertical-align:-1rem; margin-right:1rem;}
+.cMain .cLeft .C_body .txt3 .FreeIcon{vertical-align:-3px; margin-right:3rem;}
+.cMain .cLeft .C_body p{margin:25rem 0 0 705rem; font-size:14rem; width:55rem; color:#3d68c9; cursor:pointer;}
+.cMain .cLeft .C_body .btn.dgray {background:#004f96; padding:0 10rem;}
+.cMain .cLeft .C_body .wGun {font-size:15rem; color:#777777; margin-left:5rem; vertical-align:-1rem;}
+
+
+.cMain .cLeft .cLink li {margin:7rem 0;}
+.cMain .cLeft .cLink li strong {color:#234799 !important; font-size:18rem;}
+.cMain .cLeft .cLink .txt {display:block; font-style:normal; font-weight:normal; color:#777; font-size:16rem;}
+

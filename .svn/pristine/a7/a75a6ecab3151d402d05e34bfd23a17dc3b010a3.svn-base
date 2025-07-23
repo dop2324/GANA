@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.member.service.impl.GroupMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		MERGE INTO WEB_Group A
+		USING DUAL ON ( A.grp_id = #{grp_id} )	
+		WHEN MATCHED THEN	
+		UPDATE SET
+			grp_nm				= #{grp_nm}
+			, grp_desc 			= #{grp_desc}
+			, grp_sttus 		= #{grp_sttus}
+			, grp_mdfcnID 		= #{grp_mdfcnID}
+			, grp_mdfcnDt 		= SYSDATE			
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			#{grp_id}
+			, #{grp_uprID}
+			, #{grp_nm}
+			, #{grp_desc}
+			, #{grp_sttus}
+			, (SELECT grp_level FROM (SELECT NVL(MIN(grp_level), -1) + 1 AS grp_level FROM WEB_Group WHERE grp_id = #{grp_uprID}) L )
+			, (SELECT grp_sort FROM (SELECT NVL(MAX(grp_sort), 0) + 1 AS grp_sort FROM WEB_Group WHERE grp_uprID = #{grp_uprID}) O )
+			, #{grp_mdfcnID}
+			, SYSDATE
+		)
+	]]>
+	</update>
+	<!-- 
+   	BEGIN
+		UPDATE WEB_Group SET grp_sort = DECODE(#{UPDN}, 'UP', grp_sort - 1, grp_sort + 1) 
+		WHERE grp_id = #{grp_id} 
+		AND EXISTS (SELECT * FROM 
+							(SELECT grp_id, grp_sort FROM WEB_Group 
+							WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} )) A, 
+							(SELECT grp_id, grp_sort FROM WEB_Group 
+							WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} )) B 
+					WHERE (( #{UPDN} = 'UP' AND A.grp_sort = B.grp_sort - 1) OR ( #{UPDN} = 'DN' AND A.grp_sort = B.grp_sort + 1)) 
+					AND B.grp_id = #{grp_id} );
+		
+		UPDATE WEB_Group SET grp_sort = DECODE(#{UPDN}, 'UP', grp_sort + 1, grp_sort - 1)
+		WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} ) 
+		AND grp_sort = (SELECT grp_sort FROM WEB_Group WHERE grp_id = #{grp_id} )
+		AND grp_id != #{grp_id};
+	END; ==> Oracle JDBC는 BEGIN ... END 내 row count 추적 불가	
+	 -->
+	<update id="setOrder" parameterType="Map">
+	<![CDATA[
+		UPDATE WEB_Group
+		SET grp_sort = CASE
+		  WHEN grp_id = #{grp_id} THEN grp_sort + CASE WHEN #{UPDN} = 'UP' THEN -1 ELSE 1 END
+		  WHEN grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})
+		       AND grp_sort = (SELECT grp_sort + CASE WHEN #{UPDN} = 'UP' THEN -1 ELSE 1 END
+		                       FROM WEB_Group WHERE grp_id = #{grp_id})
+		       THEN grp_sort + CASE WHEN #{UPDN} = 'UP' THEN 1 ELSE -1 END
+		  ELSE grp_sort
+		END
+		WHERE grp_id = #{grp_id}
+		   OR (
+		     grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})
+		     AND grp_sort = (SELECT grp_sort + CASE WHEN #{UPDN} = 'UP' THEN -1 ELSE 1 END
+		                     FROM WEB_Group WHERE grp_id = #{grp_id})
+		   )
+	]]>
+	</update>
+
+	<!-- 비활성화시 하위 비활성화 -->
+	<update id="disableSubGroup" parameterType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		UPDATE WEB_Group SET 
+			grp_status = #grp_status#
+		WHERE grp_id IN (	
+							SELECT grp_id
+							FROM WEB_Group
+							START WITH grp_uprID = #{grp_id}
+							CONNECT BY PRIOR grp_id = grp_uprID
+						)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+	<![CDATA[
+		DELETE FROM WEB_Group WHERE grp_id = #{grp_id}
+	]]>
+	</delete>
+	
+	<select id="deleteRtnValue" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT 	NVL(A.grp_id, B.grp_uprID) As grp_id
+		FROM 
+		(	SELECT grp_id, grp_uprID
+			FROM WEB_Group
+			WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})
+			AND grp_id != #{grp_id} AND grp_sort = 1
+		) A
+		RIGHT OUTER JOIN (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id}) B
+		ON A.grp_uprID = B.grp_uprID
+	]]>
+	</select>
+	
+	<update id="deleteOrder" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_Group SET grp_sort = grp_sort - 1  
+		WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})  
+		AND grp_sort > (SELECT grp_sort FROM WEB_Group WHERE grp_id = #{grp_id})
+	]]>
+	</update>
+	
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT grp_id
+				, grp_uprID
+				, grp_nm
+				, grp_desc
+				, grp_sttus
+				, grp_level
+				, grp_sort
+				, grp_mdfcnID
+				, grp_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_Group WHERE grp_uprID = A.grp_id) AS grp_childCnt 
+		FROM WEB_Group A
+		WHERE grp_id = #{grp_id}
+	]]>
+	</select>
+	
+
+	
+	<select id="selectTree" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT 
+		    grp_id,
+		    NVL(grp_uprID, -1) AS grp_uprID,
+		    grp_nm,
+		    grp_sttus,
+		    grp_sort,
+		    LEVEL AS grp_level,
+		    (SELECT COUNT(*) FROM WEB_Group g2 WHERE g2.grp_uprID = g1.grp_id) AS grp_childCnt
+		FROM 
+		    WEB_Group g1
+		START WITH 
+		    DECODE(#{grp_id}, NULL, 'ROOT', #{grp_id}) = NVL(g1.grp_id, 'ROOT')
+		CONNECT BY 
+		    PRIOR grp_id = grp_uprID
+		ORDER BY 
+		    grp_sort , grp_level		
+	]]>
+	</select>
+	
+	<select id="selectExcludeTree" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT 
+		    grp_id,
+		    NVL(grp_uprID, -1) AS grp_uprID,
+		    grp_nm,
+		    grp_sttus,
+		    grp_sort,
+		    LEVEL AS grp_level,
+		    (SELECT COUNT(*) FROM WEB_Group g2 WHERE g2.grp_uprID = g1.grp_id) AS grp_childCnt
+		FROM 
+		    WEB_Group g1
+		START WITH grp_uprID = #{grp_id}
+		CONNECT BY PRIOR grp_id = grp_uprID
+		ORDER BY grp_sort,grp_level		
+	]]>
+	</select>
+	
+
+	<select id="selectGroupPath" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT 
+		    grp_id,
+		    NVL(grp_uprID, -1) AS grp_uprID,
+		    grp_nm,
+		    grp_desc,
+		    grp_sttus,
+		    grp_sort,
+		    LEVEL AS grp_level,
+		    (SELECT COUNT(*) FROM WEB_Group g2 WHERE g2.grp_uprID = g1.grp_id) AS grp_childCnt
+		FROM 
+		    WEB_Group g1
+		WHERE grp_sort > 0    
+		START WITH grp_id = #{grp_id}
+		CONNECT BY PRIOR grp_id = grp_uprID
+		ORDER BY grp_sort ,grp_level
+	]]>
+	</select>
+	
+</mapper>

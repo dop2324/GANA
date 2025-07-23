@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.emp.mnthleave.service.impl.MnthLeaveMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.func.emp.mnthleave.service.MnthLeaveVo" useGeneratedKeys="true" keyProperty="key_sn">
+		INSERT INTO FUNC_EmpMnthLeave
+		VALUE (
+			IF(#{mnth_sn} = -1, NULL, #{mnth_sn})
+			, #{emp_id}
+			, #{mnth_year}
+			, #{mnth_se}
+			, #{mnth_days}
+			, #{mnth_rsn}
+			, #{mnth_memo}
+			, #{mnth_regID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			mnth_year		= #{mnth_year}
+			, mnth_se		= #{mnth_se}
+			, mnth_days		= #{mnth_days}
+			, mnth_rsn		= #{mnth_rsn}
+			, mnth_memo		= #{mnth_memo}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM FUNC_EmpMnthLeave WHERE mnth_sn = #{mnth_sn}
+	</delete>
+	
+	
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.func.emp.mnthleave.service.MnthLeaveVo">
+		SELECT A.*
+		FROM FUNC_EmpMnthLeave A 
+		WHERE mnth_sn = #{mnth_sn}
+	</select>
+	
+	<select id="chckDup" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		FROM FUNC_EmpMnthLeave A 
+		JOIN FUNC_EmpMnthLeaveDt B ON A.mnth_sn = B.mnth_sn
+		WHERE emp_id = #{emp_id}
+		AND mnth_dt = #{mnth_dt}
+		
+		<if test="mnth_sn != null and mnth_sn != -1">
+			AND A.mnth_sn != #{mnth_sn}
+		</if>
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.emp.mnthleave.service.MnthLeaveVo">
+		SELECT A.*
+		FROM FUNC_EmpMnthLeave A 
+		WHERE emp_id = #{emp_id}
+		AND mnth_year = #{mnth_year}
+		ORDER BY mnth_regDt DESC
+	</select>
+	
+	<select id="selectEmpList" parameterType="Map" resultType="HashMap">
+		SELECT dept_nm, emp_id, emp_nm
+				, SUM(mnth_1) As mnth_1
+				, SUM(mnth_2) As mnth_2
+				, SUM(mnth_3) As mnth_3
+				, SUM(mnth_4) As mnth_4
+				, SUM(mnth_5) As mnth_5
+				, SUM(mnth_6) As mnth_6
+				, SUM(mnth_7) As mnth_7
+				, SUM(mnth_8) As mnth_8
+				, SUM(mnth_9) As mnth_9
+				, SUM(mnth_10) As mnth_10
+				, SUM(mnth_11) As mnth_11
+				, SUM(mnth_12) As mnth_12
+				, SUM(mnth_1+mnth_2+mnth_3+mnth_4+mnth_5+mnth_6+mnth_7+mnth_8+mnth_9+mnth_10+mnth_11+mnth_12) As mnth_total
+			FROM
+			(
+				SELECT 
+					dept_nm, emp_id, emp_nm
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '01' THEN 1 ELSE 0 END As mnth_1
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '02' THEN 1 ELSE 0 END As mnth_2
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '03' THEN 1 ELSE 0 END As mnth_3
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '04' THEN 1 ELSE 0 END As mnth_4
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '05' THEN 1 ELSE 0 END As mnth_5
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '06' THEN 1 ELSE 0 END As mnth_6
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '07' THEN 1 ELSE 0 END As mnth_7
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '08' THEN 1 ELSE 0 END As mnth_8
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '09' THEN 1 ELSE 0 END As mnth_9
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '10' THEN 1 ELSE 0 END As mnth_10
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '11' THEN 1 ELSE 0 END As mnth_11
+					, CASE WHEN DATE_FORMAT(mnth_dt, '%m') = '12' THEN 1 ELSE 0 END As mnth_12
+				FROM 
+				(
+					SELECT dept_nm, A.emp_id, emp_nm
+						, DATE_FORMAT(mnth_dt, '%Y') As mnth_year
+						, mnth_dt
+					FROM (
+						WITH RECURSIVE cte As 
+						( 
+							SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+							FROM WEB_Dept 
+							WHERE dept_id = #{dept_id}
+			
+							UNION ALL 
+							SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+							FROM WEB_Dept p 
+							INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+						)  
+						SELECT emp_id, emp_nm, emp_sttus
+								, B.dept_id, B.dept_nm
+								, emp_jbps, emp_jbgd
+						FROM cte A
+						JOIN WEB_Emp B ON A.dept_id = B.dept_id
+						WHERE emp_useYn = 1
+						
+					<if test="srchKwd != null and srchKwd != ''">
+						AND (
+							emp_nm LIKE CONCAT('%',#{srchKwd},'%')
+							OR emp_task LIKE CONCAT('%',#{srchKwd},'%')  
+						)
+					</if>
+					
+					) A
+					LEFT JOIN FUNC_EmpMnthLeave B ON A.emp_id = B.emp_id
+					LEFT JOIN FUNC_EmpMnthLeaveDt C ON B.mnth_sn = C.mnth_sn 
+					WHERE NVL(DATE_FORMAT(mnth_dt, '%Y'), #{srchYear}) = #{srchYear}
+				) A
+			) T
+			GROUP BY emp_id
+	</select>
+<!-- 
+	<select id="selectEmpList" parameterType="Map" resultMap="MnthLeaveListMap">
+		WITH RECURSIVE cte As 
+		( 
+			SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+			FROM WEB_Dept 
+			WHERE dept_id = #{dept_id}
+		
+			UNION ALL 
+			SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+			FROM WEB_Dept p 
+			INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+		)  
+		SELECT emp_id, emp_nm, emp_sttus
+				, B.dept_id, B.dept_nm
+				, emp_jbps, emp_jbgd
+		FROM cte A
+		JOIN WEB_Emp B ON A.dept_id = B.dept_id
+		WHERE emp_useYn = 1
+		AND A.dept_id IN (
+								WITH RECURSIVE cte As 
+								( 
+									SELECT dept_id, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+									FROM WEB_Dept 
+									WHERE dept_id = #{dept_id}
+								
+									UNION ALL 
+									SELECT p.dept_id, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+									FROM WEB_Dept p 
+									INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+								)
+								SELECT dept_id FROM cte
+							)
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				emp_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR emp_task LIKE CONCAT('%',#{srchKwd},'%')  
+			)
+		</if>
+		
+	</select>
+ -->
+ 
+	<update id="saveDate" parameterType="Map">
+		INSERT INTO FUNC_EmpMnthLeaveDt
+		VALUE (
+			#{mnth_sn}
+			, #{mnth_dt}
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			mnth_dt	= #{mnth_dt}
+
+	</update>
+	
+	<select id="selectDtList" parameterType="int" resultType="egovframework.dnworks.func.emp.mnthleave.service.MnthLeaveDtVo">
+		SELECT A.*
+		FROM FUNC_EmpMnthLeaveDt A 
+		WHERE mnth_sn = #{mnth_sn}
+		ORDER BY mnth_dt
+	</select>
+	
+	<delete id="deleteDt" parameterType="int">
+		DELETE FROM FUNC_EmpMnthLeaveDt WHERE mnth_sn = #{mnth_sn}
+	</delete>
+	
+
+</mapper>

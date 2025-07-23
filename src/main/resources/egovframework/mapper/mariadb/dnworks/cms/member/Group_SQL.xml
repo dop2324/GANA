@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.member.service.impl.GroupMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		INSERT INTO WEB_Group
+		VALUE (
+			#{grp_id}
+			, #{grp_uprID}
+			, #{grp_nm}
+			, #{grp_desc}
+			, #{grp_sttus}
+			, (SELECT grp_level FROM (SELECT IFNULL(MIN(grp_level), -1) + 1 AS grp_level FROM WEB_Group WHERE grp_id = #{grp_uprID}) L )
+			, (SELECT grp_sort FROM (SELECT IFNULL(MAX(grp_sort), 0) + 1 AS grp_sort FROM WEB_Group WHERE grp_uprID = #{grp_uprID}) O )
+			, #{grp_mdfcnID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			grp_nm				= #{grp_nm}
+			, grp_desc 			= #{grp_desc}
+			, grp_sttus 		= #{grp_sttus}
+			, grp_mdfcnID 		= #{grp_mdfcnID}
+			, grp_mdfcnDt 		= SYSDATE()
+	]]>
+	</update>
+	
+	<update id="setOrder" parameterType="Map">
+	<![CDATA[
+		UPDATE WEB_Group SET grp_sort = IF(#{UPDN} = 'UP', grp_sort - 1, grp_sort + 1) 
+		WHERE grp_id = #{grp_id} 
+		AND EXISTS (SELECT * FROM 
+							(SELECT grp_id, grp_sort FROM WEB_Group 
+							WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} )) A, 
+							(SELECT grp_id, grp_sort FROM WEB_Group 
+							WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} )) B 
+					WHERE (( #{UPDN} = 'UP' AND A.grp_sort = B.grp_sort - 1) OR ( #{UPDN} = 'DN' AND A.grp_sort = B.grp_sort + 1)) 
+					AND B.grp_id = #{grp_id} );
+		
+		UPDATE WEB_Group SET grp_sort = IF(#{UPDN} = 'UP', grp_sort + 1, grp_sort - 1) 
+		WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id} ) 
+		AND grp_sort = (SELECT grp_sort FROM WEB_Group WHERE grp_id = #{grp_id} ) 
+		AND grp_id != #{grp_id};
+	]]>
+	</update>
+
+	<!-- 비활성화시 하위 비활성화 -->
+	<update id="disableSubGroup" parameterType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		UPDATE WEB_Group SET 
+			grp_status = #grp_status#
+		WHERE grp_id IN (	
+							WITH RECURSIVE cte As 
+							( 
+								SELECT grp_id, 1 AS level 
+								FROM WEB_Group 
+								WHERE grp_uprID = #{grp_id}
+							
+								UNION ALL 
+								SELECT p.grp_id, 1+level as level 
+								FROM WEB_Group p 
+								INNER JOIN cte ON p.grp_uprID = cte.grp_id 
+							) 
+							SELECT grp_id FROM cte
+						)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+	<![CDATA[
+		DELETE FROM WEB_Group WHERE grp_id = #{grp_id}
+	]]>
+	</delete>
+	
+	<select id="deleteRtnValue" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT 	IFNULL(A.grp_id, B.grp_uprID) As grp_id
+		FROM 
+		(	SELECT grp_id, grp_uprID
+			FROM WEB_Group
+			WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})
+			AND grp_id != #{grp_id} AND grp_sort = 1
+		) A
+		RIGHT OUTER JOIN (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id}) B
+		ON A.grp_uprID = B.grp_uprID
+	]]>
+	</select>
+	
+	<update id="deleteOrder" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_Group SET grp_sort = grp_sort - 1  
+		WHERE grp_uprID = (SELECT grp_uprID FROM WEB_Group WHERE grp_id = #{grp_id})  
+		AND grp_sort > (SELECT grp_sort FROM WEB_Group WHERE grp_id = #{grp_id})
+	]]>
+	</update>
+	
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT grp_id
+				, grp_uprID
+				, grp_nm
+				, grp_desc
+				, grp_sttus
+				, grp_level
+				, grp_sort
+				, grp_mdfcnID
+				, grp_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_Group WHERE grp_uprID = A.grp_id) AS grp_childCnt 
+		FROM WEB_Group A
+		WHERE grp_id = #{grp_id}
+	]]>
+	</select>
+	
+
+	
+	<select id="selectTree" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT grp_id, grp_uprID, grp_nm, grp_sttus, grp_sort, 1 AS level
+			FROM WEB_Group 
+			WHERE IFNULL(grp_id, 'root') = IF(#{grp_id} IS NULL, 'ROOT', #{grp_id})
+			
+			UNION ALL 
+			SELECT p.grp_id, p.grp_uprID, p.grp_nm, p.grp_sttus, p.grp_sort,  1+level as level 
+			FROM WEB_Group p 
+			INNER JOIN cte ON p.grp_uprID = cte.grp_id 
+		) 
+		SELECT grp_id, IFNULL( grp_uprID, -1) as grp_uprID ,grp_nm, grp_sttus, grp_sort, level As grp_level
+				, (SELECT COUNT(1) FROM WEB_Group WHERE grp_uprID = cte.grp_id) AS grp_childCnt 
+		FROM cte
+		ORDER BY grp_sort
+	]]>
+	</select>
+	
+	<select id="selectExcludeTree" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT grp_id, grp_uprID, grp_nm, grp_sttus, grp_sort, 1 AS level
+			FROM WEB_Group 
+			WHERE grp_uprID = #{grp_id}
+			
+			UNION ALL 
+			SELECT p.grp_id, p.grp_uprID, p.grp_nm, p.grp_sttus, p.grp_sort,  1+level as level 
+			FROM WEB_Group p 
+			INNER JOIN cte ON p.grp_uprID = cte.grp_id 
+		) 
+		SELECT grp_id, IFNULL( grp_uprID, -1) as grp_uprID ,grp_nm, grp_sttus, grp_sort, level As grp_level
+				, (SELECT COUNT(1) FROM WEB_Group WHERE grp_uprID = cte.grp_id) AS grp_childCnt 
+		FROM cte
+		ORDER BY grp_sort
+	]]>
+	</select>
+	
+
+	<select id="selectGroupPath" parameterType="String" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		WITH RECURSIVE cte As 
+		( 
+			SELECT grp_id, grp_uprID, grp_nm, grp_sttus, grp_sort, 1 AS level
+			FROM WEB_Group 
+			WHERE grp_id = #{grp_id}
+			
+			UNION ALL 
+			SELECT p.grp_id, p.grp_uprID, p.grp_nm, p.grp_sttus, p.grp_sort,  1+level as level 
+			FROM WEB_Group p 
+			INNER JOIN cte ON p.grp_uprID = cte.grp_id 
+		) 
+		SELECT grp_id, IFNULL( grp_uprID, -1) as grp_uprID ,code_nm, code_val, code_sttus, grp_sort, level As grp_level
+				, (SELECT COUNT(1) FROM WEB_Group WHERE grp_uprID = cte.grp_id) AS grp_childCnt 
+		FROM cte
+		WHERE grp_sort > 0
+		ORDER BY grp_sort
+	]]>
+	</select>
+	
+</mapper>

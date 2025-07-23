@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+    <!-- 패키지 내 Controller, Service, Repository 클래스의 auto detect를 위한 mvc 설정 -->
+    <context:component-scan base-package="egovframework">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+    
+    <!-- url 노출 때문에 이름변경해서 사용 
+    <context:property-placeholder location="classpath:egovframework/egovProps/globals.properties" />
+     -->
+    <context:property-placeholder location="classpath:egovframework/egovProps/globals_config.properties" />
+     
+    <!-- 
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.com.cmm.web.EgovBindingInitializer"/>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <ref bean="localeChangeInterceptor" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+    <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="language" />
+    </bean>   
+	 -->
+    <!-- 서블릿컨네이너상의 exception에 대한 오류 페이지를 연결하는 mvc 설정
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView" value="cmm/error/egovError"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.dao.DataAccessException">cmm/error/dataAccessFailure</prop>
+                <prop key="org.springframework.transaction.TransactionException">cmm/error/transactionFailure</prop>
+                <prop key="egovframework.rte.fdl.cmmn.exception.EgovBizException">cmm/error/egovError</prop>
+                <prop key="org.springframework.security.AccessDeniedException">cmm/error/accessDenied</prop>
+            </props>
+        </property>
+    </bean>
+    -->
+
+    <!-- 화면처리용 JSP 파일명의  prefix, suffix 처리에 대한 mvc 설정  -->
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1"
+	    p:viewClass="org.springframework.web.servlet.view.JstlView"
+	    p:prefix="/WEB-INF/jsp/" p:suffix=".jsp"/>
+
+    <!-- 로그인 체크가 필요한 URL과 로그인 여부를 체크해준다  -->
+    
+    
+    <mvc:interceptors>
+    	
+    	<mvc:interceptor>
+            <mvc:mapping path="/**/*.do" />
+			<mvc:exclude-mapping path="/EgovPageLink.do"/>
+			<mvc:exclude-mapping path="/error/*.do"/>
+			<mvc:exclude-mapping path="/auth/dev/*.do"/>
+			
+			<mvc:exclude-mapping path="/**/main.do"/>
+			
+			<mvc:exclude-mapping path="/**/expirepw.do"/>
+			<mvc:exclude-mapping path="/**/expirepw_process.do"/>
+			
+			<mvc:exclude-mapping path="/common/ckupload.do"/>
+			<mvc:exclude-mapping path="/common/link/*.do"/>
+			<mvc:exclude-mapping path="/common/board/*.do"/>
+			<mvc:exclude-mapping path="/common/NICE/*.do"/>
+			<mvc:exclude-mapping path="/synap/board_fileViewer.do"/>
+			<mvc:exclude-mapping path="/WebContent/search/*.do"/>
+			
+
+		    <bean class="egovframework.dnworks.cmm.interceptor.WebUserCheckInterceptor" />
+        </mvc:interceptor>
+        
+        <!-- 모아회원 로그인 체크 페이지 -->
+        <mvc:interceptor>
+        	<mvc:mapping path="/member/page.do" />
+        	<bean class="egovframework.dnworks.cmm.interceptor.MoaUserCheckInterceptor" />
+        </mvc:interceptor>
+
+    </mvc:interceptors>
+    
+
+    <!-- Annotation 을 사용하지 않는 경우에 대한 MVC 처리 설정
+    <mvc:view-controller path="/cmmn/validator.do" view-name="cmmn/validator"/>
+    -->
+    <mvc:annotation-driven/>
+    
+</beans>

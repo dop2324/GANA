@@ -1,0 +1,15 @@
+
+## \ud68c\uc6d0\uac00\uc785\uc2dc \uae08\uc9c0\ub2e8\uc5b4 \ud544\ud130\ub9c1
+## `,`(\ucf64\ub9c8) \ub97c \ud1b5\ud574 \uae08\uc9c0\ub418\uc5b4\uc57c \ud560 ID\ub4e4 \uc785\ub825
+moaid.banid=admin,administrator,root,manager
+
+## \ube44\ud68c\uc6d0 \uc790\ub3d9\ub85c\uadf8\uc778 \uc8fc\uc18c
+moa.login.page = /member/page.do
+moa.login.mnuCode = mlogin 
+moa.login.frst.mnuCode = membPage
+
+## \ub85c\uadf8 \uc774\ub825 \ubcf4\uad00\uae30\uac04(\uc77c)
+moa.login.retntnDt = 90
+
+## \ub85c\uadf8\uc778 \uccb4\ud06c \uc608\uc678 mnu_code
+moa.loginchk.mnuCode=membMypage,authMgnt

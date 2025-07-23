@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.memb.service.impl.MembAgentMapper">
+
+	<sql id="whereMembAgentList">
+		FROM TN_USE_ORG_INFO A
+		WHERE DEL_YN='N'
+		<if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+			AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+		</if>
+	</sql>
+
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+	]]>
+	<include refid="whereMembAgentList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembAgentVO">
+		SELECT T.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY USE_ORG_ID DESC) AS RNUM,
+				USE_ORG_ID           AS useOrgId,
+				USE_ORG_NM           AS useOrgNm,
+				HMPG_NM              AS hmpgNm,
+				HMPG_URL             AS hmpgUrl,
+				CALLBACK_URL         AS callbackUrl,
+				ORG_PIC_NM           AS orgPicNm,
+				ORG_PIC_EML_ADDR     AS orgPicEmlAddr,
+				ORG_PIC_TELNO        AS orgPicTelno,
+				CLIENT_ID            AS clientId,
+				USE_YN               AS useYn,
+				REG_DT               AS regDt,
+				REG_ID               AS regId,
+				MDFCN_DT              AS mdfcnDt,
+				MDFCN_ID              AS mdfcnId,
+				DEL_YN               AS delYn,
+				DEL_DT               AS delDt,
+				DEL_ID               AS delId
+			<include refid="whereMembAgentList" />
+		) T
+	<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+	]]>
+	</select>
+	
+	<select id="select" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		SELECT
+			USE_ORG_ID           AS useOrgId,
+			USE_ORG_NM           AS useOrgNm,
+			HMPG_NM              AS hmpgNm,
+			HMPG_URL             AS hmpgUrl,
+			CALLBACK_URL         AS callbackUrl,
+			ORG_PIC_NM           AS orgPicNm,
+			ORG_PIC_EML_ADDR     AS orgPicEmlAddr,
+			ORG_PIC_TELNO        AS orgPicTelno,
+			CLIENT_ID            AS clientId,
+			USE_YN               AS useYn,
+			REG_DT               AS regDt,
+			REG_ID               AS regId,
+			MDFCN_DT             AS mdfcnDt,
+			MDFCN_ID             AS mdfcnId,
+			DEL_YN               AS delYn,
+			DEL_DT               AS delDt,
+			DEL_ID               AS delId
+		FROM TN_USE_ORG_INFO
+		WHERE DEL_YN='N' AND USE_ORG_ID = #{useOrgId}
+	]]>
+	</select>
+
+	<insert id="insert" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		INSERT INTO TN_USE_ORG_INFO (
+			USE_ORG_ID, USE_ORG_NM, HMPG_NM, HMPG_URL, CALLBACK_URL, ORG_PIC_NM, ORG_PIC_EML_ADDR, ORG_PIC_TELNO, CLIENT_ID, USE_YN, REG_DT, REG_ID
+		) VALUES (
+			#{useOrgId}
+			, #{useOrgNm}
+			, #{hmpgNm}
+			, #{hmpgUrl}
+			, #{callbackUrl}
+			, #{orgPicNm}
+			, #{orgPicEmlAddr}
+			, #{orgPicTelno}
+			, #{clientId}
+			, #{useYn}
+			, SYSDATE
+			, #{regId}
+		)
+	]]>
+	</insert>
+	
+	<update id="update" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		UPDATE TN_USE_ORG_INFO SET 
+			USE_ORG_NM = #{useOrgNm},
+			HMPG_NM = #{hmpgNm},
+			ORG_PIC_NM = #{orgPicNm},
+			ORG_PIC_EML_ADDR = #{orgPicEmlAddr},
+			ORG_PIC_TELNO = #{orgPicTelno},
+			USE_YN = #{useYn},
+			MDFCN_DT = SYSDATE,
+			MDFCN_ID = #{mdfcnId}
+		WHERE USE_ORG_ID = #{useOrgId}
+	]]>
+	</update>
+	
+	<update id="delete" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		UPDATE TN_USE_ORG_INFO SET 
+			DEL_YN = 'Y',
+			DEL_DT = SYSDATE,
+			DEL_ID = #{delId}
+		WHERE USE_ORG_ID = #{useOrgId}
+	]]>
+	</update>
+	
+	<select id="existsClientId" parameterType="string" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+        FROM TN_USE_ORG_INFO
+        WHERE CLIENT_ID = #{clientId}
+	]]>
+	</select>
+
+</mapper>

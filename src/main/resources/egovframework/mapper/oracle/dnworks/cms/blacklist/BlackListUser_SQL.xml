@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.blacklist.service.impl.BlackListUserMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.blacklist.service.BlackListUserVo">
+	<![CDATA[
+		INSERT INTO WEB_BlackListUser (
+			  blu_sn
+			, blu_id
+			, blu_nm
+			, blu_rng
+			, blu_desc
+			, blu_sttus
+			, blu_mdfcnID
+			, blu_mdfcnDt
+			, site_code
+		) VALUES (
+			  SEQ_BlackListUser.nextval
+			, #{blu_id}
+			, #{blu_nm}
+			, #{blu_rng}
+			, #{blu_desc}
+			, #{blu_sttus}
+			, #{blu_mdfcnID}
+			, SYSDATE
+			, #{site_code}
+		)
+	]]>
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.blacklist.service.BlackListUserVo">
+	<![CDATA[
+		UPDATE WEB_BlackListUser SET
+			blu_id			= #{blu_id}
+		    , blu_nm		= #{blu_nm}
+		    , blu_rng		= #{blu_rng}
+		    , blu_desc		= #{blu_desc}
+		    , blu_sttus		= #{blu_sttus}
+		    , blu_mdfcnID	= #{blu_mdfcnID}
+		    , blu_mdfcnDt	= SYSDATE
+		    , site_code		= #{site_code}
+		WHERE blu_sn = #{blu_sn}
+	]]>
+	</update>
+	
+	<update id="delete" parameterType="int">
+	<![CDATA[
+		DELETE FROM WEB_BlackListUser
+		WHERE blu_sn = #{blu_sn}
+	]]>
+	</update>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.blacklist.service.BlackListUserVo">
+	<![CDATA[
+		SELECT blu_sn
+				, blu_id
+				, blu_nm
+				, blu_rng
+				, blu_desc
+				, blu_sttus
+				, blu_mdfcnID
+				, blu_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListUser A
+		WHERE blu_sn = #{blu_sn}
+	]]>
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.blacklist.service.BlackListUserVo">
+	<![CDATA[
+		SELECT blu_sn
+				, blu_id
+				, blu_nm
+				, blu_rng
+				, blu_desc
+				, blu_sttus
+				, blu_mdfcnID
+				, blu_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListUser A
+		WHERE site_code = #{site_code}
+	]]>
+	</select>
+	
+	<select id="isBlackListUser" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_BlackListUser
+		WHERE blu_sttus = 1
+		AND blu_id = #{blu_id}
+		<if test="site_code != '' and site_code != null">
+			AND site_code = #{site_code}
+		</if>
+	</select>
+	
+	<select id="selectUserList" parameterType="Map" resultType="egovframework.dnworks.cms.blacklist.service.BlackListUserVo">
+	<![CDATA[
+		SELECT blu_sn
+				, blu_id
+				, blu_nm
+				, blu_rng
+				, blu_desc
+				, blu_sttus
+				, blu_mdfcnID
+				, blu_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListUser A
+		WHERE blu_sttus = 1
+		AND blu_id = #{blu_id}
+	]]>
+		<if test="site_code != '' and site_code != null">
+			AND site_code = #{site_code}
+		</if>
+	</select>
+	
+</mapper>

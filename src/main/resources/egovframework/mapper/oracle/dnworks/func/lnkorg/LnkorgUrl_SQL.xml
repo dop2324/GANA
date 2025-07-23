@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.lnkorg.service.impl.LnkorgUrlMapper">
+
+	<insert id="insert" parameterType="Map">
+	<![CDATA[
+		INSERT INTO TN_LNKORG_URL (
+			LNKORG_URL_ID, ORG_UNQ_ID, DATA_DIV_CD, URL, USE_YN, REG_DT, REG_ID
+		) VALUES (
+			#{lnkorgUrlId}
+			, #{orgUnqId}
+			, #{dataDivCd}
+			, #{url}
+			, #{useYn}
+			, SYSDATE
+			, #{regId}
+		)
+	]]>
+	</insert>
+	
+	<update id="update" parameterType="Map">
+	<![CDATA[
+		UPDATE TN_LNKORG_URL SET
+			USE_YN = #{useYn}
+			, MDFCN_DT = SYSDATE
+			, MDFCN_ID = #{mdfcnId}
+		WHERE LNKORG_URL_ID = #{lnkorgUrlId}
+	]]>
+	</update>
+	
+	<delete id="remove" parameterType="Map">
+	<![CDATA[
+		DELETE FROM TN_LNKORG_URL
+		WHERE LNKORG_URL_ID = #{lnkorgUrlId}
+	]]>
+	</delete>
+	
+	<select id="getList" parameterType="Map" resultType="egovframework.dnworks.func.lnkorg.service.LnkorgUrlVO">
+	<![CDATA[
+		SELECT 
+			LNKORG_URL_ID AS lnkorgUrlId
+			, ORG_UNQ_ID AS orgUnqId
+			, DATA_DIV_CD AS dataDivCd
+			, URL AS url
+			, USE_YN AS useYn
+			, REG_DT AS regDt
+			, REG_ID AS regId
+			, MDFCN_DT AS mdfcnDt
+			, MDFCN_ID AS mdfcnId
+		FROM TN_LNKORG_URL
+	]]>
+		WHERE ORG_UNQ_ID = #{orgUnqId}
+	</select>
+
+</mapper>

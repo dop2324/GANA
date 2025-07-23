@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.lnkorg.service.impl.LnkorgInfoMapper">
+
+    <!-- 목록 조건 공통 SQL -->
+    <sql id="whereLnkOrgInfoList">
+        FROM TN_LNKORG_INFO
+        WHERE DEL_YN='N'
+        <if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+            AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+        </if>
+        <if test="srchUseYn != null and srchUseYn != ''">
+            AND USE_YN = #{srchUseYn}
+        </if>
+    </sql>
+
+    <!-- 목록 총 갯수 -->
+    <select id="selectListCnt" parameterType="Map" resultType="int">
+        SELECT COUNT(1)
+        <include refid="whereLnkOrgInfoList" />
+    </select>
+
+    <!-- 목록 조회 (페이징 포함) -->
+    <select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.lnkorg.service.LnkorgInfoVO">
+        SELECT T.*
+        FROM (
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY ORG_NM ASC) AS RNUM,
+                ORG_UNQ_ID            AS orgUnqId,
+                ORG_NM                AS orgNm,
+                ZIP                   AS zip,
+                ROAD_NM_ADDR          AS roadNmAddr,
+                DTL_ADDR              AS dtlAddr,
+                PIC_NM                AS picNm,
+                PIC_EML_ADDR          AS picEmlAddr,
+                PIC_TELNO             AS picTelno,
+                MTNCO_NM              AS mtncoNm,
+                MTNCO_PIC_NM          AS mtncoPicNm,
+                MTNCO_PIC_TELNO       AS mtncoPicTelno,
+                MTNCO_PIC_EML_ADDR    AS mtncoPicEmlAddr,
+                USE_YN                AS useYn,
+                HMPG_URL              AS hmpgUrl,
+                REG_DT                AS regDt,
+                REG_ID                AS regId,
+                MDFCN_DT              AS mdfcnDt,
+                MDFCN_ID              AS mdfcnId,
+                DEL_YN               AS delYn,
+				DEL_DT               AS delDt,
+				DEL_ID               AS delId
+            <include refid="whereLnkOrgInfoList" />
+        ) T
+        <![CDATA[
+        WHERE RNUM > ((#{pageNo} - 1) * #{pageSize}) AND ROWNUM <= #{pageSize}
+        ]]>
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="select" parameterType="String" resultType="egovframework.dnworks.func.lnkorg.service.LnkorgInfoVO">
+        SELECT
+            ORG_UNQ_ID            AS orgUnqId,
+            ORG_NM                AS orgNm,
+            ZIP                   AS zip,
+            ROAD_NM_ADDR          AS roadNmAddr,
+            DTL_ADDR              AS dtlAddr,
+            PIC_NM                AS picNm,
+            PIC_EML_ADDR          AS picEmlAddr,
+            PIC_TELNO             AS picTelno,
+            MTNCO_NM              AS mtncoNm,
+            MTNCO_PIC_NM          AS mtncoPicNm,
+            MTNCO_PIC_TELNO       AS mtncoPicTelno,
+            MTNCO_PIC_EML_ADDR    AS mtncoPicEmlAddr,
+            USE_YN                AS useYn,
+            HMPG_URL              AS hmpgUrl,
+            REG_DT                AS regDt,
+            REG_ID                AS regId,
+            MDFCN_DT              AS mdfcnDt,
+            MDFCN_ID              AS mdfcnId,
+            DEL_YN               AS delYn,
+			DEL_DT               AS delDt,
+			DEL_ID               AS delId
+        FROM TN_LNKORG_INFO
+        WHERE ORG_UNQ_ID = #{orgUnqId} AND DEL_YN='N'
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="egovframework.dnworks.func.lnkorg.service.LnkorgInfoVO">
+        INSERT INTO TN_LNKORG_INFO (
+            ORG_UNQ_ID, ORG_NM, ZIP, ROAD_NM_ADDR, DTL_ADDR,
+            PIC_NM, PIC_EML_ADDR, PIC_TELNO,
+            MTNCO_NM, MTNCO_PIC_NM, MTNCO_PIC_TELNO, MTNCO_PIC_EML_ADDR,
+            USE_YN, HMPG_URL, REG_DT, REG_ID
+        ) VALUES (
+            #{orgUnqId}, #{orgNm}, #{zip}, #{roadNmAddr}, #{dtlAddr},
+            #{picNm}, #{picEmlAddr}, #{picTelno},
+            #{mtncoNm}, #{mtncoPicNm}, #{mtncoPicTelno}, #{mtncoPicEmlAddr},
+            #{useYn}, #{hmpgUrl}, SYSDATE, #{regId}
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="egovframework.dnworks.func.lnkorg.service.LnkorgInfoVO">
+        UPDATE TN_LNKORG_INFO
+        SET
+            ORG_NM = #{orgNm},
+            ZIP = #{zip},
+            ROAD_NM_ADDR = #{roadNmAddr},
+            DTL_ADDR = #{dtlAddr},
+            PIC_NM = #{picNm},
+            PIC_EML_ADDR = #{picEmlAddr},
+            PIC_TELNO = #{picTelno},
+            MTNCO_NM = #{mtncoNm},
+            MTNCO_PIC_NM = #{mtncoPicNm},
+            MTNCO_PIC_TELNO = #{mtncoPicTelno},
+            MTNCO_PIC_EML_ADDR = #{mtncoPicEmlAddr},
+            USE_YN = #{useYn},
+            HMPG_URL = #{hmpgUrl},
+            MDFCN_DT = SYSDATE,
+            MDFCN_ID = #{mdfcnId}
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+    </update>
+    
+    <update id="delete" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		UPDATE TN_LNKORG_INFO SET 
+			DEL_YN = 'Y',
+			DEL_DT = SYSDATE,
+			DEL_ID = #{delId}
+		WHERE ORG_UNQ_ID = #{orgUnqId}
+	]]>
+	</update>
+
+</mapper>

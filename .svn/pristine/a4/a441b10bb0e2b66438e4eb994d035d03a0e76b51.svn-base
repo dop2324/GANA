@@ -1,0 +1,232 @@
+package egovframework.dnworks.controller.sitemanager.func.org;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import egovframework.dnworks.base.WebDefault;
+import egovframework.dnworks.cmm.util.Util;
+import egovframework.dnworks.cms.cmmncd.service.CmmnCdService;
+import egovframework.dnworks.func.cmm.utl.JavaScriptUtil;
+import egovframework.dnworks.func.cmm.utl.MoaFuncUtil;
+import egovframework.dnworks.func.org.service.OrgInfoService;
+import egovframework.dnworks.func.org.service.OrgInfoVO;
+import egovframework.com.cmm.service.EgovFileMngService;
+import egovframework.com.cmm.service.EgovFileMngUtil;
+import egovframework.com.cmm.service.EgovProperties;
+import egovframework.com.cmm.service.FileVO;
+import egovframework.com.cmm.util.EgovDoubleSubmitHelper;
+import egovframework.com.cmm.util.EgovStringUtil;
+import egovframework.dnworks.cmm.Code;
+import egovframework.dnworks.cmm.PageNavi;
+
+@Controller
+@RequestMapping("/SiteManager/func/org")
+public class OrgInfoController extends WebDefault {
+
+	@Resource(name = "orgInfoService")
+	private OrgInfoService orgInfoService;
+
+	@Autowired
+	private CmmnCdService cmmnCdService;
+	
+	/**
+	 * 첨부파일 처리
+	 * */
+	@Resource(name = "EgovFileMngService")
+    private EgovFileMngService fileMngService;
+	
+	@Resource(name = "EgovFileMngUtil")
+    private EgovFileMngUtil fileUtil;
+	
+	private static final String PROGRAM_PATH = EgovProperties.getProperty("Globals.fileStorePath")+"ORG";
+	private static final int THUMB_WIDTH = 340;
+	private static final int THUMB_HEIGHT = 235;
+	
+	@RequestMapping("/info.do")
+	public String info(HttpServletRequest request, HttpSession session, ModelMap model) throws Exception {
+		String location = null;
+		String mnu_code = Util.nvl(request.getParameter("mnu_code"));
+		int cmd = Util.nvl(request.getParameter("cmd"), 1);
+
+		HashMap<String, Object> udp = new HashMap<>();
+		udp.put("mnu_code", "");
+		udp.put("srchSe", "");
+		udp.put("srchUseYn", "");
+		udp.put("pageNo", 1);
+		udp.put("pageSize", 20);
+		
+		String queryString = super.getParameters(request, udp, true, false);
+		model.addAttribute("queryString", queryString);
+		model.addAttribute("listLink", String.format("?%s", queryString));
+		model.addAttribute("mnu_code", mnu_code);
+
+		switch (cmd) {
+			case 16:
+				this.select(request, session, model, queryString);
+				location = managerDir + "/func/org/info/form";
+				break;
+			case 4:
+				this.select(request, session, model, queryString);
+				location = managerDir + "/func/org/info/form";
+				break;
+			default:
+				this.list(request, session, model, queryString);
+				location = managerDir + "/func/org/info/list";
+				break;
+		}
+		return location;
+	}
+
+	public void list(HttpServletRequest request, HttpSession session, ModelMap model, String queryString) throws Exception {
+		int pageNo = Util.nvl(request.getParameter("pageNo"), 1);
+		int pageSize = Util.nvl(request.getParameter("pageSize"), 20);
+
+		Map<String, Object> param = new HashMap<>();
+		param.put("srchSe", Util.nvl(request.getParameter("srchSe")));
+		param.put("srchUseYn", Util.nvl(request.getParameter("srchUseYn")));
+		param.put("srchKwd", Util.nvl(request.getParameter("srchKwd")));
+		param.put("offset", (pageNo - 1) * pageSize);
+		param.put("pageSize", pageSize);
+		param.put("pageNo", pageNo);
+		param.put("mngrOrgUnqId", this.mngrOrgUnqId(session));
+
+		int totalCnt = orgInfoService.selectListCnt(param); // 필요 시 selectListCnt 구현
+		int no = totalCnt - ((pageNo - 1) * pageSize);
+		List<OrgInfoVO> orgList = orgInfoService.selectList(param);
+
+		model.addAttribute("pageNo", pageNo);
+		model.addAttribute("no", no);
+		model.addAttribute("totalCnt", totalCnt);
+		model.addAttribute("orgList", orgList);
+		model.addAttribute("srchMap", param);
+
+		PageNavi pageNavi = new PageNavi();
+		model.addAttribute("paging", pageNavi.getPageNaviTag(totalCnt, pageSize, pageNo, "", queryString));
+	}
+
+	public void select(HttpServletRequest request, HttpSession session, ModelMap model, String queryString) throws Exception {
+		String orgUnqId = Util.nvl(request.getParameter("orgUnqId"));
+		int cmd = !orgUnqId.equals("") ? Code.Prm.PrmUpd.getCode() : Code.Prm.PrmIns.getCode();
+
+		OrgInfoVO orgVo = new OrgInfoVO();
+		if (cmd == Code.Prm.PrmUpd.getCode()) {
+			orgVo = orgInfoService.select(orgUnqId);
+			
+			// 첨부파일 갯수 구하기
+			int atchFileCnt = 0;
+			if(!EgovStringUtil.isEmpty(orgVo.getAtchFileId())) {
+				FileVO fvo = new FileVO();
+				fvo.setAtchFileId(orgVo.getAtchFileId());
+				atchFileCnt = (this.fileMngService.selectFileInfs(fvo)).size();
+			}
+			model.addAttribute("atchFileCnt", atchFileCnt);
+		}
+
+		model.addAttribute("orgVo", orgVo);
+		model.addAttribute("cmd", cmd);
+	}
+
+	@RequestMapping("/info_process.do")
+	public String info_process(final MultipartHttpServletRequest request, HttpServletResponse response, HttpSession session, ModelMap model,
+			@ModelAttribute OrgInfoVO vo) throws Exception {
+
+		int cmd = Util.nvl(request.getParameter("cmd"), 0);
+		String returnUrl = Util.nvl(request.getParameter("returnUrl"), managerDir+"/func/org/info.do");
+		String queryString = Util.nvl(request.getParameter("queryString"));
+		String location = String.format("%s?%s", returnUrl, queryString);
+
+		String message = "";
+		String log_what = "";
+
+		if (EgovDoubleSubmitHelper.checkAndSaveToken(request)) {
+			try {
+				/***
+				 * 첨부파일 처리 START
+				 * CRUD 로직 전에 처리하여 atchFileId 얻기
+				 * ***/
+				List<FileVO> result = null;
+				String atchFileId = vo.getAtchFileId();
+				int fileSn = 0;
+				if(!EgovStringUtil.isEmpty(atchFileId)) {
+					FileVO fvo = new FileVO();
+					fvo.setAtchFileId(atchFileId);
+					fileSn = fileMngService.getMaxFileSN(fvo);
+				}
+				
+				final Map<String, MultipartFile> files = request.getFileMap();
+				if (!files.isEmpty()) {
+					/**
+					 * 일반첨부파일 등록
+					 * result = fileUtil.parseFileInf(files, "FSTV_", fileSn, atchFileId, PROGRAM_PATH);
+					 * 
+					 * 이미지 썸네일 추출 첨부파일 등록
+					 * result = fileUtil.parseImgFileThumbInf(files, "FSTV_", fileSn, atchFileId, PROGRAM_PATH, 300, 200);
+					 * **/
+					result = fileUtil.parseImgFileThumbInf(files, "FSTV_", fileSn, atchFileId, PROGRAM_PATH, THUMB_WIDTH, THUMB_HEIGHT);
+					for (int i = 0; i < result.size(); i++) {
+						String fileCnParam = "atchFileCn_" + (i + 1);
+						String fileCn = request.getParameter(fileCnParam);
+						if(fileCn != null) {
+							result.get(i).setFileCn(fileCn);
+						}
+					}
+					
+					if(EgovStringUtil.isEmpty(atchFileId)) {
+						// 최초등록
+						atchFileId = fileMngService.insertFileInfs(result);
+						vo.setAtchFileId(atchFileId);
+					}else {
+						// 수정
+						fileMngService.updateFileInfs(result);
+					}
+					
+				}
+				/***
+				 * 첨부파일 처리 END
+				 * ***/
+				if (cmd == Code.Prm.PrmIns.getCode()) {
+					vo.setRegId(Util.getSession(session, "USR_ID"));
+					vo.setMdfcnId(Util.getSession(session, "USR_ID"));
+					orgInfoService.insert(vo);
+					message = "등록되었습니다.";
+					log_what = String.format("%s 기관: %s (%s)", "insert", vo.getOrgNm(), cmd);
+				} else if (cmd == Code.Prm.PrmUpd.getCode()) {
+					vo.setMdfcnId(Util.getSession(session, "USR_ID"));
+					orgInfoService.update(vo);
+					message = "수정되었습니다.";
+					log_what = String.format("%s 기관: %s (%s)", "update", vo.getOrgNm(), cmd);
+				} else if (cmd == Code.Prm.PrmDel.getCode()) {
+					vo.setDelId(Util.getSession(session, "USR_ID"));
+					orgInfoService.delete(vo);
+					message = "삭제 되었습니다.";
+					log_what = String.format("%s 기관: %s (%s)", "delete", vo.getOrgNm(), cmd);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				JavaScriptUtil.flushJsAlertAndHistoryBack(response, "요청 처리 중 오류가 발생했습니다.");
+				return null;
+			}
+		} else {
+			JavaScriptUtil.flushJsAlertAndHistoryBack(response, "중복 입력할 수 없습니다.");
+			return null;
+		}
+
+		super.insertLog(request, log_what);
+		JavaScriptUtil.flushJsAlertAndLocation(response, message, location);
+		return null;
+	}
+} 

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+		 xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+		 xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	<display-name>egovframework.sht</display-name>
+	<filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>utf-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>*.do</url-pattern>
+    </filter-mapping>
+    
+
+ 	<filter>
+	    <filter-name>multipartFilter</filter-name>
+	    <filter-class>org.springframework.web.multipart.support.MultipartFilter</filter-class>
+	    <init-param>
+			<param-name>multipartResolverBeanName</param-name>
+			<param-value>multipartResolver</param-value>
+		</init-param>
+	</filter>
+	 
+	<filter-mapping>
+	    <filter-name>multipartFilter</filter-name>
+	    <url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	
+	<!-- lucy-xss-filter 설정  & &amp;amp 문제 발생해서 사용X
+	<filter>
+		<filter-name>xssEscapeServletFilter</filter-name>
+		<filter-class>com.navercorp.lucy.security.xss.servletfilter.XssEscapeServletFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	    <filter-name>xssEscapeServletFilter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
+	-->
+	
+ 	<!-- XSSFilter -->
+ 	<filter>
+ 		<filter-name>XSS</filter-name>
+ 		<filter-class>egovframework.dnworks.cmm.xss.XSSFilter</filter-class>
+ 		<init-param>
+        	<param-name>excludedUrls</param-name>
+        	<param-value>/SiteManager/cms/menu/page/page_process.do</param-value>
+        	<param-value>/SiteManager/func/festvl/process.do</param-value>
+    	</init-param>
+	</filter>
+	<filter-mapping>
+ 		<filter-name>XSS</filter-name>
+ 		<url-pattern>*.do</url-pattern>
+	</filter-mapping>     
+
+	<jsp-config>
+	  <jsp-property-group>
+	    <url-pattern>*.jsp</url-pattern>
+	    <page-encoding>UTF-8</page-encoding>
+	  </jsp-property-group>
+	</jsp-config>
+	
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			classpath*:egovframework/spring/com/context-*.xml
+		</param-value>
+	</context-param>
+	 
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/config/egovframework/springmvc/*.xml</param-value>
+		</init-param>
+		
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<!-- captcha -->
+	<servlet>
+	    <servlet-name>captcha</servlet-name>
+	    <servlet-class>egovframework.dnworks.cmm.CaptchaServlet</servlet-class>
+	    <load-on-startup>1</load-on-startup>
+        
+	</servlet>
+	<servlet-mapping>
+	    <servlet-name>captcha</servlet-name>
+	    <url-pattern>/captcha.do</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
+	
+	<session-config>
+        <session-timeout>600</session-timeout>
+    </session-config>
+    
+	<error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/error/error.jsp</location>
+    </error-page>
+	<error-page>
+        <error-code>403</error-code>
+        <location>/error/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error/error404.jsp</location>
+    </error-page>
+	<error-page>
+        <error-code>405</error-code>
+        <location>/error/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/common/error500.jsp</location>
+    </error-page>
+    
+	<listener>
+	    <listener-class>egovframework.dnworks.func.cmm.listener.MoaSessionListener</listener-class>
+	</listener>
+    
+</web-app>

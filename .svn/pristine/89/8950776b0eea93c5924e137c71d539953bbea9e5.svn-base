@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.LogErrorMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.menu.service.LogErrorVo">
+		<![CDATA[
+			INSERT INTO WEB_LogError
+			VALUES 
+			(
+				SEQ_LogError.nextval
+				, #{mnu_code}
+				, systimestamp
+				, #{err_code}
+				, #{err_msg}
+				, #{err_controller}
+				, #{err_method}
+				, #{err_uri}
+				, #{err_inc}
+				, #{err_ip}
+				, #{err_detail}
+			)
+		]]>
+	</update>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.menu.service.LogErrorVo">
+	<![CDATA[
+		SELECT err_sn, A.mnu_code
+				, err_date, err_code, err_msg
+				, err_controller, err_method
+				, err_uri, err_inc, err_ip, err_detail
+				, (SELECT mnu_nm FROM WEB_Menu WHERE mnu_code = A.mnu_code) AS mnu_nm			
+		 FROM WEB_LogError A
+		WHERE err_sn = #{err_sn}
+	]]>
+	</select>
+	
+	<sql id="whereLogErrorList">
+		FROM WEB_LogError A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE 1 = 1 
+		
+		<if test="site_code != null and site_code != ''">
+			AND site_code = #{site_code}
+		</if>
+		
+		<if test="mnu_code != null and mnu_code != ''">
+			AND A.mnu_code IN (
+								SELECT 
+								    mnu_code
+								FROM WEB_Menu
+								START WITH mnu_code = #{mnu_code}
+								CONNECT BY PRIOR mnu_code = mnu_uprCode								
+							)
+		</if>
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND err_date BETWEEN TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEdate}||' 23:59:59.999' ,'YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND err_date >= TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3')				
+			</if>
+		</if>
+		
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		err_msg LIKE '%'||#{srchKwd}||'%'  
+				OR err_controller LIKE '%'||#{srchKwd}||'%' 
+				OR err_method LIKE '%'||#{srchKwd}||'%' 
+				OR err_uri LIKE '%'||#{srchKwd}||'%'
+				OR mnu_nm  LIKE '%'||#{srchKwd}||'%'
+				)
+		</if>
+
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+		]]>
+		<include refid="whereLogErrorList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.LogErrorVo">
+		SELECT T.*
+		FROM (	
+		SELECT ROW_NUMBER() OVER (ORDER BY err_sn DESC) AS RNUM ,err_sn, A.mnu_code
+				, err_date, err_code, err_msg
+				, err_controller, err_method
+				, err_uri, err_inc, err_ip, err_detail
+				, mnu_nm
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = B.site_code) As site_nm
+		<include refid="whereLogErrorList" />
+		) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select> 
+		
+</mapper>

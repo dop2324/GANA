@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.search.service.impl.SearchMapper">
+	
+	<!-- Page -->
+	<sql id="searchwherePageList">
+		FROM WEB_Page A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		JOIN WEB_Permission D ON B.mnu_code = D.mnu_code
+		JOIN WEB_Site C ON B.site_code = C.site_code
+		WHERE page_sttus = 1
+		AND page_saveTy = 1 <!-- 페이지 저장구분(DB:1,JSP:0) -->
+		AND mnu_sttus	= 1
+		AND site_useYn	= 1
+		AND site_mngYn	= 0
+		AND prm_id 		= #{prm_id}
+		AND prm_dnySel 	= 0
+		AND prm_alwSel 	= 1
+		<if test="kwd != null and kwd != ''">
+			AND (
+				mnu_nm LIKE CONCAT('%',#{kwd},'%')
+				OR page_cn LIKE CONCAT('%',#{kwd},'%')  
+			)
+		</if>
+	</sql>
+	<select id="pageSelectListCnt" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		<include refid="searchwherePageList" />
+	</select>
+		
+	<select id="pageSelectList" parameterType="Map" resultType="HashMap">
+		SELECT page_sn
+				, C.site_code, C.site_nm
+				, A.mnu_code
+				, B.mnu_nm
+				, ref_code
+				, page_ttl
+				, CASE 
+						WHEN ref_code IS NOT NULL THEN (SELECT page_cn
+														FROM WEB_Page WP
+														WHERE mnu_code = A.ref_code
+														AND page_sttus = 1 
+														)
+						ELSE page_cn 
+				END As page_cn
+				, page_html, page_saveTy, page_sttus
+				, page_mdfcnID, page_mdfcnDt
+				, mnu_nm, mnu_ty, mnu_sttus
+		<include refid="searchwherePageList" />
+	</select>
+	
+	<!-- Board -->
+	<sql id="searchwhereBoardList">
+		FROM VIEW_BoardList A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		JOIN WEB_Permission D ON B.mnu_code = D.mnu_code
+		JOIN WEB_Site C ON B.site_code = C.site_code
+		WHERE bod_sttus = 1
+		AND bod_lock 	= 0
+		AND bod_delSttus= 0
+		AND mnu_sttus	= 1
+		AND site_useYn	= 1
+		AND site_mngYn	= 0
+		AND prm_id 		= #{prm_id}
+		AND prm_dnySel 	= 0
+		AND prm_alwSel 	= 1
+		
+		<if test="kwd != null and kwd != ''">
+			AND (
+				bod_ttl LIKE CONCAT('%',#{kwd},'%')
+				OR con_cn LIKE CONCAT('%',#{kwd},'%')  
+			)
+		</if>
+	</sql>
+	<select id="boardSelectListCnt" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		<include refid="searchwhereBoardList" />
+	</select>
+	
+	<select id="boardSelectList" parameterType="Map" resultType="HashMap">
+		SELECT A.*
+				, DATEDIFF(SYSDATE(), con_regDt) As bod_dateDiff
+				, (SELECT COUNT(1) FROM WEB_BoardFile WHERE bod_sn = A.bod_sn) As file_fileCnt
+				, (SELECT COUNT(1) FROM WEB_BoardDept WHERE bod_sn = A.bod_sn) As bod_deptCnt
+				, (SELECT IF(file_thumbFileNm IS NOT NULL, file_thumbFileNm, file_phyFileNm)
+					FROM WEB_BoardFile
+					WHERE bod_sn = A.bod_sn
+					ORDER BY file_firstYn DESC, file_sn
+					LIMIT 1
+				) As bod_listFileNm
+		<include refid="searchwhereBoardList" />
+		ORDER BY bod_ref DESC, bod_sort ASC
+		LIMIT #{pageSize} OFFSET  #{offset}
+	</select>
+	
+	<!-- Org Emp -->
+	<select id="orgSelectList" parameterType="Map" resultType="HashMap">
+		WITH RECURSIVE cte As 
+		( 
+			SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+			FROM WEB_Dept 
+			WHERE dept_id = IF(#{dept_id} IS NULL, 'ROOT', #{dept_id})
+		
+			UNION ALL 
+			SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+			FROM WEB_Dept p 
+			INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+		)  
+		SELECT emp_id, emp_nm, emp_sttus
+				, B.dept_id, B.dept_nm
+				, emp_jbps, emp_jbgd, emp_telno, emp_task
+				, emp_useYn
+				, emp_regDt, emp_mdfcnDt
+		FROM cte A
+		JOIN WEB_Emp B ON A.dept_id = B.dept_id
+		WHERE dept_useYn = 1 
+		AND emp_useYn = 1
+		AND A.dept_id IN (
+						WITH RECURSIVE cte As 
+						( 
+							SELECT dept_id, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+							FROM WEB_Dept 
+							WHERE dept_id = IF(#{dept_id} IS NULL, 'ROOT', #{dept_id})
+						
+							UNION ALL 
+							SELECT p.dept_id, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+							FROM WEB_Dept p 
+							INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+						)
+						SELECT dept_id FROM cte
+		)
+		<if test="kwd != null and kwd != ''">
+			AND (
+				emp_nm LIKE CONCAT('%',#{kwd},'%')
+				OR emp_task LIKE CONCAT('%',#{kwd},'%') 
+				OR B.dept_nm LIKE CONCAT('%',#{kwd},'%')  
+			)
+		</if>
+
+		ORDER BY ord, dept_rank
+	</select>
+	
+	
+</mapper>

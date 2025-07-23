@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.accessip.service.impl.AccessIPMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.accessip.service.AccessIPVo">
+	<![CDATA[
+		INSERT INTO WEB_AccessIP (
+			  ip_sn
+			, ip_startIP
+			, ip_endIP
+			, ip_desc
+			, ip_sttus
+			, ip_mdfcnID
+			, ip_mdfcnDt
+			, site_code
+		) VALUES (
+			  SEQ_AccessIP.nextval
+			, #{ip_startIP}
+			, NVL(#{ip_endIP}, #{ip_startIP})
+			, #{ip_desc}
+			, #{ip_sttus}
+			, #{ip_mdfcnID}
+			, SYSDATE
+			, #{site_code}
+		)
+	]]>
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.accessip.service.AccessIPVo">
+	<![CDATA[
+		UPDATE WEB_AccessIP SET
+			ip_startIP		= #{ip_startIP}
+		    , ip_endIP		= #{ip_endIP}
+		    , ip_desc		= #{ip_desc}
+		    , ip_sttus		= #{ip_sttus}
+		    , ip_mdfcnID	= #{ip_mdfcnID}
+		    , ip_mdfcnDt	= SYSDATE
+		    , site_code		= #{site_code}
+		WHERE ip_sn = #{ip_sn}
+	]]>
+	</update>
+	
+	<update id="delete" parameterType="int">
+	<![CDATA[
+		DELETE FROM WEB_AccessIP
+		WHERE ip_sn = #{ip_sn}
+	]]>
+	</update>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.accessip.service.AccessIPVo">
+	<![CDATA[
+		SELECT ip_sn
+				, ip_startIP
+				, ip_endIP
+				, ip_desc
+				, ip_sttus
+				, ip_mdfcnID
+				, ip_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_AccessIP A
+		WHERE ip_sn = #{ip_sn}
+	]]>
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.accessip.service.AccessIPVo">
+	<![CDATA[
+		SELECT ip_sn
+				, ip_startIP
+				, ip_endIP
+				, ip_desc
+				, ip_sttus
+				, ip_mdfcnID
+				, ip_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_AccessIP A
+		WHERE site_code = #{site_code}
+	]]>
+	</select>
+	
+	<select id="isAccessIP" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+		FROM WEB_AccessIP
+		WHERE site_code = #{site_code}
+		AND #{accessip} BETWEEN ip_startIP AND ip_endIP
+		AND ip_sttus = 1
+	]]>
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardHeadColumnMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.info.service.BoardHeadColumnVo">
+	<![CDATA[
+		MERGE INTO WEB_BoardHeadColumn A
+		USING DUAL ON ( A.mnu_code = #{mnu_code} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			bhc_visibleNo			= #{bhc_visibleNo}
+			, bhc_visibleGroup		= #{bhc_visibleGroup}
+			, bhc_visibleTtl		= #{bhc_visibleTtl}
+			, bhc_visibleNm			= #{bhc_visibleNm}
+			, bhc_visibleDept		= #{bhc_visibleDept}
+			, bhc_visibleDate		= #{bhc_visibleDate}
+			, bhc_visibleFile		= #{bhc_visibleFile}
+			, bhc_visibleReadCnt	= #{bhc_visibleReadCnt}
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			#{mnu_code}
+			, #{bhc_visibleNo}
+			, #{bhc_visibleGroup}
+			, #{bhc_visibleTtl}
+			, #{bhc_visibleNm}
+			, #{bhc_visibleDept}
+			, #{bhc_visibleDate}
+			, #{bhc_visibleFile}
+			, #{bhc_visibleReadCnt}
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_BoardHeadColumn WHERE mnu_code = #{mnu_code}
+	</delete>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardHeadColumnVo">
+		SELECT mnu_code
+				, bhc_visibleNo
+				, bhc_visibleGroup
+				, bhc_visibleTtl
+				, bhc_visibleNm
+				, bhc_visibleDept
+				, bhc_visibleDate
+				, bhc_visibleFile
+				, bhc_visibleReadCnt
+		FROM WEB_BoardHeadColumn A 
+		WHERE mnu_code = #{mnu_code}
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- 모아회원 장기미사용자 메일발송 처리 스케줄링 {매일 00:05분 실행} -->
+	<bean id="membLngtmTask" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="MembLngtmService" />
+		<property name="targetMethod" value="lngtmSenderMail" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="membLngtmTaskTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="membLngtmTask" />
+		<!--   초  분  시  일  월  요일 -->
+		<!-- <property name="cronExpression" value="0/30 * * * * ?" /> -->
+		<property name="cronExpression"  value="0 5 0 * * ?"/>
+	</bean>
+	
+	<!-- 모아회원 오래된 로그인이력 자동삭제 스케줄링 {매일 00:15분 실행} -->
+	<bean id="removeLgnLogTask" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="MembLogService" />
+		<property name="targetMethod" value="removeLogData" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="removeLgnLogTaskTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="removeLgnLogTask" />
+		<property name="cronExpression"  value="0 15 0 * * ?"/>
+	</bean>
+
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+	    <property name="triggers">
+	        <list>
+	            <ref bean="membLngtmTaskTrigger"/>
+	            <ref bean="removeLgnLogTaskTrigger"/>
+	        </list>
+	    </property>
+	</bean>
+</beans>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.org.service.impl.EmpMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.org.service.EmpVo">
+		INSERT INTO WEB_Emp
+		VALUES 
+		(
+			#{emp_id}
+			, #{emp_nm}
+			, #{emp_sttus}
+			, #{dept_id}
+			, (SELECT dept_nm FROM WEB_Dept WHERE dept_id = #{dept_id})
+			, #{emp_jbps}
+			, #{emp_jbgd}
+			, #{emp_eml}
+			, #{emp_telno}
+			, #{emp_moblphon}
+			, #{emp_task}
+			, #{emp_useYn}
+			, SYSDATE()
+			, NULL
+		)
+		ON DUPLICATE KEY UPDATE
+			emp_nm				= #{emp_nm}
+			, emp_sttus			= #{emp_sttus}
+			, dept_id			= #{dept_id}
+			, dept_nm			= (SELECT dept_nm FROM WEB_Dept WHERE dept_id = #{dept_id})
+			, emp_jbps			= #{emp_jbps}
+			, emp_jbgd			= #{emp_jbgd}
+			, emp_eml			= #{emp_eml}
+			, emp_telno			= #{emp_telno}
+			, emp_moblphon		= #{emp_moblphon}
+			, emp_task			= #{emp_task}
+			, emp_useYn			= #{emp_useYn}
+			, emp_mdfcnDt		= SYSDATE()
+	</update>
+	
+	<delete id="delete" parameterType="string">
+		DELETE FROM WEB_Emp WHERE emp_id = #{emp_id}
+	</delete>
+	
+	<delete id="truncate">
+		TRUNCATE TABLE WEB_Emp
+	</delete>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.org.service.EmpVo">
+		SELECT emp_id, emp_nm, emp_sttus
+				, dept_id, dept_nm
+				, emp_jbps, emp_jbgd, emp_eml, emp_telno, emp_moblphon, emp_task
+				, emp_useYn
+				, emp_regDt, emp_mdfcnDt
+		FROM WEB_Emp
+		WHERE emp_id = #{emp_id}
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.org.service.EmpVo">
+		WITH RECURSIVE cte As 
+		( 
+			SELECT *, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+			FROM WEB_Dept 
+			WHERE dept_id = #{dept_id}
+		
+			UNION ALL 
+			SELECT p.*, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+			FROM WEB_Dept p 
+			INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+		)  
+		SELECT emp_id, emp_nm, emp_sttus
+				, B.dept_id, B.dept_nm
+				, emp_jbps, emp_jbgd, emp_eml, emp_telno, emp_moblphon, emp_task
+				, emp_useYn
+				, emp_regDt, emp_mdfcnDt
+		FROM cte A
+		JOIN WEB_Emp B ON A.dept_id = B.dept_id
+		WHERE A.dept_id IN (
+								WITH RECURSIVE cte As 
+								( 
+									SELECT dept_id, 1 AS level, CAST(LPAD(dept_rank,7,'0') AS char(99)) ord
+									FROM WEB_Dept 
+									WHERE dept_id = #{dept_id}
+								
+									UNION ALL 
+									SELECT p.dept_id, 1+level as level, CONCAT(cte.ord, '-', CAST(LPAD(p.dept_rank,7,'0') AS char(99))) ord
+									FROM WEB_Dept p 
+									INNER JOIN cte ON p.upper_deptID = cte.dept_id 
+								)
+								SELECT dept_id FROM cte
+							)
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				emp_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR emp_task LIKE CONCAT('%',#{srchKwd},'%')  
+			)
+		</if>
+		
+		<if test="srchSttus != null and srchSttus != ''">
+			AND emp_useYn = #{srchSttus}
+		</if>
+		
+		ORDER BY ord, dept_rank
+	</select>
+	
+</mapper>

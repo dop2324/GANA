@@ -1,0 +1,1067 @@
+package egovframework.dnworks.controller.sitemanager.cms.board;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.http.HttpException;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.common.model.Picture;
+import org.jcodec.scale.AWTUtil;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.client.RestTemplate;
+
+import egovframework.com.cmm.service.EgovProperties;
+import egovframework.com.cmm.util.EgovDoubleSubmitHelper;
+import egovframework.com.cmm.util.EgovFormBasedFileVo;
+import egovframework.dnworks.base.WebDefault;
+import egovframework.dnworks.cmm.Code;
+import egovframework.dnworks.cmm.FileManager;
+import egovframework.dnworks.cmm.FileUploadUtil;
+import egovframework.dnworks.cmm.PageNavi;
+import egovframework.dnworks.cmm.cipher.aes.AESUtil;
+import egovframework.dnworks.cmm.util.DateUtil;
+import egovframework.dnworks.cmm.util.IPUtil;
+import egovframework.dnworks.cmm.util.MailUtil;
+import egovframework.dnworks.cmm.util.Thumbnailator;
+import egovframework.dnworks.cmm.util.Util;
+import egovframework.dnworks.cms.blacklist.service.BlackListIPService;
+import egovframework.dnworks.cms.blacklist.service.BlackListUserService;
+import egovframework.dnworks.cms.board.info.service.BoardFieldVo;
+import egovframework.dnworks.cms.board.info.service.BoardInfoService;
+import egovframework.dnworks.cms.board.info.service.BoardInfoVo;
+import egovframework.dnworks.cms.board.service.BoardContentVo;
+import egovframework.dnworks.cms.board.service.BoardDeptService;
+import egovframework.dnworks.cms.board.service.BoardDeptVo;
+import egovframework.dnworks.cms.board.service.BoardFieldValueVo;
+import egovframework.dnworks.cms.board.service.BoardFileService;
+import egovframework.dnworks.cms.board.service.BoardFileVo;
+import egovframework.dnworks.cms.board.service.BoardService;
+import egovframework.dnworks.cms.board.service.BoardShareMemberVo;
+import egovframework.dnworks.cms.board.service.BoardVo;
+import egovframework.dnworks.cms.board.service.BoardVodService;
+import egovframework.dnworks.cms.board.service.BoardVodVo;
+
+@Controller
+@RequestMapping("/SiteManager/cms/board")
+public class BoardController extends WebDefault 
+{
+	@Autowired
+	private BoardInfoService boardInfoService;
+	
+	@Autowired
+	private BoardService boardService;
+	
+	@Autowired
+	private BoardFileService boardFileService;
+	
+	@Autowired
+	private BoardVodService boardVodService;
+	
+	@Autowired
+	private BlackListIPService blackListIPService;
+	
+	@Autowired
+	private BlackListUserService blackListUserService;
+	
+	@Autowired
+	private BoardDeptService boardDeptService;
+	
+	private String list_location = EgovProperties.getProperty("Globals.AdminPath")+"/cms/board/board_list";
+	private String form_location = EgovProperties.getProperty("Globals.AdminPath")+"/cms/board/board_form";
+	private String view_location = EgovProperties.getProperty("Globals.AdminPath")+"/cms/board/board_view";
+	private String pw_location 	 = EgovProperties.getProperty("Globals.AdminPath")+"/cms/board/board_pw";
+	
+	private String reply_location = EgovProperties.getProperty("Globals.AdminPath")+"/cms/board/dept/dept_replyForm";
+	
+	/*
+	 * board
+	 */
+	@RequestMapping("/board.do")
+	public String board(HttpServletRequest request, HttpSession session, ModelMap model) throws Exception
+	{
+		String location 	= null;
+		String site_code 	= Util.nvl(request.getParameter("site_code"));
+		String mnu_code 	= Util.nvl(request.getParameter("mnu_code"));
+		String parm_mnuCode = Util.nvl(request.getParameter("parm_mnuCode"), mnu_code);
+		int prmVal 			= (int) request.getAttribute("prmVal");
+		
+		int cmd				= Util.nvl(request.getParameter("cmd"), 1);
+		int pageNo			= Util.nvl(request.getParameter("pageNo"), 1);
+		
+		HashMap<String, Object> udp = new HashMap<>();
+		udp.put("site_code"		, "");
+		udp.put("mnu_code"		, "");
+		udp.put("parm_mnuCode"	, "");
+		udp.put("srchKwd"		, "");
+		udp.put("srchBgpSn"		, "");
+		udp.put("srchSttus"		, "");
+		udp.put("srchMemId"		, "");
+		udp.put("srchGrpId"		, "");
+		
+		udp.put("srchDelete"	, "");
+		udp.put("srchSDate"		, "");
+		udp.put("srchEDate"		, "");
+		udp.put("srchBodAll"	, "");
+		udp.put("srchDeptSttus"	, "");
+		if(cmd != 1) udp.put("pageNo"	, "");
+		String queryString = super.getParameters(request, udp, true, false);
+		model.addAttribute("queryString"	, queryString);
+		
+		String listLink = String.format("?%s", queryString);
+		model.addAttribute("listLink"		, listLink);
+		
+		BoardInfoVo infoVo = boardInfoService.select(parm_mnuCode);
+		
+		if(infoVo == null)
+		{
+			model.addAttribute("message", "게시판 설정이 없습니다.");
+			model.addAttribute("location", String.format("location.href='%s&frmTy=info'", listLink));
+			return "common/scriptAlert";
+		}
+		
+		//차단 IP
+		if(infoVo.getInf_fncAdmBlockIP() == 1) {
+			Map<String, Object> blipMap = new HashMap<>();
+			blipMap.put("site_code", site_code);
+			blipMap.put("accessip", IPUtil.getXForwardedFor(request));
+			int blackListIPCnt = blackListIPService.isBlackListIP(blipMap);
+			if(blackListIPCnt > 0) {
+				//세션 삭제
+				request.getSession().invalidate();
+				String clientIp = IPUtil.getXForwardedFor(request);
+				super.insertBlockLog(request, clientIp, "게시판 차단 IP");
+				model.addAttribute("message", "게시판 이용 차단 IP 입니다\n관리자에게 문의 바랍니다");
+				model.addAttribute("location", "location.href='/'");
+				return "common/scriptAlert";
+			}
+		}
+		
+		//차단 ID
+		if(infoVo.getInf_fncAdmBlockID() == 1) {
+			Map<String, Object> bluMap = new HashMap<>();
+			bluMap.put("blu_id", Util.getSession(request.getSession(), "USR_ID"));
+	    	int blackListUserIDCnt = blackListUserService.isBlackListUser(bluMap);
+	    	bluMap.put("blu_id", Util.getSession(request.getSession(), "USR_DI"));
+	    	int blackListUserDICnt = blackListUserService.isBlackListUser(bluMap);
+	    	int blackListUserCnt = blackListUserIDCnt+blackListUserDICnt;
+	    	if(blackListUserCnt > 0) {
+	    		//세션 삭제
+				request.getSession().invalidate();
+				String log_id = Util.getSession(request.getSession(), "USR_ID");
+				if(blackListUserIDCnt == 0) log_id = Util.getSession(request.getSession(), "USR_DI");
+				super.insertBlockLog(request, log_id, "게시판 차단 사용자");
+				model.addAttribute("message", "게시판 이용 차단 사용자 입니다\n관리자에게 문의 바랍니다");
+				model.addAttribute("location", "location.href='/'");
+				return "common/scriptAlert";
+	    	}
+		}
+		
+		boolean hasAdm = Util.hasPermission(prmVal, Code.Prm.PrmAdm.getCode());
+		
+		model.addAttribute("site_code"		, site_code);
+		model.addAttribute("mnu_code"		, mnu_code);
+		model.addAttribute("parm_mnuCode"	, parm_mnuCode);
+		
+		model.addAttribute("infoVo"			, infoVo);
+		model.addAttribute("hasAdm"			, hasAdm);
+		model.addAttribute("HasToken"		, Code.Prm.HasToken.getCode());
+		
+		model.addAttribute("pageNo"			, pageNo);
+		
+		switch(cmd)
+		{
+			//민원 답변
+			case 8+256	:
+						location = this.deptReply(request, session, model, infoVo, hasAdm, queryString);
+						break;
+		
+			case 32	:
+			case 16	:
+			case 2	:
+						location = this.password(request, session, model, infoVo, hasAdm, queryString);
+						break;
+						
+			case 2+256 :
+						cmd = cmd & ~Code.Prm.HasToken.getCode();
+						location = this.select(request, session, model, infoVo, hasAdm, queryString);
+						break;
+						
+			case 8	:
+			case 4	:
+			case 16+256 :
+						location = this.write(request, session, model, infoVo, hasAdm, queryString);
+						break;
+			default :	
+						this.list(request, session, model, infoVo, hasAdm, queryString);
+						location = list_location;
+						break;
+		}
+		
+		return location;
+	}
+	
+	private String deptReply(HttpServletRequest request, HttpSession session, ModelMap model, BoardInfoVo infoVo, boolean hasAdm, String queryString) throws Exception
+	{
+		String location = reply_location;
+		int bod_sn 		= Util.nvl(request.getParameter("bod_sn"), 0);
+		int dept_sn 	= Util.nvl(request.getParameter("dept_sn"), 0);
+		int cmd			= dept_sn != 0 ? Code.Prm.PrmUpd.getCode():Code.Prm.PrmIns.getCode();
+		
+		String viewLink	= String.format("?%sbod_sn=%s&cmd=2", queryString, bod_sn);
+		
+		
+		BoardDeptVo deptVo = null;
+		if(dept_sn != 0) {
+			deptVo = boardDeptService.select(dept_sn);
+		}
+		model.addAttribute("bod_sn"			, bod_sn);
+		model.addAttribute("dept_sn"		, dept_sn);
+		model.addAttribute("cmd"			, cmd);
+		model.addAttribute("deptVo"			, deptVo);
+		model.addAttribute("viewLink"		, viewLink);
+		return location;
+	}
+	
+	/* password */
+	private String password(HttpServletRequest request, HttpSession session, ModelMap model, BoardInfoVo infoVo, boolean hasAdm, String queryString) throws Exception
+	{
+		String location = pw_location;
+		int cmd			= Util.nvl(request.getParameter("cmd"), 1);
+		int bod_sn  	= Util.nvl(request.getParameter("bod_sn"), 0);
+		String con_pw 	= "";
+		
+		Map<String, Object> boardMap = boardService.select(bod_sn);
+		if(boardMap == null)
+		{
+			model.addAttribute("message", "존재하지 않는 게시물 입니다.");
+			model.addAttribute("location", "history.back();");
+			return "common/scriptAlert";
+		}
+		
+		//조회 비밀글이 아니면
+		if(cmd == Code.Prm.PrmSel.getCode() && Util.nvl(boardMap.get("bod_lock"), 0) == 0) {
+			location = this.select(request, session, model, infoVo, hasAdm, queryString);
+			return location;
+		}else {
+			if(cmd != Code.Prm.PrmDel.getCode()) {
+				cmd = cmd+Code.Prm.HasToken.getCode();
+			}
+
+			if(hasAdm) {
+				con_pw = AESUtil.decrypt(Util.nvl(boardMap.get("con_pw")));
+			}
+		}
+		
+		model.addAttribute("bod_sn"			, bod_sn);
+		model.addAttribute("cmd"			, cmd);
+		model.addAttribute("con_pw"			, con_pw);
+		model.addAttribute("boardMap"		, boardMap);
+		return location;
+	}
+	
+	/* list */
+	private void list(HttpServletRequest request, HttpSession session, ModelMap model, BoardInfoVo infoVo, boolean hasAdm, String queryString) throws Exception
+	{
+		String mnu_code 	= Util.nvl(request.getParameter("mnu_code"));
+		String parm_mnuCode = Util.nvl(request.getParameter("parm_mnuCode"), mnu_code);
+		int pageNo 			= Util.nvl(request.getParameter("pageNo"), 1);
+		int pageSize 		= infoVo.getInf_pageSize();
+		
+		String srchColumn	= Util.nvl(request.getParameter("srchColumn"));
+		String srchKwd 		= Util.nvl(request.getParameter("srchKwd"));
+		String srchBgpSn 	= Util.nvl(request.getParameter("srchBgpSn"));
+		String srchSttus 	= Util.nvl(request.getParameter("srchSttus"));
+		String srchDelete 	= Util.nvl(request.getParameter("srchDelete"));
+		String srchSDate	= Util.nvl(request.getParameter("srchSDate"));
+		String srchEDate	= Util.nvl(request.getParameter("srchEDate"));
+		String srchBodSkin	= Util.nvl(request.getParameter("srchBodSkin"));
+		String srchBodAll	= Util.nvl(request.getParameter("srchBodAll"));
+		String srchDeptSttus= Util.nvl(request.getParameter("srchDeptSttus"));
+		String srchMemId	= Util.nvl(request.getParameter("srchMemId"));
+		String srchGrpId	= Util.nvl(request.getParameter("srchGrpId"));
+		
+		//boardList
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("pageNo"		, pageNo);
+		map.put("pageSize"		, pageSize);
+		map.put("offset"		, (pageNo - 1) * pageSize);
+		
+		map.put("mnu_code"		, parm_mnuCode);
+		map.put("srchColumn"	, srchColumn);
+		map.put("srchKwd"		, srchKwd);
+		map.put("srchBgpSn"		, srchBgpSn);
+		map.put("srchNotice"	, 0);
+		//map.put("srchSttus"		, srchSttus);
+		map.put("srchDelete"	, srchDelete);
+		map.put("srchSDate"		, srchSDate);
+		map.put("srchEDate"		, srchEDate);
+		map.put("hasPrmAdm"		, hasAdm);
+		map.put("srchDeptSttus"	, srchDeptSttus);
+		map.put("srchMemId"		, srchMemId);
+		map.put("srchGrpId"		, srchGrpId);
+		
+		//map.put("boardShare"	, boardInfoVo.getBoardShareList().size());
+		map.put("srchBodSkin"	, srchBodSkin);
+		map.put("srchBodAll"	, srchBodAll);
+		
+		map.put("infFncAdmTerm"		, infoVo.getInf_fncAdmTerm());
+		map.put("infFncAdmTermTy"	, infoVo.getInf_fncAdmTermTy());
+		map.put("infBoardPublic"	, infoVo.getBoardPublicList().size());
+		
+		int totalCnt = boardService.selectListCnt(map);
+		int no = totalCnt - ((pageNo - 1) * pageSize);
+		int totalPage = (totalCnt == 0) ? 1 : ((totalCnt/infoVo.getInf_pageSize())+1);
+		List<Map<String, Object>> boardList = boardService.selectList(map);
+		
+		//파일업로드(관리자용)
+		if(infoVo.getInf_skinType().equals("upload")) {
+			for(Map<String, Object> m:boardList) {
+				List<BoardFileVo> boardFileList = boardFileService.selectList(Util.nvl(m.get("bod_sn"), 0));
+				m.put("boardFileList", boardFileList);
+			}
+		}
+		
+		//notice
+		map.put("pageNo"			, 1);
+		map.put("pageSize"			, 10000);
+		map.put("srchKwd"			, "");
+		map.put("srchBgpSn"			, "");
+		map.put("srchNotice"		, 1);
+		map.remove("srchDeptSttus");
+		map.remove("srchBodSkin");
+		map.remove("srchBodAll");
+		List<Map<String, Object>> noticeList = boardService.selectList(map);
+
+		//marge list
+		List<Map<String, Object>> boardLists = new ArrayList<Map<String, Object>>();
+		boardLists.addAll(noticeList);
+		boardLists.addAll(boardList);
+		
+		model.addAttribute("srchMap"				, map);
+		model.addAttribute("totalCnt"				, totalCnt);
+		model.addAttribute("no"						, no);
+		model.addAttribute("totalPage"				, totalPage);
+		model.addAttribute("boardLists"				, boardLists);
+		
+		PageNavi pageNavi = new PageNavi();
+		model.addAttribute("paging"		, pageNavi.getPageNaviTag(totalCnt, pageSize, pageNo, "", queryString));
+	}
+	
+	/* write */
+	private String write(HttpServletRequest request, HttpSession session, ModelMap model, BoardInfoVo infoVo, boolean hasAdm, String queryString) throws Exception
+	{
+		String location = form_location;
+		int bod_sn 		= Util.nvl(request.getParameter("bod_sn"), 0);
+		int cmd			= Util.nvl(request.getParameter("cmd"), 1);
+		String listLink	= String.format("location.href='?%s'", queryString);
+		
+		Map<String, Object> boardMap = boardService.select(bod_sn);
+		
+		if(boardMap != null) {
+			String bod_startDate = Util.nvl(boardMap.get("bod_startDate"));
+			String bod_endDate = Util.nvl(boardMap.get("bod_endDate"));
+			
+			if(bod_startDate.equals("2000-01-01")) 	boardMap.put("bod_startDate", "");
+			if(bod_endDate.equals("9999-12-31")) 	boardMap.put("bod_endDate", "");
+			
+			// 사용자 필드
+			List<BoardFieldValueVo> boardFieldValueList = (List<BoardFieldValueVo>) boardMap.get("boardFieldValueList");
+			HashMap<String, String> boardFieldValue = null;
+			if( boardFieldValueList != null ) {
+				boardFieldValue = new HashMap<String, String>();
+				for(BoardFieldValueVo bfv:boardFieldValueList) {
+					boardFieldValue.put(bfv.getBfd_id(), bfv.getBfd_val());
+				}
+			}
+			model.addAttribute("boardFieldValue"	, boardFieldValue);
+		}
+		
+		if(cmd == Code.Prm.PrmIns.getCode()) {
+			
+			//boardMap.put("con_nm", Util.getSession(session, "USR_NM"));
+			
+		}else if(cmd == Code.Prm.PrmUpd.getCode()+Code.Prm.HasToken.getCode()) {
+			cmd = cmd & ~Code.Prm.HasToken.getCode();
+
+			//if(!hasAdm) {
+				String con_pw = Util.nvl(request.getParameter("con_pw"));
+				con_pw = AESUtil.encrypt(con_pw);
+				if(!con_pw.equals(Util.nvl(boardMap.get("con_pw")))) {
+					model.addAttribute("message"	, "비밀번호가 맞지 않습니다!");
+					model.addAttribute("location"	, listLink);
+					return "common/scriptAlert";
+				}
+			//}
+			boardMap.put("con_pw", AESUtil.decrypt(Util.nvl(boardMap.get("con_pw"))) );
+			
+		}else if(cmd == Code.Prm.PrmRpl.getCode()) {
+
+			boardMap.put("bod_lock"				, null);
+			boardMap.put("bod_notice"			, null);
+			boardMap.put("bod_pushGroup"		, null);
+
+			boardMap.put("con_nm"				, Util.getSession(session, "USR_NM"));
+			boardMap.put("con_pw"				, null);
+			boardMap.put("con_eml"				, null);
+			boardMap.put("con_telno"			, null);
+			boardMap.put("con_cn"				, null);
+			boardMap.put("con_zip"				, null);
+			boardMap.put("con_addr"				, null);
+			boardMap.put("con_linkurl"			, null);
+			boardMap.put("con_regDt"			, null);
+			boardMap.put("boardFileList"		, null);
+			boardMap.put("boardVodList"			, null);
+			boardMap.put("boardFieldValueList"	, null);
+			boardMap.put("boardShareMemberList"	, null);
+			model.addAttribute("boardFieldValue"	, null);
+			
+		}
+		
+		model.addAttribute("cmd"			, cmd);
+		model.addAttribute("boardMap"		, boardMap);
+		return location;
+	}
+	
+	/* select */
+	private String select(HttpServletRequest request, HttpSession session, ModelMap model, BoardInfoVo infoVo, boolean hasAdm, String queryString) throws Exception
+	{
+		String location = view_location;
+		int bod_sn 		= Util.nvl(request.getParameter("bod_sn"), 0);
+		String con_pw 	= Util.nvl(request.getParameter("con_pw"));
+		
+		Map<String, Object> boardMap = boardService.select(bod_sn);
+		
+		if(boardMap == null) {
+			model.addAttribute("message", "존재하지 않는 게시물 입니다.");
+			model.addAttribute("location", "history.back();");
+			return "common/scriptAlert";
+		}
+		
+		//조회수 증가
+		if (session.getAttribute("board_cookie") == null) {
+		 	session.setAttribute("board_cookie", bod_sn);
+		 	boardService.updateReadCnt(bod_sn);
+		}else {
+			if(!session.getAttribute("board_cookie").toString().contains(Integer.toString(bod_sn))) {
+				session.setAttribute("board_cookie", session.getAttribute("board_cookie")+","+bod_sn);
+				boardService.updateReadCnt(bod_sn);
+			}
+		}
+		
+		//비밀글 확인
+		//if(!hasAdm && Util.nvl(boardMap.get("bod_lock"), 0) == 1) {
+		if(Util.nvl(boardMap.get("bod_lock"), 0) == 1) {
+			con_pw = AESUtil.encrypt(con_pw);
+			if(!con_pw.equals(boardMap.get("con_pw"))) {
+				model.addAttribute("message", "비밀번호가 맞지 않습니다!");
+				model.addAttribute("location", String.format("location.href='?%s'", queryString));
+				return "common/scriptAlert";
+			}
+		}
+		
+		//boardPreNxt
+		Map<String, Object> preNxtMap = new HashMap<>();
+		preNxtMap.put("bod_sn"		, bod_sn);
+		preNxtMap.put("bod_sttus"	, hasAdm ? -1:1);
+		preNxtMap.put("bgp_sn"		, Util.nvl(request.getParameter("srchBgpSn"), -1));
+		preNxtMap.put("hasAdm"		, hasAdm ? -1:1);
+		Util.checkMap(preNxtMap);
+		boardService.selectPreNxt(preNxtMap);
+		
+		if(infoVo.getInf_skinType().equals("reply")) {
+			//부서 답변 
+			List<BoardDeptVo> boardDeptList = boardDeptService.selectList(bod_sn);
+			model.addAttribute("boardDeptList"	, boardDeptList);
+		}
+		
+		model.addAttribute("boardMap"	, boardMap);
+		model.addAttribute("preNxtMap"	, preNxtMap);
+		return location;
+	}
+	
+	@RequestMapping("/board_sttus.do")
+	public String board_sttus(HttpServletRequest request, HttpSession session, ModelMap model) throws Exception
+	{
+		int bod_sn 			= Util.nvl(request.getParameter("bod_sn"), 0);
+		String returnUrl 	= Util.nvl(request.getParameter("returnUrl"));
+		String queryString 	= Util.nvl(request.getParameter("queryString"));
+		String location 	= String.format("location.href='%s?%sbod_sn=%s&cmd=2'", returnUrl, queryString, bod_sn);
+		
+		int rtnVal = -1;
+		String message 	= "";
+		if(EgovDoubleSubmitHelper.checkAndSaveToken(request))
+		{
+			Map<String, Object> boardMap = boardService.select(bod_sn);
+			rtnVal = boardService.updateSttus(bod_sn);
+			
+			if(rtnVal == -1) {
+				message = "처리중 오류가 발생하였습니다.";
+			}
+			log_what = String.format("Sttuss Board : 제목:%s\n작성자:%s(%s)\n%s\n%s"
+									, boardMap.get("bod_ttl")
+									, boardMap.get("con_nm"), boardMap.get("con_id")
+									, Util.nvl(boardMap.get("bod_sttus"), 0) == 1 ? "활성 -> 중지":"중지 -> 활성" 
+									, message
+								);
+			super.insertLog(request, log_what);
+		}
+		model.addAttribute("message", message);
+		model.addAttribute("location", location);
+		return "common/scriptAlert";
+	}
+	
+	
+	@RequestMapping(value = "/board_process.do", method = RequestMethod.POST)
+	public String board_process(@ModelAttribute BoardVo boardVo, BindingResult bindingResult
+									, HttpServletRequest request, HttpSession session, ModelMap model) throws Exception 
+	{
+		int cmd				= Util.nvl(request.getParameter("cmd"), 0);
+		String returnUrl 	= Util.nvl(request.getParameter("returnUrl"));
+		String queryString 	= Util.nvl(request.getParameter("queryString"));
+		String location 	= String.format("location.href='%s?%s'", returnUrl, queryString);
+		
+		int rtnVal = -1;
+		String message 	= "";
+
+		if(EgovDoubleSubmitHelper.checkAndSaveToken(request))
+		{
+			//upload
+			String uploadDir	= EgovProperties.getProperty("Globals.FilePath")+boardVo.getWebDir();
+			String[] BadExt 	= EgovProperties.getProperty("Globals.file.BadExt").split(",");
+			String parm_mnuCode = Util.nvl(request.getParameter("parm_mnuCode"));
+			int prmVal 			= super.getPermission(request, session);
+			
+			BoardInfoVo infoVo = boardInfoService.select(parm_mnuCode);
+			boolean hasAdm = Util.hasPermission(prmVal, Code.Prm.PrmAdm.getCode());
+
+			boardVo.setCmd(cmd);
+			boardVo.setMnu_code(parm_mnuCode);
+			
+			Map<String, Object> selectBodMap = boardService.select(boardVo.getBod_sn());
+			
+			if(cmd != Code.Prm.PrmDel.getCode()) {
+				
+				//term
+				String bod_startDate= Util.nvl(request.getParameter("bod_startDate"), "2000-01-01");
+				String bod_endDate 	= Util.nvl(request.getParameter("bod_endDate"), "9999-12-31");
+				boardVo.setBod_startDate(DateUtil.getDateTimeFromString(String.format("%s 00:00:00", bod_startDate)));
+				boardVo.setBod_endDate(	DateUtil.getDateTimeFromString(String.format("%s 23:59:59", bod_endDate)));
+				
+				//일정(달력)
+				if(infoVo.getInf_skinType().equals("calendar")) {
+					String bodEndDate 	= Util.nvl(request.getParameter("bod_endDate"));
+					if(bodEndDate.equals("")) {
+						boardVo.setBod_endDate(	DateUtil.getDateTimeFromString(String.format("%s 23:59:59", bod_startDate)));
+					}
+				}
+
+				//비공개 기능 설정 opt 강재비공개 일때
+				if(infoVo.getInf_fncUsrLockOpt() == 2) {
+					boardVo.setBod_lock(1);
+				}
+				//sttus
+				boardVo.setBod_sttus(infoVo.getInf_fncUsrAutoEnable());
+				//글 분류
+				boardVo.setBgp_sn(Util.nvl(request.getParameter("bgp_sn"), 0) );
+				//부서정보
+				String dept_id = Util.nvl(request.getParameter("dept_id"), Util.getSession(session, "DPT_ID"));
+				String dept_nm = Util.nvl(request.getParameter("dept_nm"), Util.getSession(session, "DPT_NM"));
+				boardVo.setDept_id(dept_id);
+				boardVo.setDept_nm(dept_nm);
+				boardVo.setBod_regIP(IPUtil.getXForwardedFor(request));
+				boardVo.setBod_regID(Util.getSession(session, "USR_ID"));
+				
+				//content
+				BoardContentVo contentVo = new BoardContentVo();
+				contentVo.setCon_id(Util.getSession(session, "USR_ID") );
+				contentVo.setCon_nm(Util.nvl(request.getParameter("con_nm")));
+				contentVo.setCon_pw(Util.nvl(request.getParameter("con_pw")));
+				
+				contentVo.setCon_eml(Util.nvl(request.getParameter("con_eml")));
+				contentVo.setCon_telno(Util.nvl(request.getParameter("con_telno")));
+				contentVo.setCon_regip(IPUtil.getXForwardedFor(request));
+				contentVo.setCon_cn(Util.nvl(request.getParameter("con_cn")));
+				contentVo.setCon_addCn(Util.nvl(request.getParameter("con_addCn")));
+				contentVo.setCon_point(0);
+				contentVo.setCon_html(infoVo.getInf_fncUsrEditor());
+				contentVo.setCon_zip(Util.nvl(request.getParameter("con_zip")));
+				contentVo.setCon_addr(Util.nvl(request.getParameter("con_addr")));
+				contentVo.setCon_regDI(Util.getSession(session, "USR_DI", Util.getSession(session, "USR_ID")) );
+				contentVo.setCon_linkUrl( Util.nvl(request.getParameter("con_linkUrl")) );
+				//contentVo.setCon_yesCnt(0);
+				//contentVo.setCon_noCnt(0);
+				//contentVo.setCon_ty(1);
+				String con_regDt = Util.nvl(request.getParameter("con_regDt"));
+				contentVo.setCon_regDt(DateUtil.getDateTimeFromString(con_regDt));
+				
+				boardVo.setBoardContentVo(contentVo);
+				
+				//board Field
+				BoardFieldValueVo fieldValueVo = null;
+				List<BoardFieldValueVo> fieldValueList = null;
+				if(infoVo.getInf_fncUsrField() == 1 && infoVo.getBoardFieldList().size() > 0) {
+					fieldValueList = new ArrayList<>();
+					for(BoardFieldVo bf:infoVo.getBoardFieldList()) {
+						String bfd_value = Util.nvl(request.getParameter(bf.getBfd_id()));
+						if(bf == null || bfd_value.equals("")) continue;
+						
+						if(bf.getBfd_sttus() == 1 && !bfd_value.equals("")) {
+							fieldValueVo = new BoardFieldValueVo();
+							fieldValueVo.setBfd_id(bf.getBfd_id());
+							fieldValueVo.setBfd_encYn(bf.getBfd_encYn());
+							fieldValueVo.setBfd_val(bfd_value);
+							if(bf.getBfd_encYn() == 1) {
+								fieldValueVo.setBfd_val(AESUtil.encrypt(bfd_value));
+							}
+							fieldValueList.add(fieldValueVo);
+						}
+					}
+					boardVo.setBoardFieldValueList(fieldValueList);
+				}
+				
+				//vod
+				if(infoVo.getInf_fncAdmVod() == 1) {
+					String[] deleteVod =  request.getParameterValues("deleteVod");
+					List<Integer> arrayDeleteVod = null;
+					if(deleteVod != null) {
+						arrayDeleteVod = new ArrayList<>();
+						for(String val:deleteVod) {
+							int vod_uid = Util.nvl(val, 0);
+							arrayDeleteVod.add(vod_uid);
+							boardVodService.delete(vod_uid);
+						}
+					}
+					BoardVodVo vodVo = null;
+					List<BoardVodVo> boardVodList = null;
+					String[] arrayVodsn		= request.getParameterValues("vod_sn");
+					String[] arrayVodttl 	= request.getParameterValues("vod_ttl");
+					String[] arrayVodLink 	= request.getParameterValues("vod_linkUrl");
+					
+					if(arrayVodLink != null) {
+						
+						boardVodList = new ArrayList<>();
+						for(int i=0; i < arrayVodLink.length; i++) {
+							String vod_linkUrl 	= Util.nvl(arrayVodLink[i]);
+							if(vod_linkUrl.equals("")) continue;
+							
+							int vod_sn 			= Util.nvl(arrayVodsn[i], -1);
+							String vod_ttl 		= Util.nvl(arrayVodttl[i]);
+
+							//삭제하는것 추가 금지
+							if(arrayDeleteVod != null) {
+								if(arrayDeleteVod.contains(vod_sn)) continue;
+							}
+
+							vodVo = new BoardVodVo();
+							vodVo.setVod_sn(vod_sn);
+							vodVo.setVod_ttl(vod_ttl);
+							vodVo.setVod_linkUrl(vod_linkUrl);
+							boardVodList.add(vodVo);
+						}
+					}
+					
+					boardVo.setBoardVodList(boardVodList);
+				}
+				
+				//board Share
+				String[] arrayShare = request.getParameterValues("shr_code");
+				if(arrayShare != null) {
+					
+					BoardShareMemberVo shareMemberVo = null;
+					List<BoardShareMemberVo> shareMemberList = new ArrayList<>();
+					
+					for(String share:arrayShare) {
+						shareMemberVo = new BoardShareMemberVo();
+						shareMemberVo.setMnu_code(boardVo.getMnu_code());
+						shareMemberVo.setShr_code(Util.nvl(share));
+						shareMemberList.add(shareMemberVo);
+					}
+					boardVo.setBoardShareMemberList(shareMemberList);
+				}
+				
+				String[] filterWordList = null;
+				// 금칙 단어 체크
+				if(!Util.nvl(infoVo.getInf_filterChar(),"").equals("")) { 
+					filterWordList = infoVo.getInf_filterChar().split(",");
+					
+					if(filterWordList != null) {
+						for(String filterWord:filterWordList) {
+							if(filterWord.length() == 0) continue;
+							
+							if(Util.hasContainWord(boardVo.getBod_ttl(), filterWord.trim()) 
+								|| Util.hasContainWord(boardVo.getBoardContentVo().getCon_cn(), filterWord.trim())
+								|| Util.hasContainWord(boardVo.getBoardContentVo().getCon_addCn(), filterWord.trim())
+							) {
+								model.addAttribute("message"	, String.format("[%s](이)가 금지된 단어입니다!", Util.replaceRegex(filterWord, "\\r\\n", "")));
+								model.addAttribute("location"	, location);
+								return "common/scriptAlert";
+							}
+						}
+					}
+				}
+				
+				// 스크립트 방지
+				if(!Util.hasPermission(prmVal, Code.Prm.PrmAdm)) {
+					if(Util.hasContainWord(boardVo.getBod_ttl().toLowerCase(), "<script")
+						|| Util.hasContainWord(boardVo.getBoardContentVo().getCon_cn().toLowerCase(), "<script" )
+						|| Util.hasContainWord(boardVo.getBoardContentVo().getCon_nm().toLowerCase(), "<script" )
+						|| Util.hasContainWord(boardVo.getBoardContentVo().getCon_addCn().toLowerCase(), "<script" )
+					) {
+						model.addAttribute("message"	, "스크립트코드는 입력 하실 수 없습니다.");
+						model.addAttribute("location"	, "history.back()");
+						return "common/scriptAlert";
+					}
+				}
+				
+				//file
+				boolean firstYn = false;
+				String alwExt 	= Util.nvl(infoVo.getInf_fileExt());
+				int MaxUploadSize= Util.nvl(infoVo.getInf_fileSizeLmt(), 0);
+				BoardFileVo fileVo = null;
+				List<BoardFileVo> boardFileList = new ArrayList<BoardFileVo>();
+				
+				List<EgovFormBasedFileVo> files = FileUploadUtil.uploadFiles(request, uploadDir, MaxUploadSize, BadExt, alwExt);
+				
+				if(files != null && files.size() > 0) {
+
+					for(EgovFormBasedFileVo file:files) {
+						
+						if(file.getFileSn() != -1) {
+							BoardFileVo updFileVo = boardFileService.select(file.getFileSn());
+							this.deleteBoardFile(uploadDir, updFileVo);
+						}
+						fileVo = new BoardFileVo();
+						//fileVo.setFile_sn(-1);
+						fileVo.setFile_sn(file.getFileSn());
+						fileVo.setFile_srcFileNm(file.getFileName());
+						fileVo.setFile_phyFileNm(String.format("%s/%s", file.getServerSubPath(), file.getPhysicalName()) );
+						fileVo.setFile_phyFileSize(Util.nvl(file.getSize(), 0));
+						fileVo.setFile_desc(file.getFileDescription() != "" ? file.getFileDescription():fileVo.getFile_srcFileNm());
+						fileVo.setFile_ext(file.getFileExtension());
+						fileVo.setFile_ty(Util.isImageFile(file.getPhysicalName()) ? 1 : 0);
+						fileVo.setFile_firstYn(file.getFirstYn());
+						
+						if(file.getFirstYn() == 1) firstYn = true;
+						
+						//create thumbnail 
+						String thumbFileNm = null;
+						if( Util.isImageFile(file.getPhysicalName()) ) {
+							thumbFileNm = String.format("t_%s", file.getPhysicalName());
+							fileVo.setFile_thumbFileNm(String.format("%s/%s", file.getServerSubPath(), thumbFileNm) );
+							Thumbnailator.createThumbImage(uploadDir, file.getServerSubPath(), file.getPhysicalName(), thumbFileNm);
+						}
+						
+						//동영상 썸네일 추출
+						//if(Util.validateRegex(file.getPhysicalName(), "\\w*\\.(?i:mp4|avi|mov|mpeg|mpg)$")){
+						if( Util.isMediaFile(file.getPhysicalName()) ) {
+							thumbFileNm 	= String.format("t_%s.png", Util.getFileName(file.getPhysicalName()));
+							String source 	= String.format("%s/%s/%s", uploadDir, file.getServerSubPath(), file.getPhysicalName());
+							String thumbnail= String.format("%s/%s/%s", uploadDir, file.getServerSubPath(), thumbFileNm);
+							int frameNumber = 30;
+							Picture picture = FrameGrab.getFrameFromFile(new File(source), frameNumber);
+							BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+							if(bufferedImage != null) {
+								ImageIO.write(bufferedImage, "png", new File(thumbnail));
+							}
+							
+							fileVo.setFile_thumbFileNm(String.format("%s/%s", file.getServerSubPath(), thumbFileNm) );
+						}
+						boardFileList.add(fileVo);
+					}
+				}
+				
+				//file desc
+				if(boardVo.getBod_sn() != 0) {
+					String[] fileSn 	= request.getParameterValues("fileSn");
+
+					if(fileSn != null) {
+
+						for(int i=0; i < fileSn.length; i++) {
+							int file_sn 		= Util.nvl(fileSn[i], 0);
+							String file_desc 	= Util.nvl(request.getParameter("fileDesc_"+file_sn));
+							int fileFirstYn 	= Util.nvl(request.getParameter("fileFirstYn"), 0);
+							
+							if(file_sn != 0) {
+								fileVo = new BoardFileVo();
+								fileVo.setFile_sn(file_sn);
+								fileVo.setFile_desc(file_desc);
+								fileVo.setFile_firstYn(file_sn == fileFirstYn ? 1:0);
+								boardFileList.add(fileVo);
+							}
+						}
+					}
+				}
+				boardVo.setBoardFileList(boardFileList);
+			}
+			
+			String msg = "";
+			if(cmd == Code.Prm.PrmIns.getCode() || cmd == Code.Prm.PrmUpd.getCode() || cmd == Code.Prm.PrmRpl.getCode()) {
+				switch(cmd) {
+					case 4 : msg = "입력";
+							break;
+					case 8 : msg = "답변";
+							break;
+					case 16 : msg = "수정";
+							location 	= String.format("location.href='%s?%sbod_sn=%s&cmd=2'", returnUrl, queryString, boardVo.getBod_sn());
+							break;
+				}
+				
+				rtnVal = boardService.save(boardVo);
+
+				if(rtnVal == -1) {
+					message 	= String.format("%s실패 : 처리 중 오류가 발생하였습니다.", msg);
+					//file delete
+					this.deleteBoardFileList(uploadDir, boardVo.getBoardFileList());
+				}else {
+					//delete file
+					String[] deleteFile =  request.getParameterValues("deleteFile");
+					if(deleteFile != null) {
+						for(String val:deleteFile){
+							BoardFileVo fileVo = boardFileService.select(Util.nvl(val, 0));
+							this.deleteBoardFile(uploadDir, fileVo);
+							boardFileService.delete(Util.nvl(val, 0));
+						}
+					}
+					
+					if(cmd == Code.Prm.PrmIns.getCode()) {
+						//관리자 알림 메일보내기
+						if(infoVo.getInf_fncAdmMail() == 1 && !Util.nvl(infoVo.getInf_fncAdmMailAddr()).equals("")) {
+							String admNoticeContent = "";
+							if(infoVo.getInf_fncUsrEditor() == 1) {
+								admNoticeContent = boardVo.getBoardContentVo().getCon_cn();
+							}else {
+								admNoticeContent = Util.htmlEncode(boardVo.getBoardContentVo().getCon_cn());
+							}
+							String mailTitle 	= String.format("%s [%s]이 등록 되었습니다.", infoVo.getMnu_nm(), boardVo.getBod_ttl());
+							String mailContent	= String.format("<strong>%s</strong><br/><br/>%s ", boardVo.getBod_ttl(), admNoticeContent);
+							//gmail메일 사용 
+							//MailUtil.gMailSend(Util.nvl(infoVo.getInf_fncAdmMailAddr(), EgovProperties.getProperty("Globals.AdminMail")), mailTitle, mailContent);
+							
+							MailUtil.naverMailSend(Util.nvl(infoVo.getInf_fncAdmMailAddr(), EgovProperties.getProperty("Globals.AdminMail")), mailTitle, mailContent);
+						}
+						//관리자 알림 SMS보내기
+						if(!Util.nvl(infoVo.getInf_fncAdmSms()).equals("")) {
+							String smsMsg 	= String.format("%s [%s] 등록", infoVo.getMnu_nm(), boardVo.getBod_ttl());
+						}
+						//모바일 앱 Push Send
+						if(infoVo.getInf_pushGroup() != "0" ) {
+							this.mobilePushSend(infoVo, boardVo, "android");
+						}
+					}
+				}
+				
+				log_what = String.format("%s Board : 제목:%s\n작성자:%s(%s)\nIP:%s\n%s"
+										, msg
+										, boardVo.getBod_ttl()
+										, boardVo.getBoardContentVo().getCon_nm(), boardVo.getBoardContentVo().getCon_id()
+										, boardVo.getBoardContentVo().getCon_regip()
+										, message
+									);
+				
+				
+			}else if(cmd == Code.Prm.PrmDel.getCode()) {
+				
+				String failLocation = String.format("location.href='%s?%sbod_sn=%s&cmd=2'", returnUrl, queryString, boardVo.getBod_sn());
+				int deleteOpt = Util.nvl(request.getParameter("deleteOpt"), 0);
+
+				if(!hasAdm) {
+					String con_pw = Util.nvl(request.getParameter("con_pw"));
+					String bod_pw = Util.nvl(selectBodMap.get("con_pw"));
+					
+					if(!bod_pw.equals(AESUtil.encrypt(con_pw))) {
+						model.addAttribute("message"	, "비밀번호가 맞지 않습니다!!!");
+						model.addAttribute("location"	, failLocation);
+						return "common/scriptAlert";
+					}
+					
+					String con_regDI = Util.nvl(selectBodMap.get("con_regDI"));
+					String sessionDI = Util.getSession(request.getSession(), "USR_DI", Util.getSession(request.getSession(), "USR_ID"));
+					
+					if(!con_regDI.equals(sessionDI)) {
+						model.addAttribute("message", "삭제 권한이 없습니다\n로그인 또는 본인확인 바랍니다");
+						model.addAttribute("location", failLocation);
+						return "common/scriptAlert";
+					}	
+				}
+
+				switch(deleteOpt) {
+					case 9 : 	
+								//DB삭제
+								List<BoardFileVo> boardFile = boardFileService.selectList(boardVo.getBod_sn());
+								//file delete
+								this.deleteBoardFileList(uploadDir, boardFile);
+								
+								rtnVal = Util.nvl(boardService.delete(boardVo.getBod_sn()), 0);
+								if(rtnVal == 0) {
+									message = "삭제실패 : 처리중 오류가 발생하였습니다.";
+								}
+					
+								break;
+					default	:
+								//삭제 표시
+								String delUserId 	= Util.getSession(session, "USR_ID");
+								String bod_delReason = Util.nvl(request.getParameter("bod_delReason"));
+								
+								Map<String, Object> m = new HashMap<String, Object>();
+								m.put("bod_sn"			, boardVo.getBod_sn());
+								m.put("bod_delUserId"	, delUserId);
+								m.put("bod_delReason"	, bod_delReason);
+								if(boardService.deleteSttus(m) == -1) {
+									message = "삭제실패 : 처리중 오류가 발생하였습니다.";
+								}
+								break;
+				}
+				
+				log_what = String.format("delete Board : 제목:%s\n작성자:%s(%s)\n등록IP:%s\n%s"
+										, selectBodMap.get("bod_ttl")
+										, selectBodMap.get("con_nm"), selectBodMap.get("con_id")
+										, selectBodMap.get("con_regip")
+										, message
+									);
+			}
+			super.insertLog(request, log_what);
+		}
+		
+		model.addAttribute("message", message);
+		model.addAttribute("location", location);
+		return "common/scriptAlert";
+
+	}
+	
+	/*
+	 * boardDelete_process
+	 */
+	@RequestMapping(value = {"/board_listDelete.do"} )
+	public String board_listDelete(HttpServletRequest request, HttpSession session, ModelMap model) throws Exception
+	{
+		int cmd 			= Util.nvl(request.getParameter("cmd"), 1);
+		String uploadDir	= EgovProperties.getProperty("Globals.FilePath")+"board";
+		String returnUrl 	= Util.nvl(request.getParameter("returnUrl"));
+		String queryString 	= Util.nvl(request.getParameter("queryString"));
+		String location 	= String.format("location.href='%s?%s'", returnUrl, queryString);
+		
+		int rtnVal = -1;
+		String message 	= "";
+		
+		int successCnt = 0;
+		int failCnt = 0;
+		String procName = "";
+		
+		if(cmd  == Code.Prm.PrmAdm.getCode()) {
+			int deleteOption = Util.nvl(request.getParameter("deleteOption"), 1 );
+			String[] boardCheck = request.getParameterValues("bod_check");
+			
+			if(boardCheck != null) {
+				Map<String, Object> m = null;
+				for(String sn:boardCheck) {
+					int bodSn = Util.nvl(sn, 0);
+					
+					switch(deleteOption) {
+						case 9	:
+									procName = "DB삭제";
+									List<BoardFileVo> boardFile = boardFileService.selectList(bodSn);
+									
+									//file delete
+									this.deleteBoardFileList(uploadDir, boardFile);
+									
+									if(boardService.delete(bodSn) != 0) {
+										failCnt++;
+									}else{
+										successCnt++;
+									}
+									
+									break;
+						default : 
+									procName = "삭제표시";
+									//삭제 표시
+									String delUsert_id 	= Util.getSession(session, "USR_ID");
+									String bod_delReason = Util.nvl(request.getParameter("bod_delReason"));
+									m = new HashMap<String, Object>();
+									m.put("bod_uid"			, bodSn);
+									m.put("bod_delUserId"	, delUsert_id);
+									m.put("bod_delReason"	, bod_delReason);
+									if(boardService.deleteSttus(m) == -1){
+										failCnt++;
+									}else {
+										successCnt++;
+									}
+									break;
+					}
+				}
+			}
+		}
+		
+		message 	= String.format("선택한 게시물 %s 성공:%s, 실패:%d 처리되었습니다", procName, successCnt, failCnt);
+		super.insertLog(request, message);
+		
+		model.addAttribute("message", message);
+		model.addAttribute("location", location);
+		return "common/scriptAlert";
+	}
+	
+	//게시물 첨부파일 지우기
+	private void deleteBoardFileList(String uploadDir, List<BoardFileVo> boardFile) {
+		//file delete
+		for(BoardFileVo fileVo:boardFile) {
+			this.deleteBoardFile(uploadDir, fileVo);
+		}
+	}
+	
+	private void deleteBoardFile(String uploadDir, BoardFileVo fileVo) {
+		FileManager.deleteFile(String.format("%s/%s", uploadDir, fileVo.getFile_phyFileNm() ) );
+		//썸네일 지우기
+		FileManager.deleteFile(String.format("%s/%s", uploadDir, fileVo.getFile_thumbFileNm() ) );
+	}
+	
+	private void mobilePushSend(BoardInfoVo boardInfoVo, BoardVo boardVo, String AppOs) throws HttpException {
+		if(boardInfoVo.getInf_pushGroup() != "0" && boardVo.getBod_pushGroup() != null) {
+			String boardLink = String.format("%s?mnu_code=%s&bod_sn=%s&cmd=258", "", boardVo.getMnu_code(), boardVo.getBod_sn());
+			
+			JSONObject data = new JSONObject();
+			data.put("title"		, boardVo.getBod_ttl());
+			data.put("message"		, boardVo.getBoardContentVo().getCon_cn());
+			data.put("clickAction"	, boardLink);
+			data.put("group"		, boardVo.getBod_pushGroup());
+			data.put("sound"		, "default");
+			
+			JSONObject json = new JSONObject();
+			json.put("to"			, "/topics/"+AppOs);
+			json.put("priority"		, "high");
+			json.put("data"			, data);
+			
+			String body = this.sendFirebase(json);
+		}
+	}
+	
+	private String sendFirebase(JSONObject json) throws HttpException {
+		String responseStr = "";
+		RestTemplate restTemplate = new RestTemplate();
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headers.set("Authorization", "key="+EgovProperties.getProperty("firebase.Authorization"));
+		HttpEntity<String> entity = new HttpEntity<String>(json.toString(), headers);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity("https://fcm.googleapis.com/fcm/send", entity, String.class);
+		responseStr = responseEntity.getBody();
+        return responseStr;
+	}
+}

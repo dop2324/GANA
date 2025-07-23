@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                            http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+        version="2.1">
+
+    <tlib-version>1.0</tlib-version>
+    <short-name>moa</short-name>
+    <uri>http://egovframework.dnworks/functions</uri>
+
+    <function>
+        <name>getCodeNm</name>
+        <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+        <function-signature>
+            java.lang.String getCodeNm(javax.servlet.http.HttpServletRequest, java.lang.String, java.lang.String)
+        </function-signature>
+    </function>
+    
+	<function>
+	    <name>getCodeList</name>
+	    <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+	    <function-signature>
+	        java.util.List getCodeList(javax.servlet.http.HttpServletRequest, java.lang.String)
+	    </function-signature>
+	</function>
+    
+	<function>
+	    <name>isLogin</name>
+	    <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+	    <function-signature>
+	        boolean isLogin(javax.servlet.http.HttpServletRequest)
+	    </function-signature>
+	</function>
+    
+	<function>
+	    <name>getGroupInfo</name>
+	    <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+	    <function-signature>
+	        GroupVo getGroupInfo(javax.servlet.http.HttpServletRequest, java.lang.String)
+	    </function-signature>
+	</function>
+    
+	<function>
+	    <name>getUseOrgList</name>
+	    <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+	    <function-signature>
+	        java.util.List getUseOrgList(javax.servlet.http.HttpServletRequest)
+	    </function-signature>
+	</function>
+
+    <function>
+        <name>getUseOrgNm</name>
+        <function-class>egovframework.dnworks.func.cmm.utl.MoaFuncUtil</function-class>
+        <function-signature>
+            java.lang.String getUseOrgNm(javax.servlet.http.HttpServletRequest, java.lang.String)
+        </function-signature>
+    </function>
+    
+  <function>
+    <description>문자열 암호화 메서드</description>
+    <name>encrypt</name>
+    <function-class>egovframework.com.cmm.web.EgovFileMngController</function-class>
+    <function-signature>java.lang.String encrypt(java.lang.String)</function-signature>
+    <example>
+    ${moa:encrypt(java.lang.String source)}
+    </example>
+  </function>
+
+</taglib>

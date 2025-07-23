@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/jdbc  http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd">
+	
+	<!-- 환경설정 기본정보를 globals.properties 에서 참조하도록 propertyConfigurer 설정  -->
+	<bean id="propertyConfigurer"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:/egovframework/egovProps/globals_config.properties</value>
+                <!-- value>file:/product/jeus/egovProps/globals.properties</value-->
+            </list>
+        </property>
+    </bean>
+    
+    <!-- datasource 설정(propertyConfigurer 활용) -->
+    <alias name="dataSource-${Globals.DbType}" alias="dataSource" />
+    <alias name="dataSource-${Globals.DbType}" alias="egov.dataSource" />
+
+	<!-- mariaDB -->
+    <bean id="dataSource-mariadb" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${Globals.DriverClassName}"/>
+        <property name="url" value="${Globals.Url}" />
+        <property name="username" value="${Globals.UserName}"/>
+        <property name="password" value="${Globals.Password}"/>
+
+        <property name="initialSize" value="10" />
+		<property name="maxTotal" value="10" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWaitMillis" value="2000" />
+		
+		<property name="validationQuery" value="select 1"/>
+		<property name="poolPreparedStatements" value="true"/>
+    </bean>
+    
+    <!-- oracle -->
+	<bean id="dataSource-oracle" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+		<property name="initialSize" value="10" />
+		<property name="maxTotal" value="10" />
+		<property name="maxIdle" value="10" />
+		<property name="maxWaitMillis" value="2000" />
+
+		<property name="validationQuery" value="select 1 from dual"/>
+		<property name="poolPreparedStatements" value="true"/>
+	</bean>
+	
+	<!-- (1) SMS DB용 DataSource -->
+	<bean id="dataSource-sms" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="${Globals.Sms.DriverClassName}" />
+	    <property name="url"              value="${Globals.Sms.Url}" />
+	    <property name="username"         value="${Globals.Sms.UserName}" />
+	    <property name="password"         value="${Globals.Sms.Password}" />
+	
+	    <!-- 풀 파라미터는 본 시스템 기준으로 조정 -->
+	    <property name="initialSize"      value="5" />
+	    <property name="maxTotal"         value="20" />
+	    <property name="maxIdle"          value="20" />
+	    <property name="maxWaitMillis"    value="3000" />
+	    <property name="validationQuery"  value="select 1 from dual" />
+	    <property name="poolPreparedStatements" value="true" />
+	</bean>
+	
+	<!-- (2) SMS DB용 SqlSessionFactory -->
+	<bean id="smsSqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+	    <property name="dataSource"      ref="dataSource-sms" />
+	    <property name="configLocation"  value="classpath:/egovframework/mapper/config/mapper-config.xml" />
+	    <property name="mapperLocations">
+	        <list>
+	            <!-- 문자발송 전용 Mapper 위치 (원하는 경로로 변경) -->
+	            <value>classpath:/egovframework/mapper/transfer/**/*.xml</value>
+	        </list>
+	    </property>
+	</bean>
+	
+	<!-- (3) SMS DB용 SqlSessionTemplate -->
+	<bean id="smsSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+	    <constructor-arg ref="smsSqlSession" />
+	</bean>
+    
+</beans>

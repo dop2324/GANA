@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardPublicMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.board.info.service.BoardPublicVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardPublic
+		VALUES (
+			#{mnu_code}
+			, #{pub_code}
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="egovframework.dnworks.cms.board.info.service.BoardPublicVo">
+		DELETE FROM WEB_BoardPublic WHERE mnu_code = #{mnu_code} AND pub_code = #{pub_code}
+	</delete>
+
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardPublicVo">
+		SELECT mnu_code
+				, pub_code
+				, (SELECT mnu_nm FROM WEB_Menu WHERE mnu_code = A.pub_code) As site_nm
+				, FUNC_GetMenuPath(A.pub_code)  As mnu_path
+		FROM WEB_BoardPublic A 
+		WHERE mnu_code = #{mnu_code}
+	</select>
+	
+</mapper>

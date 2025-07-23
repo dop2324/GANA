@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.stats.service.impl.SessionMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		INSERT INTO WEB_Session
+		SELECT
+			#{ses_id}
+			, #{site_code}
+			, SYSDATE(3)
+			, #{ses_sesID}
+			, #{ses_agent}
+			, #{ses_clientIP}
+			, #{ses_serverIP}
+			, #{ses_referer}
+			, #{ses_lang}
+		FROM DUAL
+		WHERE NOT EXISTS (SELECT ses_id FROM WEB_Session WHERE ses_id = #{ses_id})
+	</update>
+	
+	<update id="insertTrack" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		INSERT INTO WEB_SessionTrack
+		SELECT
+			#{mnu_code}
+			, #{ses_id}
+			, SYSDATE(3)
+		FROM DUAL
+		WHERE EXISTS (SELECT ses_id FROM WEB_Session WHERE ses_id = #{ses_id})
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		UPDATE WEB_Session SET
+			ses_sesID = #{ses_sesID}
+		WHERE ses_id = #{ses_id}
+	</update>
+	
+	<sql id="whereSessionList">
+		FROM
+		(
+			SELECT * FROM WEB_Session
+			UNION ALL
+			SELECT * FROM WEB_SessionLog
+		) A
+		WHERE ses_joinDt BETWEEN STR_TO_DATE(CONCAT(#{srchSDate},' 00:00:00'),'%Y-%m-%d %H:%i:%s') AND STR_TO_DATE(CONCAT(#{srchEDate},' 23:59:59'),'%Y-%m-%d %H:%i:%s')
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		ses_userID LIKE CONCAT('%',#{srchKwd},'%')  
+				OR ses_clientIP LIKE CONCAT('%',#{srchKwd},'%') 
+				OR ses_agent LIKE CONCAT('%',#{srchKwd},'%') 
+				)
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		<include refid="whereSessionList"/>
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.SessionVo">
+
+		SELECT ses_id, site_code
+				, ses_joinDt, ses_sesID, ses_agent, ses_clientIP, ses_serverIP
+				, ses_referer, ses_lang
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+		
+		<include refid="whereSessionList"/>
+		ORDER BY ses_joinDt DESC
+		LIMIT #{pageSize} OFFSET  #{offset} 
+	</select>
+	
+</mapper>

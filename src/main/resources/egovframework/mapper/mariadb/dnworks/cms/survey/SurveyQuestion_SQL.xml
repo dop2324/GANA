@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveyQuestionMapper">
+
+	<insert id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveyQuestionVo">
+		INSERT INTO WEB_SurveyQuestion
+		VALUES 
+		(
+			IF(#{qus_sn} = -1, NULL, #{qus_sn})
+			, #{survey_sn}
+			, #{qus_question}
+			, #{qus_cn}
+			, #{qus_ty}
+			, #{qus_required}
+			, #{qus_sttus}
+		)
+		ON DUPLICATE KEY UPDATE
+			qus_question	= #{qus_question}
+			, qus_cn		= #{qus_cn}
+			, qus_ty		= #{qus_ty}
+			, qus_required	= #{qus_required}
+			, qus_sttus		= #{qus_sttus}
+		<selectKey keyProperty="key_sn" resultType="int">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_SurveyQuestion WHERE qus_sn = #{qus_sn}
+	</delete>
+	
+	<sql id="selSurveyQuestionCol">
+		qus_sn, survey_sn, qus_question, qus_cn, qus_ty, qus_required, qus_sttus
+		, (
+			(SELECT COUNT(1) FROM WEB_SurveyResult WHERE qus_sn = A.qus_sn) 
+			+ 
+			(SELECT COUNT(1) FROM WEB_SurveySubject WHERE qus_sn = A.qus_sn)
+		) As qus_totCnt
+	</sql>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveyQuestionVo">
+		SELECT 
+		<include refid="selSurveyQuestionCol" />
+		FROM WEB_SurveyQuestion A
+		WHERE qus_sn = #{qus_sn}
+	</select>
+
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveyQuestionVo">
+		SELECT 
+		<include refid="selSurveyQuestionCol" />
+		FROM WEB_SurveyQuestion A
+		WHERE survey_sn = #{survey_sn}
+		ORDER BY qus_sn
+	</select>
+	
+</mapper>

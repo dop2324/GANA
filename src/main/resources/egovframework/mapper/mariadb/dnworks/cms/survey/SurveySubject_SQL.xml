@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveySubjectMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveySubjectVo">
+		INSERT INTO WEB_SurveySubject
+		VALUES 
+		(
+			NULL
+			, #{sub_cn}
+			, #{qus_sn}
+			, #{exam_sn}
+			, #{user_sn}
+		)
+	</update>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveySubjectVo">
+		SELECT sub_sn, sub_cn, qus_sn, exam_sn, user_sn
+		FROM WEB_SurveySubject A
+		WHERE qus_sn = #{qus_sn}
+		ORDER BY sub_sn
+	</select>
+	
+</mapper>

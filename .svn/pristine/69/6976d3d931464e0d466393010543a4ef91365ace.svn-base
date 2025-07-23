@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardInfoMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.info.service.BoardInfoVo">
+	<![CDATA[
+		MERGE INTO WEB_BoardInfo A
+		USING DUAL ON ( A.mnu_code = #{mnu_code} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			inf_pageSize			= #{inf_pageSize}
+			, inf_fncWriterOnly		= #{inf_fncWriterOnly}
+			, inf_fileCnt			= #{inf_fileCnt}
+			, inf_fileSizeLmt		= #{inf_fileSizeLmt}
+			, inf_fileExt			= #{inf_fileExt}
+			, inf_fncUseThumb		= #{inf_fncUseThumb}
+			, inf_fncAdmBlockID		= #{inf_fncAdmBlockID}
+			, inf_fncAdmBlockIP		= #{inf_fncAdmBlockIP}
+			, inf_fncAdmNotice		= #{inf_fncAdmNotice}
+			, inf_fncAdmMail		= #{inf_fncAdmMail}
+			, inf_fncAdmMailAddr	= #{inf_fncAdmMailAddr}
+			, inf_fncAdmTerm		= #{inf_fncAdmTerm}
+			, inf_fncAdmTermTy		= #{inf_fncAdmTermTy}
+			, inf_fncAdmVod			= #{inf_fncAdmVod}
+			, inf_fncAdmSms			= #{inf_fncAdmSms}
+			, inf_fncUsrCheckAuth	= #{inf_fncUsrCheckAuth}
+			, inf_fncMbrCheckAuth	= #{inf_fncMbrCheckAuth}
+			, inf_fncUsrEditor		= #{inf_fncUsrEditor}
+			, inf_fncUsrLock		= #{inf_fncUsrLock}
+			, inf_fncUsrLockOpt		= #{inf_fncUsrLockOpt}
+			, inf_fncUsrAutoEnable	= #{inf_fncUsrAutoEnable}
+			, inf_fncUsrCmnts		= #{inf_fncUsrCmnts}
+			, inf_fncUsrCmntsCharLmt= #{inf_fncUsrCmntsCharLmt}
+			, inf_fncUsrVote		= #{inf_fncUsrVote}
+			, inf_fncUsrRss			= #{inf_fncUsrRss}
+			, inf_fncUsrGroup		= #{inf_fncUsrGroup}
+			, inf_fncDeptGroup		= #{inf_fncDeptGroup}
+			, inf_deptTelno			= #{inf_deptTelno}
+			, inf_fncUsrField		= #{inf_fncUsrField}
+			, inf_fieldEml			= #{inf_fieldEml}
+			, inf_fieldTelno		= #{inf_fieldTelno}
+			, inf_fieldAddr			= #{inf_fieldAddr}
+			, inf_skinType			= #{inf_skinType}
+			, inf_entryPoint		= #{inf_entryPoint}
+			, inf_resourceFile		= #{inf_resourceFile}
+			, inf_oldBoardLnk		= #{inf_oldBoardLnk}
+			, inf_defaultCn			= #{inf_defaultCn}
+			, inf_filterChar		= #{inf_filterChar}
+			, inf_header			= #{inf_header}
+			, inf_footer			= #{inf_footer}
+			, inf_admDept			= #{inf_admDept}
+			, inf_fncAllBoard		= #{inf_fncAllBoard}
+			, inf_pushGroup			= #{inf_pushGroup}
+			, inf_mdfcnID			= #{inf_mdfcnID}
+			, inf_mdfcnDt			= SYSDATE			
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			#{mnu_code}
+			, #{inf_pageSize}
+			, #{inf_fncWriterOnly}
+			, #{inf_fileCnt}
+			, #{inf_fileSizeLmt}
+			, #{inf_fileExt}
+			, #{inf_fncUseThumb}
+			, #{inf_fncAdmBlockID}
+			, #{inf_fncAdmBlockIP}
+			, #{inf_fncAdmNotice}
+			, #{inf_fncAdmMail}
+			, #{inf_fncAdmMailAddr}
+			, #{inf_fncAdmTerm}
+			, #{inf_fncAdmTermTy}
+			, #{inf_fncAdmVod}
+			, #{inf_fncAdmSms}
+			, #{inf_fncUsrCheckAuth}
+			, #{inf_fncMbrCheckAuth}
+			, #{inf_fncUsrEditor}
+			, #{inf_fncUsrLock}
+			, #{inf_fncUsrLockOpt}
+			, #{inf_fncUsrAutoEnable}
+			, #{inf_fncUsrCmnts}
+			, #{inf_fncUsrCmntsCharLmt}
+			, #{inf_fncUsrVote}
+			, #{inf_fncUsrRss}
+			, #{inf_fncUsrGroup}
+			, #{inf_fncDeptGroup}
+			, #{inf_deptTelno}
+			, #{inf_fncUsrField}
+			, #{inf_fieldEml}
+			, #{inf_fieldTelno}
+			, #{inf_fieldAddr}
+			, #{inf_skinType}
+			, #{inf_entryPoint}
+			, #{inf_resourceFile}
+			, #{inf_oldBoardLnk}
+			, #{inf_defaultCn}
+			, #{inf_filterChar}
+			, #{inf_header}
+			, #{inf_footer}
+			, #{inf_admDept}
+			, #{inf_fncAllBoard}
+			, #{inf_pushGroup}
+			, #{inf_mdfcnID}
+			, SYSDATE
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_BoardInfo WHERE mnu_code = #{mnu_code}
+	</delete>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardInfoVo">
+		SELECT 	A.mnu_code
+				, B.mnu_nm
+				, inf_pageSize
+				, inf_fncWriterOnly
+				, inf_fileCnt
+				, inf_fileSizeLmt
+				, inf_fileExt
+				, inf_fncUseThumb
+				, inf_fncAdmBlockID
+				, inf_fncAdmBlockIP
+				, inf_fncAdmNotice
+				, inf_fncAdmMail
+				, inf_fncAdmMailAddr
+				, inf_fncAdmTerm
+				, inf_fncAdmTermTy
+				, inf_fncAdmVod
+				, inf_fncAdmSms
+				, inf_fncUsrCheckAuth
+				, inf_fncMbrCheckAuth
+				, inf_fncUsrEditor
+				, inf_fncUsrLock
+				, inf_fncUsrLockOpt
+				, inf_fncUsrAutoEnable
+				, inf_fncUsrCmnts
+				, inf_fncUsrCmntsCharLmt
+				, inf_fncUsrVote
+				, inf_fncUsrRss
+				, inf_fncUsrGroup
+				, inf_fncDeptGroup
+				, inf_deptTelno
+				, inf_fncUsrField
+				, inf_fieldEml
+				, inf_fieldTelno
+				, inf_fieldAddr
+				, inf_skinType
+				, inf_entryPoint
+				, inf_resourceFile
+				, inf_oldBoardLnk
+				, inf_defaultCn
+				, inf_filterChar
+				, inf_header
+				, inf_footer
+				, inf_admDept
+				, (SELECT dept_nm FROM WEB_Dept WHERE dept_id = A.inf_admDept) As inf_admDeptNm
+				, inf_fncAllBoard
+				, inf_pushGroup
+				, inf_mdfcnID
+				, inf_mdfcnDt
+		FROM WEB_BoardInfo A 
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE A.mnu_code = #{mnu_code}
+	</select>
+	
+	<!-- 삭제시 게시물 존재확인 -->
+	<select id="checkBoard" parameterType="String" resultType="int">
+		SELECT COUNT(1) As Cnt
+		FROM WEB_Board
+		WHERE mnu_code = #{mnu_code}
+	</select>	
+	
+	<select id="selectRssList" parameterType="String"  resultType="egovframework.dnworks.cms.board.info.service.BoardInfoVo">
+		SELECT *
+		FROM WEB_BoardInfo A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		JOIN WEB_Site C ON B.site_code = C.site_code
+		WHERE B.site_code = #{site_code}
+		AND C.site_useYn = 1
+		AND mnu_sttus = 1
+		AND inf_fncUsrRss = 1
+	</select>	
+	
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %5p [%c] %m%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+
+ 	    <Logger name="org.springframework" level="ERROR" additivity="false">
+	        <AppenderRef ref="console" />
+	    </Logger>
+	    
+        <Logger name="egovframework" level="ERROR" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+        
+        <Logger name="org.egovframe" level="ERROR" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+        
+        <Logger name="java.sql" level="ERROR" additivity="false">
+            <AppenderRef ref="console" />
+        </Logger>
+	    
+		<!-- 실행 쿼리 로그 -->
+		<logger name="jdbc.sqlonly" level="ERROR" additivity="false">
+			<Appender-ref ref="console" />
+		</logger>
+
+		<!-- 쿼리 조회결과 -->
+		<logger name="jdbc.resultsettable" level="ERROR" additivity="false">
+			<Appender-ref ref="console" />
+		</logger>
+		
+		<!-- log SQL with timing information, post execution -->
+	    <Logger name="jdbc.sqltiming" level="ERROR" additivity="false">
+	        <AppenderRef ref="console" />
+	    </Logger>
+	    
+        <Logger name="ServiceInfoLogger" level="INFO" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
+
+        <Root level="ERROR">
+            <AppenderRef ref="console" />
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.org.service.impl.EmpMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.org.service.EmpVo">
+		MERGE INTO WEB_Emp A
+		USING DUAL ON ( A.emp_id = #{emp_id} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			emp_nm				= #{emp_nm}
+			, emp_sttus			= #{emp_sttus}
+			, dept_id			= #{dept_id}
+			, dept_nm			= (SELECT dept_nm FROM WEB_Dept WHERE dept_id = #{dept_id})
+			, emp_jbps			= #{emp_jbps}
+			, emp_jbgd			= #{emp_jbgd}
+			, emp_eml			= #{emp_eml}
+			, emp_telno			= #{emp_telno}
+			, emp_moblphon		= #{emp_moblphon}
+			, emp_task			= #{emp_task}
+			, emp_useYn			= #{emp_useYn}
+			, emp_mdfcnDt		= SYSDATE
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			#{emp_id}
+			, #{emp_nm}
+			, #{emp_sttus}
+			, #{dept_id}
+			, (SELECT dept_nm FROM WEB_Dept WHERE dept_id = #{dept_id})
+			, #{emp_jbps}
+			, #{emp_jbgd}
+			, #{emp_eml}
+			, #{emp_telno}
+			, #{emp_moblphon}
+			, #{emp_task}
+			, #{emp_useYn}
+			, SYSDATE
+			, NULL
+		)
+	</update>
+	
+	<delete id="delete" parameterType="string">
+		DELETE FROM WEB_Emp WHERE emp_id = #{emp_id}
+	</delete>
+	
+	<delete id="truncate">
+		TRUNCATE TABLE WEB_Emp
+	</delete>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.org.service.EmpVo">
+		SELECT emp_id, emp_nm, emp_sttus
+				, dept_id, dept_nm
+				, emp_jbps, emp_jbgd, emp_eml, emp_telno, emp_moblphon, emp_task
+				, emp_useYn
+				, emp_regDt, emp_mdfcnDt
+		FROM WEB_Emp
+		WHERE emp_id = #{emp_id}
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.org.service.EmpVo">
+		SELECT 
+		    E.emp_id,
+		    E.emp_nm,
+		    E.emp_sttus,
+		    D.dept_id,
+		    D.dept_nm,
+		    E.emp_jbps,
+		    E.emp_jbgd,
+		    E.emp_eml,
+		    E.emp_telno,
+		    E.emp_moblphon,
+		    E.emp_task,
+		    E.emp_useYn,
+		    E.emp_regDt,
+		    E.emp_mdfcnDt,
+		    LEVEL AS dept_level
+		FROM WEB_Dept D JOIN WEB_Emp E ON D.dept_id = E.dept_id
+		WHERE D.dept_id IN (
+		        SELECT dept_id
+		        FROM WEB_Dept
+		        START WITH dept_id = #{dept_id}
+		        CONNECT BY PRIOR dept_id = upper_deptID
+		    )
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				emp_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR emp_task LIKE CONCAT('%',#{srchKwd},'%')  
+			)
+		</if>		
+		<if test="srchSttus != null and srchSttus != ''">
+			AND emp_useYn = #{srchSttus}
+		</if>		    
+		START WITH D.dept_id = #{dept_id}
+		CONNECT BY PRIOR D.dept_id = D.upper_deptID
+		ORDER SIBLINGS BY LPAD(D.dept_rank, 7, '0')
+	</select>
+	
+</mapper>

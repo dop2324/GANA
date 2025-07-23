@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.LogMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.menu.service.LogVo">
+		<![CDATA[
+			INSERT INTO WEB_Log
+			VALUES 
+			(
+				NULL
+				, #{mnu_code}
+				, SYSDATE(3)
+				, #{log_who}
+				, #{log_where}
+				, #{log_what}
+				, #{log_how}
+				, #{log_privacy}
+				, #{log_ip}
+			)
+		]]>
+	</update>
+	
+	<sql id="whereLogList">
+		FROM WEB_Log A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE 1 = 1 
+		
+		<if test="site_code != null and site_code != ''">
+			AND site_code = #{site_code}
+		</if> 
+		
+		<if test="mnu_code != null and mnu_code != ''">
+			AND A.mnu_code IN (
+								WITH RECURSIVE cte As 
+								( 
+									SELECT mnu_code, 1 AS level 
+									FROM WEB_Menu 
+									WHERE mnu_code = #{mnu_code}
+									UNION ALL 
+									SELECT p.mnu_code, 1+level as level 
+									FROM WEB_Menu p 
+									INNER JOIN cte ON p.mnu_uprCode = cte.mnu_code 
+								) 
+								SELECT mnu_code FROM cte
+							)
+		</if> 
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND DATE_FORMAT(log_when, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{srchSdate}, '%Y-%m-%d') AND DATE_FORMAT(#{srchEdate}, '%Y-%m-%d')
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND DATE_FORMAT(log_when, '%Y-%m-%d') >= DATE_FORMAT(#{srchSdate}, '%Y-%m-%d')
+			</if>
+		</if>
+		
+		<if test="srchHow != null and srchHow != ''">
+			AND log_how = #{srchHow}
+		</if> 
+		
+		<if test="srchHow != null and srchHow != ''">
+			AND log_how = #{srchHow}
+		</if> 
+		
+		<if test="srchPrivacy != null and srchPrivacy != ''">
+			AND log_privacy = #{srchPrivacy}
+		</if> 
+	
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		log_who LIKE CONCAT('%',#{srchKwd},'%')  
+				OR log_where LIKE CONCAT('%',#{srchKwd},'%') 
+				OR log_what LIKE CONCAT('%',#{srchKwd},'%') 
+				OR log_how LIKE CONCAT('%',#{srchKwd},'%') 
+				OR mnu_nm  LIKE CONCAT('%',#{srchKwd},'%')
+				)
+		</if>
+
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			
+		]]>
+		<include refid="whereLogList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.LogVo">
+		SELECT log_sn, A.mnu_code
+				, log_when, log_who, log_where, log_what, log_how
+				, log_privacy, log_ip
+				, mnu_nm
+		<include refid="whereLogList" />
+		ORDER BY log_sn DESC
+		LIMIT #{pageSize} OFFSET  #{offset} 
+	</select> 
+		
+</mapper>

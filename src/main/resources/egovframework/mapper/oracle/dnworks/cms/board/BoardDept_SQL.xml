@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardDeptMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardDeptVo">
+	<![CDATA[
+		MERGE INTO WEB_BoardDept A
+		USING DUAL ON ( A.dept_sn = #{dept_sn} )	
+		WHEN MATCHED THEN	
+		UPDATE SET
+			dept_id			= #{dept_id}
+			, dept_nm		= #{dept_nm}
+			, user_id		= #{user_id}
+			, user_nm		= #{user_nm}
+			, dept_cn		= #{dept_cn}
+			, dept_sttus	= #{dept_sttus}
+			, dept_useYn	= #{dept_useYn}
+			, dept_mdfcnIP	= #{dept_mdfcnIP}
+			, dept_mdfcnDt	= SYSDATE
+		WHEN not matched THEN  					
+		INSERT VALUES (
+		  	CASE
+					WHEN #{dept_sn} IN (0, -1) THEN SEQ_BoardDept.nextval
+	    			ELSE #{dept_sn}
+			  END
+			, #{bod_sn}
+			, #{dept_id}
+			, #{dept_nm}
+			, #{user_id}
+			, #{user_nm}
+			, #{dept_cn}
+			, #{dept_sttus}
+			, #{dept_useYn}
+			, #{dept_regIP}
+			, SYSDATE
+			, NULL
+			, NULL
+		)
+	]]>
+		<selectKey keyProperty="key_sn" resultType="int">
+            SELECT SEQ_BoardDept.currval FROM DUAL
+        </selectKey>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardDept WHERE dept_sn = #{dept_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardDeptVo">
+		SELECT dept_sn, bod_sn
+				, dept_id, dept_nm, user_id, user_nm, dept_cn
+				, dept_sttus, dept_useYn
+				, dept_regIP, dept_regDt, dept_mdfcnIP, dept_mdfcnDt
+		FROM WEB_BoardDept A 
+		WHERE dept_sn = #{dept_sn}
+	</select>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardDeptVo">
+		SELECT dept_sn, bod_sn
+				, dept_id, dept_nm, user_id, user_nm, dept_cn
+				, dept_sttus, dept_useYn
+				, dept_regIP, dept_regDt, dept_mdfcnIP, dept_mdfcnDt
+		FROM WEB_BoardDept
+		WHERE bod_sn = #{bod_sn}
+		ORDER BY dept_sn DESC
+	</select>
+	
+</mapper>

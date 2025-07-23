@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.org.service.impl.OrgInfoMapper">
+
+    <!-- 목록 조건 공통 SQL -->
+    <sql id="whereOrgInfoList">
+        FROM TN_ORG_INFO
+        WHERE 1=1
+        <if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+            AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+        </if>
+        <if test="srchUseYn != null and srchUseYn != ''">
+            AND USE_YN = #{srchUseYn}
+        </if>
+        <if test=" mngrOrgUnqId != null and mngrOrgUnqId != '' ">
+        	AND ORG_UNQ_ID = #{mngrOrgUnqId}
+        </if>
+    </sql>
+
+    <!-- 목록 총 갯수 -->
+    <select id="selectListCnt" parameterType="Map" resultType="int">
+        SELECT COUNT(1)
+        <include refid="whereOrgInfoList" />
+    </select>
+
+    <!-- 목록 조회 (페이징 포함) -->
+    <select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.org.service.OrgInfoVO">
+        SELECT T.*
+        FROM (
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY ORG_NM ASC) AS RNUM,
+                ORG_UNQ_ID     AS orgUnqId,
+                ORG_NM         AS orgNm,
+                ZIP            AS zip,
+                ROAD_NM_ADDR   AS roadNmAddr,
+                DTL_ADDR       AS dtlAddr,
+                RPRSNT_TELNO   AS rprsntTelno,
+                SMS_SNDNG_TELNO AS smsSndngTelno,
+                ONL_STORE_ID   AS onlStoreId,
+                ONL_MART_KEY   AS onlMartKey,
+                ONL_API_KEY   AS onlApiKey,
+                OFF_STORE_ID   AS offStoreId,
+                OFF_MART_KEY   AS offMartKey,
+                OFF_API_KEY   AS offApiKey,
+                USE_YN         AS useYn,
+                REG_DT         AS regDt,
+                REG_ID         AS regId,
+                MDFCN_DT       AS mdfcnDt,
+                MDFCN_ID       AS mdfcnId
+            <include refid="whereOrgInfoList" />
+        ) T
+        <![CDATA[
+        WHERE RNUM > ((#{pageNo} - 1) * #{pageSize}) AND ROWNUM <= #{pageSize}
+        ]]>
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="select" parameterType="String" resultType="egovframework.dnworks.func.org.service.OrgInfoVO">
+        SELECT
+            ORG_UNQ_ID     AS orgUnqId,
+            ORG_NM         AS orgNm,
+            ZIP            AS zip,
+            ROAD_NM_ADDR   AS roadNmAddr,
+            DTL_ADDR       AS dtlAddr,
+            RPRSNT_TELNO   AS rprsntTelno,
+            SMS_SNDNG_TELNO AS smsSndngTelno,
+            ONL_STORE_ID   AS onlStoreId,
+            ONL_MART_KEY   AS onlMartKey,
+             ONL_API_KEY   AS onlApiKey,
+            OFF_STORE_ID   AS offStoreId,
+            OFF_MART_KEY   AS offMartKey,
+            OFF_API_KEY   AS offApiKey,
+            USE_YN         AS useYn,
+            REG_DT         AS regDt,
+            REG_ID         AS regId,
+            MDFCN_DT       AS mdfcnDt,
+            MDFCN_ID       AS mdfcnId
+        FROM TN_ORG_INFO
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="egovframework.dnworks.func.org.service.OrgInfoVO">
+        INSERT INTO TN_ORG_INFO (
+            ORG_UNQ_ID, ORG_NM, ZIP, ROAD_NM_ADDR, DTL_ADDR,
+            RPRSNT_TELNO, SMS_SNDNG_TELNO,
+            ONL_STORE_ID, ONL_MART_KEY, ONL_API_KEY, OFF_STORE_ID, OFF_MART_KEY, OFF_API_KEY,
+            USE_YN, REG_DT, REG_ID
+        ) VALUES (
+            #{orgUnqId}, #{orgNm}, #{zip}, #{roadNmAddr}, #{dtlAddr},
+            #{rprsntTelno}, #{smsSndngTelno},
+            #{onlStoreId}, #{onlMartKey}, #{onlApiKey}, #{offStoreId}, #{offMartKey}, #{offApiKey},
+            #{useYn}, SYSDATE, #{regId}
+        )
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="egovframework.dnworks.func.org.service.OrgInfoVO">
+        UPDATE TN_ORG_INFO
+        SET
+            ORG_NM = #{orgNm},
+            ZIP = #{zip},
+            ROAD_NM_ADDR = #{roadNmAddr},
+            DTL_ADDR = #{dtlAddr},
+            RPRSNT_TELNO = #{rprsntTelno},
+            SMS_SNDNG_TELNO = #{smsSndngTelno},
+            ONL_STORE_ID = #{onlStoreId},
+            ONL_MART_KEY = #{onlMartKey},
+            ONL_API_KEY = #{onlApiKey},
+            OFF_STORE_ID = #{offStoreId},
+            OFF_MART_KEY = #{offMartKey},
+            OFF_API_KEY = #{offApiKey},
+            USE_YN = #{useYn},
+            MDFCN_DT = SYSDATE,
+            MDFCN_ID = #{mdfcnId}
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+    </update>
+
+    <!-- 삭제 -->
+    <update id="delete" parameterType="egovframework.dnworks.func.org.service.OrgInfoVO">
+        UPDATE TN_ORG_INFO
+        SET USE_YN = 'N',
+            MDFCN_DT = SYSDATE,
+            MDFCN_ID = #{delId}
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+    </update>
+
+</mapper>

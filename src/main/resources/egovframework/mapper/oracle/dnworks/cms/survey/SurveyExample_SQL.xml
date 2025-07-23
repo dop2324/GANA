@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveyExampleMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveyExampleVo">
+		MERGE INTO WEB_SurveyExample A
+		USING DUAL ON ( A.exam_sn = #{exam_sn} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			exam_ty				= #{exam_ty}
+			, exam_example		= #{exam_example}
+			, exam_file			= #{exam_file}
+			, exam_linkUrl		= #{exam_linkUrl}
+			, exam_sttus		= #{exam_sttus}
+		WHEN not matched THEN  					
+		INSERT VALUES (						
+		  	CASE
+					WHEN #{exam_sn} IN (0, -1) THEN SEQ_SurveyExample.nextval
+	    			ELSE #{exam_sn}
+			  END				
+			, #{qus_sn}
+			, #{exam_ty}
+			, #{exam_example}
+			, #{exam_file}
+			, #{exam_linkUrl}
+			, 0
+			, #{exam_sttus}
+		)
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_SurveyExample WHERE exam_sn = #{exam_sn}
+	</delete>
+	
+	<sql id="selSurveyExampleCol">
+		exam_sn, qus_sn, exam_ty, exam_example, exam_file, exam_linkUrl, exam_sttus
+		, ( CASE 
+				WHEN exam_ty = 1 THEN (
+										SELECT COUNT(1) 
+										FROM WEB_SurveySubject 
+										WHERE qus_sn = A.qus_sn 
+										AND exam_sn = A.exam_sn
+									)
+				ELSE (
+						SELECT COUNT(1) 
+						FROM WEB_SurveyResult 
+						WHERE qus_sn = A.qus_sn AND exam_sn = A.exam_sn
+					) 
+			END 
+		) As exam_voteCnt
+		, CASE 
+			WHEN exam_ty = 0 THEN (SELECT COUNT(1) FROM WEB_SurveyResult WHERE qus_sn = A.qus_sn)
+			WHEN exam_ty = 1 THEN (SELECT COUNT(1) FROM WEB_SurveySubject WHERE qus_sn = A.qus_sn)
+		END As exam_totCnt
+	</sql>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveyExampleVo">
+		SELECT 
+		<include refid="selSurveyExampleCol" />
+		FROM WEB_SurveyExample A
+		WHERE exam_sn = #{exam_sn}
+	</select>
+
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.survey.service.SurveyExampleVo">
+		SELECT 
+		<include refid="selSurveyExampleCol" />
+		FROM WEB_SurveyExample A
+		WHERE qus_sn = #{qus_sn}
+		ORDER BY exam_sn
+	</select>
+	
+</mapper>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.PageMapper">
+	
+	<insert id="save" parameterType="egovframework.dnworks.cms.menu.service.PageVo">
+	<![CDATA[
+		MERGE INTO WEB_Page A
+		USING DUAL ON ( A.page_sn = #{page_sn} )	
+		WHEN MATCHED THEN		
+		UPDATE SET
+			ref_code		= #{ref_code}
+			, page_ttl		= #{page_ttl}
+			, page_cn		= #{page_cn}
+			, page_html		= #{page_html}
+			, page_saveTy	= #{page_saveTy}
+			, page_mdfcnID	= #{page_mdfcnID}
+			, page_mdfcnDt	= SYSDATE			
+		WHEN not matched THEN  					
+		INSERT VALUES (
+			  DECODE(#{page_sn} , 0, SEQ_Page.nextval, #{page_sn})
+			, #{mnu_code}
+			, #{ref_code}
+			, #{page_ttl}
+			, #{page_cn}
+			, #{page_html}
+			, #{page_saveTy}
+			, #{page_sttus}
+			, #{page_mdfcnID}
+			, SYSDATE
+		)
+	]]>
+		<selectKey keyProperty="key_sn" resultType="int">
+             SELECT SEQ_Page.currval FROM DUAL
+        </selectKey>
+	</insert>
+	
+	<update id="insert" parameterType="egovframework.dnworks.cms.menu.service.PageVo">
+	<![CDATA[
+		INSERT INTO WEB_Page
+		VALUES 
+		(
+			SEQ_Page.nextval
+			, #{mnu_code}
+			, #{ref_code}
+			, #{page_ttl}
+			, #{page_cn}
+			, #{page_html}
+			, #{page_saveTy}
+			, #{page_sttus}
+			, #{page_mdfcnID}
+			, SYSDATE
+		)
+	]]>
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.menu.service.PageVo">
+	<![CDATA[
+		UPDATE WEB_Page SET
+			ref_code		= #{ref_code}
+			, page_ttl		= #{page_ttl}
+			, page_cn		= #{page_cn}
+			, page_html		= #{page_html}
+			, page_saveTy	= #{page_saveTy}
+			, page_mdfcnID	= #{page_mdfcnID}
+			, SYSDATE
+		WHERE page_sn = #{page_sn}
+	]]>
+	</update>
+	
+	<update id="disableSttus" parameterType="egovframework.dnworks.cms.menu.service.PageVo">
+	<![CDATA[
+		UPDATE WEB_Page SET
+			page_sttus = 0
+		WHERE mnu_code IN (SELECT mnu_code FROM (SELECT mnu_code FROM WEB_Page WHERE page_sn = #{page_sn}) P)
+	]]>
+	</update>
+	
+	<update id="enableSttus" parameterType="egovframework.dnworks.cms.menu.service.PageVo">
+	<![CDATA[
+		UPDATE WEB_Page SET
+			page_sttus = 1
+		WHERE page_sn = #{page_sn}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_Page WHERE page_sn = #{page_sn}
+	</delete>
+	
+	<delete id="deleteMenu" parameterType="String">
+		DELETE FROM WEB_Page WHERE mnu_code = #{mnu_code}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.menu.service.PageVo">
+		SELECT page_sn
+				, mnu_code
+				, ref_code
+				, CASE 
+						WHEN ref_code IS NOT NULL THEN (SELECT mnu_nm
+														FROM WEB_Menu WP
+														WHERE mnu_code = A.ref_code
+														)
+						ELSE NULL 
+				END As ref_mnuNm
+				, page_ttl
+				, CASE 
+						WHEN ref_code IS NOT NULL THEN (SELECT page_cn
+														FROM WEB_Page WP
+														WHERE mnu_code = A.ref_code
+														AND page_sttus = 1 
+														)
+						ELSE page_cn 
+				END As page_cn
+				, page_html, page_saveTy, page_sttus
+				, page_mdfcnID, page_mdfcnDt
+		FROM WEB_Page A
+		WHERE page_sn = #{page_sn}
+	</select>
+	
+	<select id="selectMenuCode" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.PageVo">
+		SELECT page_sn
+				, A.mnu_code, ref_code
+				, page_ttl
+				, CASE 
+						WHEN ref_code IS NOT NULL THEN (SELECT page_cn
+														FROM WEB_Page WP
+														WHERE mnu_code = A.ref_code
+														AND page_sttus = 1 
+														)
+						ELSE page_cn 
+				END As page_cn
+				, page_html, page_saveTy, page_sttus
+				, page_mdfcnID, page_mdfcnDt
+				, mnu_nm, mnu_ty, mnu_sttus
+		FROM WEB_Page A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE page_sttus = 1
+		AND A.mnu_code = #{mnu_code}
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.PageVo">
+		SELECT page_sn
+				, mnu_code, ref_code
+				, page_ttl, page_cn
+				, page_html, page_saveTy, page_sttus
+				, page_mdfcnID, page_mdfcnDt
+		FROM WEB_Page
+		WHERE mnu_code = #{mnu_code}
+		ORDER BY page_sttus DESC, page_sn DESC
+	</select>
+	
+	<select id="selectRefCnt" parameterType="String" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_Page
+		WHERE (ref_code = #{mnu_code} OR mnu_code = #{mnu_code})
+	</select>
+	
+</mapper>

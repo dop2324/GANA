@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.blacklist.service.impl.BlockLogMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.blacklist.service.BlockLogVo">
+		<![CDATA[
+			INSERT INTO WEB_BlockLog
+			VALUES 
+			(
+				SEQ_BlockLog.nextval
+				, #{log_id}
+				, #{log_nm}
+				, #{log_ip}
+				, #{log_url}
+				, #{log_se}
+				, SYSDATE
+				, #{site_code}
+			)
+		]]>
+	</update>
+	
+	<sql id="whereLogList">
+		WHERE 1 = 1 
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		log_id LIKE '%'||#{srchKwd}||'%'  
+				OR log_nm LIKE '%'||#{srchKwd}||'%' 
+				OR log_ip LIKE '%'||#{srchKwd}||'%' 
+				OR log_url LIKE '%'||#{srchKwd}||'%' 
+				)
+		</if>
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND log_regDt BETWEEN TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEdate}||' 23:59:59.999' ,'YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND log_regDt >= TO_TIMESTAMP(#{srchSdate}||' 00:00:00.000','YYYY-MM-DD HH24:MI:SS.FF3' )
+			</if>
+		</if>
+		
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if> 
+
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			FROM WEB_BlockLog A
+		]]>
+		<include refid="whereLogList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.blacklist.service.BlockLogVo">
+		SELECT * FROM (
+		SELECT ROW_NUMBER() OVER (ORDER BY log_sn DESC) AS RNUM , log_sn, log_id
+				, log_nm
+				, log_ip
+				, log_url
+				, log_se
+				, log_regDt
+				, B.site_code
+				, B.site_nm
+		FROM WEB_BlockLog A
+		JOIN WEB_Site B ON A.site_code = B.site_code 
+		<include refid="whereLogList" />
+		) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select>
+		
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.blacklist.service.impl.BlackListIPMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.blacklist.service.BlackListIPVo">
+	<![CDATA[
+		MERGE INTO WEB_BlackListIP A
+		USING DUAL ON ( A.bli_sn = #{bli_sn} )
+		WHEN MATCHED THEN	
+		UPDATE SET
+			bli_startIP		= #{bli_startIP}
+		    , bli_endIP		= #{bli_endIP}
+		    , bli_rng		= #{bli_rng}
+		    , bli_desc		= #{bli_desc}
+		    , bli_sttus		= #{bli_sttus}
+		    , bli_mdfcnID	= #{bli_mdfcnID}
+		    , bli_mdfcnDt	= SYSDATE
+		    , site_code		= #{site_code}
+		WHEN not matched THEN    			
+		INSERT VALUES (
+			  DECODE(#{bli_sn}, 0, SEQ_CmmnCd.nextval, #{bli_sn})
+			, #{bli_startIP}
+			, NVL(#{bli_endIP}, #{bli_startIP})
+			, #{bli_rng}
+			, #{bli_desc}
+			, #{bli_sttus}
+			, #{bli_mdfcnID}
+			, SYSDATE
+			, #{site_code}
+		)
+
+
+	]]>
+	</update>
+	
+	<update id="delete" parameterType="int">
+	<![CDATA[
+		DELETE FROM WEB_BlackListIP
+		WHERE bli_sn = #{bli_sn}
+	]]>
+	</update>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.blacklist.service.BlackListIPVo">
+	<![CDATA[
+		SELECT bli_sn
+				, bli_startIP
+				, bli_endIP
+				, bli_rng
+				, bli_desc
+				, bli_sttus
+				, bli_mdfcnID
+				, bli_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListIP A
+		WHERE bli_sn = #{bli_sn}
+	]]>
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.blacklist.service.BlackListIPVo">
+	<![CDATA[
+		SELECT bli_sn
+				, bli_startIP
+				, bli_endIP
+				, bli_rng
+				, bli_desc
+				, bli_sttus
+				, bli_mdfcnID
+				, bli_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListIP A
+		WHERE site_code = #{site_code}
+	]]>
+	</select>
+	
+	<select id="isBlackListIP" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_BlackListIP
+		WHERE bli_sttus = 1 
+		AND (
+			#{accessip} BETWEEN bli_startIP AND bli_endIP
+			OR
+			bli_startIP = #{accessip} 
+			)
+		
+		<if test="site_code != '' and site_code != null">
+			AND site_code = #{site_code}
+		</if>
+	</select>
+	
+	<select id="selectIPList" parameterType="Map" resultType="egovframework.dnworks.cms.blacklist.service.BlackListIPVo">
+		SELECT bli_sn
+				, bli_startIP
+				, bli_endIP
+				, bli_rng
+				, bli_desc
+				, bli_sttus
+				, bli_mdfcnID
+				, bli_mdfcnDt
+				, site_code
+				, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code ) As site_nm 
+		FROM WEB_BlackListIP A
+		WHERE bli_sttus = 1 
+		AND (
+			#{accessip} BETWEEN bli_startIP AND bli_endIP
+			OR
+			bli_startIP = #{accessip} 
+			)
+		
+		<if test="site_code != '' and site_code != null">
+			AND site_code = #{site_code}
+		</if>
+	</select>
+</mapper>

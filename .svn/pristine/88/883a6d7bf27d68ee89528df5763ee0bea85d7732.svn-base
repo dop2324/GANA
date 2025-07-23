@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.link.service.impl.LinkMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.link.service.LinkVo">
+	<![CDATA[
+		INSERT INTO WEB_Link
+		VALUE (
+			IF(#{lnk_sn} = -1, NULL, #{lnk_sn})
+			, #{lgp_sn}
+			, #{lnk_nm}
+			, #{lnk_imgFileNm}
+			, #{lnk_linkUrl}
+			, #{lnk_target}
+			, #{lnk_cn}
+			, (SELECT lnk_sort FROM (SELECT NVL(MAX(lnk_sort), 0)+1 AS lnk_sort FROM WEB_Link WHERE lgp_sn = #{lgp_sn}) A)
+			, 0
+			, #{lnk_startDt}
+			, #{lnk_endDt}
+			, #{lnk_width}
+			, #{lnk_height}
+			, #{lnk_left}
+			, #{lnk_top}
+			, #{lnk_window}
+			, #{lnk_imgPath}
+			, #{lnk_alt}
+			, #{lnk_html}
+			, #{lnk_sttus}
+			, #{lnk_mdfcnID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			lnk_nm			= #{lnk_nm}
+			, lnk_imgFileNm = #{lnk_imgFileNm}
+			, lnk_linkUrl 	= #{lnk_linkUrl}
+			, lnk_target 	= #{lnk_target}
+			, lnk_cn 		= #{lnk_cn}
+			, lnk_startDt 	= #{lnk_startDt}
+			, lnk_endDt 	= #{lnk_endDt}
+			, lnk_width 	= #{lnk_width}
+			, lnk_height 	= #{lnk_height}
+			, lnk_left 		= #{lnk_left}
+			, lnk_top 		= #{lnk_top}
+			, lnk_window 	= #{lnk_window}
+			, lnk_imgPath 	= #{lnk_imgPath}
+			, lnk_alt 		= #{lnk_alt}
+			, lnk_html 		= #{lnk_html}
+			, lnk_sttus 	= #{lnk_sttus}
+			, lnk_mdfcnID 	= #{lnk_mdfcnID}
+			, lnk_mdfcnDt 	= SYSDATE()
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_Link WHERE lnk_sn = #{lnk_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.link.service.LinkVo">
+		SELECT 	lnk_sn
+				, A.lgp_sn
+				, B.lgp_nm
+				, lnk_nm, lnk_imgFileNm, lnk_linkUrl, lnk_target, lnk_cn, lnk_sort, lnk_clickCnt
+				, lnk_startDt, lnk_endDt
+				, lnk_width, lnk_height, lnk_left, lnk_top, lnk_window
+				, lnk_imgPath, lnk_alt, lnk_html, lnk_sttus
+				, lnk_mdfcnID, lnk_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_LinkClick WHERE lnk_sn = A.lnk_sn AND DATE_FORMAT(click_dt, '%Y%m') = DATE_FORMAT(DATE_ADD(SYSDATE(), INTERVAL 1 MONTH), '%Y%m')) As lnk_prevCnt
+				, (SELECT COUNT(1) FROM WEB_LinkClick WHERE lnk_sn = A.lnk_sn AND DATE_FORMAT(click_dt, '%Y%m') = DATE_FORMAT(SYSDATE(), '%Y%m')) As lnk_currCnt
+		FROM WEB_Link A 
+		JOIN WEB_LinkGroup B ON A.lgp_sn = B.lgp_sn
+		WHERE lnk_sn = #{lnk_sn}
+	</select>
+	
+	<sql id="whereLinkList">
+		FROM WEB_Link A 
+		JOIN WEB_LinkGroup B ON A.lgp_sn = B.lgp_sn
+		WHERE B.site_code = #{site_code}
+		
+		<if test="srchGroup != '' and srchGroup != null">
+			AND A.lgp_sn = #{srchGroup}
+		</if>
+		
+		<if test="srchKwd != '' and srchKwd != null">
+			AND (
+				lnk_nm LIKE CONCAT('%',#{srchKwd},'%')
+				OR 
+				lnk_cn LIKE CONCAT('%',#{srchKwd},'%')
+				)
+		</if>
+		
+		<if test="srchSttus != '' and srchSttus != null">
+			AND lnk_sttus = #{srchSttus}
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT 	COUNT(1)
+		<include refid="whereLinkList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.link.service.LinkVo">
+		SELECT 	lnk_sn
+				, A.lgp_sn
+				, B.lgp_nm
+				, lnk_nm, lnk_imgFileNm, lnk_linkUrl, lnk_target, lnk_sort, lnk_clickCnt
+				, lnk_startDt, lnk_endDt
+				, lnk_width, lnk_height, lnk_left, lnk_top, lnk_window
+				, lnk_imgPath
+				, lnk_sttus
+				, lnk_mdfcnID, lnk_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_LinkClick WHERE lnk_sn = A.lnk_sn AND DATE_FORMAT(click_dt, '%Y%m') = DATE_FORMAT(DATE_ADD(SYSDATE(), INTERVAL 1 MONTH), '%Y%m')) As lnk_prevCnt
+				, (SELECT COUNT(1) FROM WEB_LinkClick WHERE lnk_sn = A.lnk_sn AND DATE_FORMAT(click_dt, '%Y%m') = DATE_FORMAT(SYSDATE(), '%Y%m')) As lnk_currCnt
+		<include refid="whereLinkList" />
+		ORDER BY lnk_sort DESC
+		LIMIT #{pageSize} OFFSET  #{offset} 
+	</select>
+	
+	<select id="selectDateList" resultType="egovframework.dnworks.cms.link.service.LinkVo">
+		SELECT 	lnk_sn
+				, A.lgp_sn
+				, B.lgp_nm
+				, lnk_nm, lnk_imgFileNm, lnk_linkUrl, lnk_target, lnk_sort, lnk_clickCnt
+				, lnk_startDt, lnk_endDt
+				, lnk_width, lnk_height, lnk_left, lnk_top, lnk_window
+				, lnk_alt, lnk_html, lnk_cn
+				, lnk_imgPath
+				, lnk_sttus
+				, lnk_mdfcnID, lnk_mdfcnDt
+		FROM WEB_Link A 
+		JOIN WEB_LinkGroup B ON A.lgp_sn = B.lgp_sn
+		WHERE DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H') >= lnk_startDt AND lnk_endDt > DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H')
+		AND lnk_sttus = 1
+		ORDER BY lnk_sort DESC
+	</select>
+	
+	<select id="selectMainList" parameterType="java.util.List" resultType="egovframework.dnworks.cms.link.service.LinkVo">
+		SELECT 	lnk_sn
+				, A.lgp_sn
+				, B.lgp_nm
+				, lnk_nm, lnk_imgFileNm, lnk_linkUrl, lnk_target, lnk_sort, lnk_clickCnt
+				, lnk_startDt, lnk_endDt
+				, lnk_width, lnk_height, lnk_left, lnk_top, lnk_window
+				, lnk_alt, lnk_html, lnk_cn
+				, lnk_imgPath
+				, lnk_sttus
+				, lnk_mdfcnID, lnk_mdfcnDt
+		FROM WEB_Link A 
+		JOIN WEB_LinkGroup B ON A.lgp_sn = B.lgp_sn
+		WHERE lnk_sttus = 1
+		AND DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H') >= lnk_startDt AND lnk_endDt > DATE_FORMAT(SYSDATE(),'%Y-%m-%d %H')
+		AND A.lgp_sn IN 
+		<foreach collection="list" item="item" separator="," close=")" open="(">
+		<![CDATA[
+			   #{item}
+		]]>
+		</foreach>
+		ORDER BY lnk_sort DESC
+	</select>
+	
+</mapper>

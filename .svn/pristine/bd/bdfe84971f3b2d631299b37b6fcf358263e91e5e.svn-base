@@ -1,0 +1,414 @@
+package egovframework.dnworks.cmm.util;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import egovframework.com.cmm.service.EgovProperties;
+import egovframework.dnworks.cmm.Code;
+
+public class Util 
+{
+	private static String DefaultCharSet = EgovProperties.getProperty("site.html.meta.charset");
+
+	public static boolean hasPermission(int prmVal, Code.Prm prmCode) {		
+		return hasPermission(prmVal, prmCode.getCode());
+	}
+	public static boolean hasPermission(int prmVal, int prmCode) {
+		if((prmVal & prmCode) == 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean isMobile(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        boolean isMobile = userAgent.matches(".*(iPhone|iPod|iPad|BlackBerry|Android|Windows CE|LG|MOT|SAMSUNG|SonyEricsson).*");
+        
+        if(isMobile) {
+        	return true;
+        }
+        return false;
+	}
+	public static String getMobileDevice(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        //boolean isMobile = userAgent.matches(".*(iPhone|iPod|iPad|BlackBerry|Android|Windows CE|LG|MOT|SAMSUNG|SonyEricsson).*");
+        
+        if(userAgent.indexOf("mobile") > -1) {
+        	if(userAgent.indexOf("android") > -1) {
+        		return "android";
+        	}else if(userAgent.indexOf("ios") > -1) {
+        		return "ios";
+        	}
+        } 
+        return null;
+	}
+	
+	/* **********************************************************************
+	 * nvl method overloading
+	 * **********************************************************************/
+	
+	// Return default string value
+	public static String nvl(String param) {
+		return nvl(param, "");
+	}
+	// Return default string value
+	public static String nvl(String param, String defaultValue) {
+		return (param == null || param.equals("") ? defaultValue : param).trim();
+	}
+	// Return default Object value
+	public static String nvl(Object param) {
+		if( param == null ) return "";
+		return nvl(param, "");
+	}
+	public static String o2s(Object param) {
+		return nvl(param);
+	}
+	// Return default string value
+	public static String nvl(Object param, String defaultValue) {
+		return (param == null || param.equals("") ? defaultValue : String.valueOf(param)).trim();
+	}	
+	// Return default integer value
+	public static int nvl(Object param, int defaultValue) {
+		int ret = 0;
+		if( param == null || param.equals("") ) return defaultValue;
+		try{
+			ret = Integer.parseInt(param.toString());
+			return ret;			
+		}catch(Exception e){}
+		return defaultValue;		
+	}
+	// Return default integer value
+	public static long nvl(Object param, long defaultValue) {
+		long ret = 0;
+		if( param == null || param.equals("") ) return defaultValue;
+		try{
+			ret = Long.parseLong(param.toString());
+			return ret;			
+		}catch(Exception e){}
+		return defaultValue;	
+	}
+	// Return default integer value
+	public static float nvl(Object param, float defaultValue) {
+		float ret = 0;
+		if( param == null || param.equals("") ) return defaultValue;
+		try{
+			ret = Float.parseFloat(param.toString());
+			return ret;			
+		}catch(Exception e){}
+		return defaultValue;	
+	}
+	// Return default date value
+	public static Date nvl(Date param) {
+		return param == null ? new Date() : param;  
+	}
+	
+	
+	// Validate IP Format
+	public static boolean isIP(String srcIP) {
+		return validateRegex(srcIP, "^(?:[1-9]|0[1-9]|00[1-9]|[1-9][0-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(?:\\.([0-9]|0[0-9]|00[0-9]|[1-9][0-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$");
+	}
+	
+	// Return IP string format 000.000.000.000
+	public static String getFormatIP(String srcIP) {
+		String[] tempIP = srcIP.split("\\.");
+		String retVal = srcIP;
+		try{
+			retVal =String.format("%03d.%03d.%03d.%03d", Integer.parseInt(tempIP[0]), Integer.parseInt(tempIP[1]), Integer.parseInt(tempIP[2]), Integer.parseInt(tempIP[3])); 
+		}catch(NumberFormatException e){
+			//
+		}		
+		return retVal;
+	}
+	
+	/* **********************************************************************
+	 * Regex Handling
+	 * **********************************************************************/
+	// 문자 일치 여부 확인
+	public static boolean validateRegex(String srcString, String rgxPattern) {
+		return Pattern.matches(rgxPattern, srcString);
+	}
+	
+	// 문자 치환
+	public static String replaceRegex(String srcString, String rgxPattern, String rplString) {
+		Pattern pattern = Pattern.compile(rgxPattern);
+		Matcher matcher = pattern.matcher(srcString);
+		return matcher.replaceAll(rplString);
+	}
+	
+	/* **********************************************************************
+	 * Remove Tag
+	 * **********************************************************************/
+	public static String htmlEncode(String srcString) {
+		srcString = replaceRegex(srcString, "<"		, "&lt;");
+		srcString = replaceRegex(srcString, ">"		, "&gt;");
+		srcString = replaceRegex(srcString, "\""	, "&quot;");
+		//srcString = replaceRegex(srcString, "&"		, "&amp;");
+		srcString = replaceRegex(srcString, "\r\n"	, "<br/>");
+		srcString = replaceRegex(srcString, "\\r\\n", "<br/>");
+		srcString = replaceRegex(srcString, "\\n"	, "<br/>");
+		return srcString;
+	}
+	
+	public static String removeTag(String srcString) {
+		srcString = replaceRegex(srcString, "<(no)?script[^>]*>.*?</(no)?script>"				, "");
+		srcString = replaceRegex(srcString, "<style[^>]*>.*</style>"							, "");
+		srcString = replaceRegex(srcString, "<(\"[^\"]*\"|\'[^\']*\'|[^\'\">])*>"				, "");
+		srcString = replaceRegex(srcString, "<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>"	, "");
+		srcString = replaceRegex(srcString, "<\\w+\\s+[^<]*\\s*>"								, "");
+		srcString = replaceRegex(srcString, "&[^;]+;"											, "");
+		srcString = replaceRegex(srcString, "\\s\\s+"											, "");
+		srcString = replaceRegex(srcString, "<([^>]+)>"											, "");
+		srcString = replaceRegex(srcString, "<!--.*-->"											, "");
+		//srcString = replaceRegex(srcString, "[^[^0-9]\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+", " ");
+		return srcString;
+	}
+
+	public static String removeTag2(String srcString) {
+		return replaceRegex(srcString, "<([^>]+)>", "");
+	}
+	
+	// Strip Special Character
+	public static String stripSpecial(String srcString) {
+		if( srcString == null ) return "";
+		if( srcString.trim().length() ==0 ) return "";
+		
+		srcString = replaceRegex(srcString, "'", "&#39");
+		srcString = replaceRegex(srcString, "\"", "&#34");
+		srcString = replaceRegex(srcString, "<", "&lt;");
+		return srcString;
+	}
+	
+	// 이모티콘 제거
+	public static String removeEmoji(String param) {
+		Pattern emticons = Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
+		Matcher emoticonsMatcher = emticons.matcher(param);
+		return emoticonsMatcher.replaceAll(" ");
+	}
+	
+	public static String encodeURI(String value) throws UnsupportedEncodingException {
+	    return URLEncoder.encode(value, "UTF-8")
+	        .replace("+", "%20")
+	        .replace("%21", "!")
+	        .replace("%27", "'")
+	        .replace("%28", "(")
+	        .replace("%29", ")")
+	        .replace("%7E", "~");
+	}
+
+	/* **********************************************************************
+	 * Validate 금칙어 필터링 체크
+	 * **********************************************************************/
+	public static boolean hasContainWord(String srcString, String keyword) {
+		return validateRegex(replaceRegex(srcString, "\\r\\n", ""), String.format("[\\s\\S\\w\\W]*%s[\\s\\S\\w\\W]*", replaceRegex(keyword, "\\r\\n", "")));
+	}
+	
+	/* **********************************************************************
+	 * Validate File Extention
+	 * **********************************************************************/
+	
+    public static boolean isDataFile(String fileName) {
+        return !validateRegex(fileName, "\\w*\\.(?i:asp|aspx|bat|bin|cs|com|cgi|class|css|conf|cmd|dll|exe|go|gadget|htm|html|inc|inf|ins|inx|isu|job|jsp|js|jse|lnk|msc|msi|msp|mst|paf|pif|php|php3|pl|phtml|py|reg|rgs|xml|sh|sql|vb|vbs|vbscript|ts)$");
+    }
+
+    public static boolean isImageFile(String fileName) {
+    	return validateRegex(fileName, "^\\S+.(?i)(gif|jpg|jpeg|bmp|png|wmf)$");
+    }
+
+    public static boolean isFlashFile(String fileName) {
+        return validateRegex(fileName, "\\w*\\.(?i:swf|fla)$");
+    }
+    
+    public static boolean isMediaFile(String fileName) {
+        return validateRegex(fileName, "\\w*\\.(?i:asf|asx|wmv|wma|mp3|mp4|avi|mov|mpeg|mpg)$");
+    }
+
+    public static boolean isWebFile(String fileName) {
+        return validateRegex(fileName, "\\w*\\.(?i:asp|aspx|jsp|php|htm|html)$");
+    }
+    
+    public static boolean isDocFile(String fileName) {
+    	 return validateRegex(fileName, "\\w*\\.(?i:doc|docx|docm|dotx|dotm|dot|xls|xlsx|xlsm|xlsb|xltx|xltm|xlt|dif|xlam|xla|xps|ods|pptx|pptm|ppt|potx|potm|pot|thmx|ppsx|ppsm|pps|ppam|ppa|rtf|odp|hwp|hwpx|txt|pdf)$");
+    }
+
+    public static String getFileFullName(String uri) {
+    	return  uri.substring(uri.lastIndexOf("/") + 1);
+    }
+    
+    public static String getFileName(String uri) {
+    	String onlyFileName = uri.substring(uri.lastIndexOf("/") + 1);
+        return onlyFileName.substring(0, onlyFileName.lastIndexOf("."));
+    }
+	
+    public static String getFileExt(String uri) {
+        return uri.substring(uri.lastIndexOf(".") + 1);
+    }
+ 	
+ 	
+ 	/* **********************************************************************
+	 * Session Handling
+	 * **********************************************************************/
+	// Set session
+	public static void setSession(HttpSession session ,String sessionName, Object sessionValue) {
+		session.setAttribute(sessionName, String.valueOf(sessionValue));
+	}
+	// Get session
+	public static String getSession(HttpSession session ,String sessionName) {
+		return nvl((String)session.getAttribute(sessionName));
+	}
+	public static String getSession(HttpSession session ,String sessionName, String defaultVal) {
+		String sessionVal = Util.nvl(session.getAttribute(sessionName));
+		if(sessionVal.equals("")) sessionVal = defaultVal;
+		return sessionVal;
+	}
+	
+	/* **********************************************************************
+	 * Cookie Handling
+	 * **********************************************************************/
+	// Set cookie
+	public static void setCookie(HttpServletResponse response, String cookieName, String cookieValue) {
+		setCookie(response, cookieName, cookieValue, -1);
+	}
+	public static void setCookie(HttpServletResponse response, String cookieName, String cookieValue, int maxAge) {
+		cookieName = cookieName.replaceAll("\r","").replaceAll("\n","");
+		cookieValue = cookieValue.replaceAll("\r","").replaceAll("\n","");
+		
+		try {
+			
+			if(cookieValue != null) {
+				String value = URLEncoder.encode(cookieValue, DefaultCharSet);
+				
+				Cookie cookie = new Cookie(cookieName, value);
+				cookie.setMaxAge(maxAge);
+				//cookie.setDomain(ThisURL.Host);
+				cookie.setPath("/");
+				cookie.setSecure(true);
+				response.addCookie(cookie);
+			}
+		}catch(Exception e){
+
+		}
+	}
+	
+	// Get cookie
+	public static String getCookie(HttpServletRequest request, String cookieName) {
+		Cookie[] cookies = request.getCookies();
+		String rtnValue = null;
+		
+		try {
+			if(cookies != null) {
+				for(Cookie cookie:cookies) {
+					if(cookie.getName().equals(cookieName)) {
+						rtnValue = URLDecoder.decode(cookie.getValue(), DefaultCharSet);
+					}
+				}
+			}		
+		}catch(Exception e){
+
+		}
+
+		return rtnValue;
+	}
+	
+	// Remove all cookies
+	public static void removeCookies(HttpServletRequest request, HttpServletResponse response) {
+		Cookie[] cookies = request.getCookies();
+		
+		if(cookies != null) {
+			for(Cookie cookie:cookies) {
+				cookie.setMaxAge(0);
+				cookie.setSecure(true);
+				response.addCookie(cookie);
+			}
+		}		
+	}
+	
+	/* **********************************************************************
+	 * Array Handling
+	 * **********************************************************************/
+
+	/* 배열에 포함여부(문자) */
+	public static boolean contains(Object[] array, Object item)  {
+	    return Arrays.asList(array).contains(item);
+	}
+	
+	public static boolean inArray(String[] arrayList, String value) { 
+		boolean flag = false;
+
+		if(arrayList == null) return false;
+		
+		for(int i=0; i < arrayList.length; i++) {
+			if(arrayList[i].equals(value)) {
+				flag = true;
+				break;
+			}
+		}
+		return flag;
+	}
+	
+	public static String getDomainInfo(HttpServletRequest request) {
+		String domain 	= "";
+		String scheme 	= request.getScheme();
+		String srvNm	= request.getServerName();
+		int port		= request.getServerPort();
+		String srvPort	= "";
+		if(port != 80 && port != 443) {
+			srvPort = ":"+port;
+		}
+		domain = String.format("%s://%s%s", scheme, srvNm, srvPort);
+		
+		return domain;
+	}
+	
+	
+	public static void checkHM(HashMap<String, Object> h) {
+		String key;
+		Set<?> set = h.keySet();
+		Iterator<?> keys = set.iterator();
+		
+		System.out.println("==========HashMap key : value ================");
+		while(keys.hasNext()){
+			key = (String)keys.next();
+			System.out.println(key +" : "+h.get(key));
+		}
+		System.out.println("==========HashMap key : value ================");
+	}
+	
+	public static void checkMap(Map<String, Object> h) {
+		String key;
+		Set<?> set = h.keySet();
+		Iterator<?> keys = set.iterator();
+		
+		System.out.println("==========HashMap key : value ================");
+		while(keys.hasNext()){
+			key = (String)keys.next();
+			System.out.println(key +" : "+h.get(key));
+		}
+		System.out.println("==========HashMap key : value ================");
+	}
+	
+	public static void checkMaps(Map<String, String> h) {
+		String key;
+		Set<?> set = h.keySet();
+		Iterator<?> keys = set.iterator();
+		
+		System.out.println("==========HashMap key : value ================");
+		while(keys.hasNext()){
+			key = (String)keys.next();
+			System.out.println(key +" : "+String.valueOf(h.get(key)) );
+		}
+		System.out.println("==========HashMap key : value ================");
+	}
+}

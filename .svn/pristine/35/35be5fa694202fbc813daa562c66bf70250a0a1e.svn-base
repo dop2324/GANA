@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.MenuMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.menu.service.MenuVo">
+		<![CDATA[
+			MERGE INTO WEB_Menu A
+			USING DUAL ON (A.mnu_code = #{mnu_code} )
+			WHEN MATCHED THEN
+			UPDATE SET 
+				  mnu_nm			= #{mnu_nm}
+				, mnu_nmKr			= #{mnu_nmKr}
+				, mnu_desc			= #{mnu_desc}
+				, mnu_ty			= #{mnu_ty}
+				, mnu_target		= #{mnu_target}
+				, mnu_param			= #{mnu_param}
+				, mnu_linkUrl		= #{mnu_linkUrl}
+				, mnu_redirectUrl	= #{mnu_redirectUrl}
+				, mnu_privacy		= NVL(#{mnu_privacy}, 0)
+				, mnu_visibleGnb	= #{mnu_visibleGnb}
+				, mnu_visibleSnb	= #{mnu_visibleSnb}
+				, mnu_visibleTab	= #{mnu_visibleTab}
+				, mnu_visibleAuth	= #{mnu_visibleAuth}
+				, mnu_sttus			= #{mnu_sttus}
+				, mnu_deptId		= #{mnu_deptId}
+				, mnu_deptNm		= #{mnu_deptNm}
+				, mnu_staffNm		= #{mnu_staffNm}
+				, mnu_staffTelno	= #{mnu_staffTelno}
+				, mnu_staffEml		= #{mnu_staffEml}
+				, mnu_cclTy			= #{mnu_cclTy}
+				, mnu_cclGrade		= #{mnu_cclGrade}
+				, mnu_secKybdYn		= #{mnu_secKybdYn}
+				, mnu_uptCycl		= #{mnu_uptCycl}
+				, mnu_uptCyclUnit	= #{mnu_uptCyclUnit}
+				, mnu_uptEmpCd		= #{mnu_uptEmpCd}
+				, mnu_mdfcnID		= #{mnu_mdfcnID}
+				, mnu_mdfcnDt		= SYSDATE
+			WHEN not matched THEN 
+			INSERT VALUES (
+				#{mnu_code}
+				, #{mnu_uprCode}
+				, #{site_code}
+				, #{mnu_nm}
+				, #{mnu_nmKr}
+				, #{mnu_desc}
+				, #{mnu_ty}
+				, #{mnu_target}
+				, #{mnu_param}
+				, #{mnu_linkUrl}
+				, #{mnu_redirectUrl}
+				, (SELECT mnu_level FROM (SELECT NVL(MIN(mnu_level), -1) + 1 AS mnu_level FROM WEB_Menu WHERE mnu_code = #{mnu_uprCode}) L )
+				, (SELECT mnu_sort FROM (SELECT NVL(MAX(mnu_sort), 0) + 1 AS mnu_sort FROM WEB_Menu WHERE NVL(mnu_uprCode, 0) = #{mnu_uprCode}) O )
+				, NVL(#{mnu_privacy}, 0)
+				, #{mnu_visibleGnb}
+				, #{mnu_visibleSnb}
+				, #{mnu_visibleTab}
+				, #{mnu_visibleAuth}
+				, #{mnu_sttus}
+				, #{mnu_deptId}
+				, #{mnu_deptNm}
+				, #{mnu_staffNm}
+				, #{mnu_staffTelno}
+				, #{mnu_staffEml}
+				, #{mnu_cclTy}
+				, #{mnu_cclGrade}
+				, #{mnu_secKybdYn}
+				, #{mnu_uptCycl}
+				, #{mnu_uptCyclUnit}
+				, #{mnu_uptEmpCd}
+				, #{mnu_regID}
+				, SYSDATE
+				, NULL
+				, NULL
+				)		
+		]]>
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.menu.service.MenuVo">
+		<![CDATA[
+			UPDATE WEB_Menu SET
+				mnu_nm				= #{mnu_nm}
+				, mnu_nmKr			= #{mnu_nmKr}
+				, mnu_desc			= #{mnu_desc}
+				, mnu_ty			= #{mnu_ty}
+				, mnu_target		= #{mnu_target}
+				, mnu_param			= #{mnu_param}
+				, mnu_linkUrl		= #{mnu_linkUrl}
+				, mnu_redirectUrl	= #{mnu_redirectUrl}
+				, mnu_privacy		= #{mnu_privacy}
+				, mnu_visibleGnb	= #{mnu_visibleGnb}
+				, mnu_visibleSnb	= #{mnu_visibleSnb}
+				, mnu_visibleTab	= #{mnu_visibleTab}
+				, mnu_visibleAuth	= #{mnu_visibleAuth}
+				, mnu_sttus			= #{mnu_sttus}
+				, mnu_deptId		= #{mnu_deptId}
+				, mnu_deptNm		= #{mnu_deptNm}
+				, mnu_staffNm		= #{mnu_staffNm}
+				, mnu_staffTelno	= #{mnu_staffTelno}
+				, mnu_staffEml		= #{mnu_staffEml}
+				, mnu_cclTy			= #{mnu_cclTy}
+				, mnu_cclGrade		= #{mnu_cclGrade}
+				, mnu_secKybdYn		= #{mnu_secKybdYn}
+				, mnu_uptCycl		= #{mnu_uptCycl}
+				, mnu_uptCyclUnit	= #{mnu_uptCyclUnit}
+				, mnu_uptEmpCd		= #{mnu_uptEmpCd}
+				, mnu_mdfcnID		= #{mnu_mdfcnID}
+				, mnu_mdfcnDt		= SYSDATE
+			WHERE mnu_code = #{mnu_code}
+		]]>
+	</update>
+	
+	<!-- 메뉴수정시 담당부서 정보 하위적용 -->
+	<update id="updateSubDeptInfo" parameterType="egovframework.dnworks.cms.menu.service.MenuVo">
+	<![CDATA[
+		UPDATE WEB_Menu SET 
+			mnu_deptId			= #{mnu_deptId}
+			, mnu_deptNm		= #{mnu_deptNm}
+			, mnu_staffNm		= #{mnu_staffNm}
+			, mnu_staffTelno	= #{mnu_staffTelno}
+			, mnu_staffEml		= #{mnu_staffEml}
+			, mnu_mdfcnID		= #{mnu_mdfcnID}
+			, mnu_mdfcnDt		= SYSDATE
+		WHERE mnu_code IN (	
+							SELECT mnu_code
+							FROM WEB_Menu
+							START WITH mnu_code = #{mnu_code}
+							CONNECT BY PRIOR mnu_code = mnu_uprCode							
+						)
+	]]>
+	</update>
+	
+	<!-- 메뉴수정시 현재메뉴 비활성화시 하위메뉴도 비활성화 -->
+	<update id="sttusSubMenu" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_Menu SET 
+		mnu_sttus = 0
+		WHERE mnu_code IN (	
+							SELECT mnu_code
+							FROM WEB_Menu
+							START WITH mnu_code = #{mnu_code}
+							CONNECT BY PRIOR mnu_code = mnu_uprCode	
+						)
+	]]>
+	</update>
+<!-- 
+		UPDATE WEB_Menu SET mnu_sort = DECODE(#{UPDN} , 'UP', mnu_sort - 1, mnu_sort + 1) 
+		WHERE mnu_code = #{mnu_code} 
+		AND EXISTS (SELECT * FROM 
+							(SELECT mnu_code, mnu_sort FROM WEB_Menu 
+							WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code} )) A, 
+							(SELECT mnu_code, mnu_sort FROM WEB_Menu 
+							WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code} )) B 
+					WHERE (( #{UPDN} = 'UP' AND A.mnu_sort = B.mnu_sort - 1) OR ( #{UPDN} = 'DN' AND A.mnu_sort = B.mnu_sort + 1)) 
+					AND B.mnu_code = #{mnu_code} );
+		
+		UPDATE WEB_Menu SET mnu_sort = DECODE(#{UPDN} , 'UP', mnu_sort + 1, mnu_sort - 1) 
+		WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code} ) 
+		AND mnu_sort = (SELECT mnu_sort FROM WEB_Menu WHERE mnu_code = #{mnu_code} ) 
+		AND mnu_code != #{mnu_code};
+ -->	
+	<update id="updateOrder" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_Menu
+		SET mnu_sort = CASE
+		  WHEN mnu_code = #{mnu_code} THEN mnu_sort + CASE WHEN #{UPDN} = 'UP' THEN -1 ELSE 1 END
+		  ELSE mnu_sort + CASE WHEN #{UPDN} = 'UP' THEN 1 ELSE -1 END
+		END
+		WHERE mnu_code IN (
+		  #{mnu_code},
+		  (
+		    SELECT mnu_code
+		    FROM WEB_Menu
+		    WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code})
+		      AND mnu_sort = (
+		        SELECT mnu_sort + CASE WHEN #{UPDN} = 'UP' THEN -1 ELSE 1 END
+		        FROM WEB_Menu
+		        WHERE mnu_code = #{mnu_code}
+		      )
+		  )
+		)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_Menu WHERE mnu_code = #{mnu_code}
+	</delete>
+	
+	<update id="deleteOrder" parameterType="String">
+	<![CDATA[
+		UPDATE WEB_Menu SET 
+			mnu_sort = mnu_sort - 1 
+		WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code} ) 
+		AND mnu_sort > (SELECT mnu_sort FROM WEB_Menu WHERE mnu_code = #{mnu_code} ) 
+	]]>
+	</update>
+	
+	<select id="deleteRtnValue" parameterType="String" resultType="int">
+	<![CDATA[
+		SELECT NVL(A.mnu_code, B.mnu_uprCode) As mnu_code
+		FROM 
+		(	SELECT mnu_code, mnu_uprCode
+			FROM WEB_Menu
+			WHERE mnu_uprCode = (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code})
+			AND mnu_code != #{mnu_code} 
+			AND mnu_sort = 1
+		) A
+		RIGHT OUTER JOIN (SELECT mnu_uprCode FROM WEB_Menu WHERE mnu_code = #{mnu_code}) B
+		ON A.mnu_uprCode = B.mnu_uprCode
+	]]>
+	</select>
+	
+	<sql id="selectMenuCol">
+		mnu_code, mnu_uprCode
+		, mnu_nm, mnu_nmKr, mnu_desc
+		, mnu_ty, mnu_target, mnu_param
+		, mnu_linkUrl, mnu_redirectUrl
+		, mnu_level, mnu_sort
+		, mnu_privacy
+		, mnu_visibleGnb, mnu_visibleSnb, mnu_visibleTab, mnu_visibleAuth
+		, mnu_sttus
+		, mnu_deptId, mnu_deptNm, mnu_staffNm, mnu_staffTelno, mnu_staffEml
+		, mnu_cclTy, mnu_cclGrade
+		, mnu_secKybdYn
+		, mnu_uptCycl, mnu_uptCyclUnit, mnu_uptEmpCd
+		, mnu_regID, mnu_regDt, mnu_mdfcnID, mnu_mdfcnDt
+		, (SELECT COUNT(1) FROM WEB_Menu WHERE mnu_uprCode = A.mnu_code) AS mnu_childCnt
+		, B.site_code, B.site_nm, B.site_directory, B.site_locale, B.site_mngYn
+	</sql>
+	
+	<select id="selectMaxMnuCode" parameterType="String" resultType="String">
+		SELECT MAX(mnu_code) As max_mnuCode
+		FROM WEB_Menu A
+		WHERE mnu_uprCode = #{mnu_code}
+	</select>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.MenuVo">
+		SELECT 
+		<include refid="selectMenuCol" />
+		FROM WEB_Menu A
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		WHERE mnu_code = #{mnu_code}
+	</select>
+	
+	<select id="selectSubMenuCnt" parameterType="String" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_Menu A
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		WHERE mnu_uprCode = #{mnu_code}
+	</select>
+	
+	<select id="selectTree" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.MenuVo">
+		SELECT 
+		<include refid="selectMenuCol" /> 
+			, LEVEL AS lvl 
+			, SUBSTR(SYS_CONNECT_BY_PATH(LPAD(TO_CHAR(A.mnu_sort), 4, '0'), '-'), 2) AS ord
+		FROM WEB_Menu A
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		WHERE A.site_code = #{site_code}
+		
+		<if test="mnu_sttus != null and mnu_sttus != ''">
+			AND A.mnu_sttus = #{mnu_sttus}
+		</if>
+		START WITH NVL(A.mnu_uprCode, 'root') = NVL(#{mnu_code}, 'root')
+		CONNECT BY PRIOR A.mnu_code = A.mnu_uprCode
+		ORDER SIBLINGS BY A.mnu_sort
+	</select>
+	
+	<select id="selectPath" parameterType="Map" resultType="egovframework.dnworks.cms.menu.service.MenuVo">
+		SELECT 
+		<include refid="selectMenuCol" />,
+    	SUBSTR(SYS_CONNECT_BY_PATH(LPAD(TO_CHAR(A.mnu_sort), 4, '0'), '-'), 2) AS ord
+		FROM WEB_Menu A
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		WHERE mnu_level > 0
+		<if test="mnu_sttus != null and mnu_sttus != ''">
+			AND mnu_sttus = #{mnu_sttus}
+		</if>
+		START WITH A.mnu_code = #{mnu_code}
+		CONNECT BY PRIOR A.mnu_uprCode = A.mnu_code  		
+		ORDER BY mnu_level, mnu_sort
+	</select>
+	
+	
+	<sql id="refSelectPrmMenus">
+		WHERE (
+				<!-- 통합회원 회원ID 권한은 여기서 체크된다 -->
+				prm_id IN (#{usr_id}, #{dpt_id} )
+				OR prm_id IN (
+								SELECT grp_id
+								FROM WEB_Group
+								WHERE grp_sttus = 1
+								AND grp_id IN (	SELECT grp_id 
+												FROM WEB_GroupMember 
+												WHERE mem_id IN (#{usr_id}, #{dpt_id})
+												UNION
+												SELECT #{grp_id} AS grp_id 
+												FROM DUAL
+											)
+						 )
+				<!-- 통합회원 그룹 상위 그룹 권한 확인-->
+				OR prm_id IN (
+								SELECT 
+								    grp_id
+								FROM WEB_Group
+								START WITH grp_id =  #{grp_id}
+								CONNECT BY PRIOR grp_uprID = grp_id								
+							)
+			   )	    
+	</sql>
+	
+	<select id="selectPrmAdminList" parameterType="Map" resultType="String">
+		<![CDATA[
+			SELECT P.mnu_code
+			FROM (
+					SELECT mnu_code , 
+						TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwAdm)), UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnyAdm))))) AS PrmAdm
+					FROM WEB_Permission
+		]]>
+					<include refid="refSelectPrmMenus" />
+		<![CDATA[
+					GROUP BY mnu_code
+			) P
+			WHERE PrmAdm = 1
+		]]>
+	</select>
+	
+	<select id="selectPrmUserList" parameterType="Map" resultType="String">
+		<![CDATA[
+			SELECT P.mnu_code
+			FROM (	
+				SELECT mnu_code,
+					TO_NUMBER(UTL_RAW.BIT_AND(TO_CHAR(MAX(prm_alwSel)), UTL_RAW.BIT_COMPLEMENT(TO_CHAR(MAX(prm_dnySel))))) AS PrmSel
+				FROM WEB_Permission
+		]]>
+				<include refid="refSelectPrmMenus" />
+		<![CDATA[
+				GROUP BY mnu_code
+			) P
+			WHERE PrmSel = 1
+		]]>
+	</select>
+	
+	<update id="updateMdfcnDt" parameterType="int">
+		UPDATE WEB_Menu SET 
+			mnu_mdfcnDt = SYSDATE
+		WHERE mnu_code = #{mnu_code}
+	</update>
+	
+	<select id="selectMdfcnDtList" parameterType="int" resultType="egovframework.dnworks.cms.menu.service.MenuVo">
+		SELECT mnu_nm, mnu_mdfcnDt, page_mdfcnDt
+				, FUNC_GetMenuPath(A.mnu_code) As mnu_path
+		FROM WEB_Page A
+		JOIN WEB_Menu B ON A.mnu_code = B.mnu_code
+		WHERE page_sttus = 1
+		AND mnu_ty IN ('page', 'menu+page', 'page+program')
+		AND site_code = #{site_code}
+		ORDER BY page_mdfcnDt DESC
+	</select>
+		
+</mapper>

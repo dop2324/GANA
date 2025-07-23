@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardVodMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardVodVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardVod
+		VALUE (
+			IF(#{vod_sn} = -1, NULL, #{vod_sn})
+			, #{bod_sn}
+			, #{vod_ttl}
+			, #{vod_linkUrl}
+			, #{vod_speed}
+			, #{vod_duration}
+			, #{vod_thumb}
+			, #{vod_cnId}
+			, #{vod_device}
+			, #{vod_readCnt}
+			, #{vod_ctgryNm}
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			vod_ttl			= #{vod_ttl}
+			, vod_linkUrl	= #{vod_linkUrl}
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardVod WHERE vod_sn = #{vod_sn}
+	</delete>
+	
+	<select id="selectList" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardVodVo">
+		SELECT vod_sn, bod_sn
+				, vod_ttl, vod_linkUrl, vod_speed, vod_duration, vod_thumb
+				, vod_cnId, vod_device, vod_readCnt, vod_ctgryNm
+		FROM WEB_BoardVod
+		WHERE bod_sn = #{bod_sn}
+		ORDER BY vod_sn
+	</select>
+	
+</mapper>

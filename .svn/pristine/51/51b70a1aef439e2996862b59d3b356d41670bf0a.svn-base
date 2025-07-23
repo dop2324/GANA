@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveyResultMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveyResultVo">
+		INSERT INTO WEB_SurveyResult
+			SELECT
+				NULL
+				, #{user_sn}
+				, #{qus_sn}
+				, #{exam_sn}
+			FROM DUAL
+			WHERE 0 = (SELECT exam_ty FROM WEB_SurveyExample WHERE exam_sn = #{exam_sn})
+		<!-- 
+		INSERT INTO WEB_SurveyResult
+		VALUES 
+		(
+			NULL
+			, #{user_sn}
+			, #{qus_sn}
+			, #{exam_sn}
+		)
+		 -->
+	</update>
+	
+</mapper>

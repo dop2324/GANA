@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.survey.service.impl.SurveyUserMapper">
+
+	<insert id="save" parameterType="egovframework.dnworks.cms.survey.service.SurveyUserVo">
+		INSERT INTO WEB_SurveyUser
+		VALUES 
+		(
+			SEQ_SurveyUser.nextval
+			, #{survey_sn}
+			, #{user_nm}
+			, #{mem_id}
+			, #{user_di}
+			, #{user_addr}
+			, SYSDATE
+		)
+		<selectKey keyProperty="key_sn" resultType="int">
+            SELECT SEQ_SurveyUser.currval FROM DUAL
+        </selectKey>
+	</insert>
+	
+	<select id="checkVote" parameterType="egovframework.dnworks.cms.survey.service.SurveyUserVo" resultType="int">
+		SELECT COUNT(1)
+		FROM WEB_SurveyUser
+		WHERE survey_sn = #{survey_sn}
+		AND user_di = #{user_di}
+	</select>
+	
+</mapper>

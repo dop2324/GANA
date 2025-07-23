@@ -1,0 +1,370 @@
+/* krds-ui 가져오기 */
+@import url("../../common/component/krds-ui/css/common/common.css");
+
+/* form input ui */
+@import url("../../common/component/krds-ui/css/component/output.css");
+
+/* 버튼, 링크, 아이콘 */
+@import url("../../common/component/krds-ui/css/component/component.css");
+/********************************
+  skip-nav
+ *******************************/
+#skip_nav{position:absolute; left:0; top:0; width:100%; z-index:9999}
+#skip_nav a {overflow:hidden; display:block; height:1px; margin-bottom:-1px; color:#0063A9; font-size:16px; text-decoration:none;}
+#skip_nav a:active, #skip_nav a:focus{width:100%; height:auto; padding:8px 0 10px; background-color:#e0e7ef; font-size:16px; text-align:center; font-weight:500; outline: 1px solid blue;outline-offset:-5px}
+.hidden {position: absolute;
+    top: -9999px;
+    overflow: hidden;}
+
+	
+/********************************
+ 누리집 - uiux
+ *******************************/
+#uiux-top {
+  position: relative;
+  /*z-index: 70;*/
+  background-color: #EDF1F5;;
+}
+#uiux-top .toggle-head {
+  padding: 0 1.6rem;
+}
+#uiux-top .toggle-head .inner {
+  position: relative;
+  gap: 0.4rem 1.6rem;
+  min-height: 3.2rem;
+  padding-top: 0.8rem;
+  padding-left: 3.2rem;
+  padding-bottom: 0.8rem;
+}
+#uiux-top .toggle-head .nuri-txt {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  font-size: 1.5rem;
+  line-height: 1;
+  word-break: break-all;
+}
+#uiux-top .toggle-head .nuri-txt::before {
+  display: inline-flex;
+  position: absolute;
+  left: 0;
+  content: "";
+  width: 2.4rem;
+  height: 1.6rem;
+  margin-right: 0.8rem;
+  background: url(https://www.krds.go.kr/resources/img/component/icon/ico_flag.svg) no-repeat center;
+  background-size: contain;
+}
+#uiux-top .toggle-head .toggle-btn {
+  font-size: 1.4rem;
+  color: #003675;
+  height: auto;
+}
+#uiux-top .toggle-head .toggle-btn::after {
+  background-image: url(	https://uiux.egovframe.go.kr/resources/img/component/common/ico_arr_20_down_blue.svg);
+  transition: 0.4s ease-in-out;
+}
+#uiux-top .toggle-head.active .toggle-btn::after {
+  transform: rotate(-180deg);
+}
+#uiux-top .toggle-head.active ~ .toggle-body {
+  display: block;
+}
+#uiux-top .toggle-body {
+  height: 0;
+  transition: 0.4s ease-in-out;
+  overflow: hidden;
+}
+#uiux-top .toggle-body::before {
+  display: flex;
+  content: "";
+  border-top: 0.1rem solid #CDD7E4;
+}
+#uiux-top .toggle-body .inner {
+  padding-top: 2.4rem;
+  padding-bottom: 2.4rem;
+}
+#uiux-top .toggle-body .dl {
+  display: flex;
+  align-items: normal;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 1.6rem;
+  flex: 1;
+}
+#uiux-top .toggle-body .dl .dt {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  font-weight: 700;
+}
+#uiux-top .toggle-body .dl .dt::before {
+  display: inline-flex;
+  content: "";
+  width: 2rem;
+  height: 2rem;
+  background-image: url(https://uiux.egovframe.go.kr/resources/img/pattern/layout/head_ico_nuri.svg);
+}
+#uiux-top .toggle-body .dl dd {
+  padding-left: 2.8rem;
+}
+#uiux-top .toggle-body .dl .dd {
+  font-size: 1.5rem;
+  color: #555555;
+}
+#uiux-top .inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+/*전체 레이아웃*/
+#wrap {position:relative;}
+#top_layout, #body_layout, #foot_layout {position:relative; width:100%;}
+#top_layout .top_inner, #body_layout .body_inner, #foot_layout .foot_inner, #foot_layout .foot_addinner 
+{position:relative; max-width:1240px; margin:0 auto;}
+#body_layout .body_inner {}
+#body_layout .body_inner:after {content:''; display:block; visibility:hidden; clear:both;}
+.inner {position:relative; max-width:1240px; margin:0 auto;}
+#foot_layout {border-top: 1px solid #e8e8e8; }
+@media screen and (max-width:1024px) {
+#foot_layout {border-top: 0; }
+}
+
+@media screen and (max-width:767px) {
+
+
+}
+
+@media screen and (max-width:640px) {
+}
+
+@media screen and (max-width:480px) {
+}
+
+
+a:focus{outline: 2px dotted #256ef4; outline-offset:-3px}
+
+/* 공공누리 */
+.nuri_wrap { margin-top:50rem;}
+.nuri_wrap .nuri { display:flex; align-items:center; justify-content:center; padding:20rem; background:#f5f5f5; border:1px solid #e9e9e9; }
+.nuri_wrap .nuri::before { content:''; display:block; flex-shrink:0; width:208px; height:80px; background:var(--sprite_template) -400px 0; zoom:60%; }
+.nuri_wrap .nuri.type2::before {width:254px; background-position-y:-80px;}
+.nuri_wrap .nuri.type3::before {width:254px; background-position-y:-160px;}
+.nuri_wrap .nuri.type4::before {width:303px; background-position-y:-240px;}
+.nuri_wrap .nuri p {margin:0 0 0 30rem;}
+.nuri_wrap .nuri span { display:block; }
+
+/*만족도조사*/
+.page_research_box { border:1px solid #ccc; margin-top:10rem; margin-bottom:1.2rem; }
+.page_research_box .page_research_box_form {padding: 2.4rem;}
+.page_research_box .page_manager { display:flex; align-items:center; border-top:1px solid #ddd; background: var(--gray2-color); padding:0.7rem 3rem; font-size:0.95em; }
+.page_research_box .page_manager p:first-of-type {margin-left:0;}
+.page_research_box .page_manager strong { margin-right:15rem; }
+.page_research_box .page_manager .update {flex-grow:1; text-align:right; }
+
+/* 공통요소 */
+.txt-box:not(:first-of-type) {
+    margin-top: var(--krds-gap-7);
+}
+.txt-box {
+	--txt-box-width-border: var(--krds-light-border-width-static-regular);
+	--txt-box-color-border: var(--krds-light-color-border-gray);
+	--txt-box-color-background: var(--krds-light-color-surface-gray-subtler);
+	padding: var(--krds-pc-padding-card-large);
+	background-color: var(--txt-box-color-background);
+	border: var(--txt-box-width-border) solid var(--txt-box-color-border);
+	border-radius: var(--krds-radius-xlarge1);
+}
+.txt-box.bg-white {
+    --bg-white-color-background: var(--krds-light-color-surface-white-subtle);
+    --bg-white-color-background-gray: var(--krds-light-color-surface-gray-subtler);
+    --bg-white-color-border: var(--krds-light-color-divider-gray-light);
+    --bg-white-color-text: var(--krds-light-color-text-subtle);
+    display: flex;
+    align-items: normal;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: var(--krds-gap-7);
+    width: 100%;
+    background-color: var(--bg-white-color-background);
+}
+
+.page-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--krds-gap-5);
+    margin-top: var(--krds-gap-9);
+}
+.page-btn-wrap.both {
+    justify-content: space-between;
+}
+
+.terms-type {gap: 0;}
+.terms-agree-all {display: flex;align-items: normal;justify-content: flex-start;flex-direction: column;gap: var(--krds-gap-3);margin-top: var(--krds-pc-gap-layout-h3-h4);}
+.terms-agree-all .conts-desc {padding-left: var(--krds-padding-10);}
+.terms-agree-ul {display: flex;align-items: normal;justify-content: flex-start;flex-direction: column;gap: var(--krds-gap-9);}
+.terms-agree-ul .agree-tit {display: flex;align-items: flex-start;justify-content: flex-start;flex-direction: column;gap: var(--krds-gap-5);}
+.terms-agree-ul .agree-box {display: flex;align-items: center;justify-content: space-between;flex-direction: row;margin-top: var(--krds-gap-5);}
+.agree-box.bg-gray {background-color: var(--krds-light-color-surface-gray-subtle);}
+.agree-box {display: flex;align-items: center;justify-content: center;flex-direction: column;padding: var(--krds-padding-8);background-color: var(--krds-light-color-surface-primary-subtler);border-radius: var(--krds-radius-xlarge1);}
+
+.txt-box.bg-white .box-sec {
+	display: flex;
+	align-items: normal;
+	justify-content: flex-start;
+	flex-direction: column;
+	gap: var(--krds-gap-7);
+}
+.helper-box {
+	position: relative;
+	background-color: var(--krds-light-color-surface-secondary-subtler);
+	padding: var(--krds-pc-padding-card-small);
+	border-radius: var(--krds-radius-xlarge1);
+}
+
+.krds-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.item-sec {
+	margin-top: var(--krds-gap-7);
+	postion:relative;
+}
+
+/********************************
+ margin
+ *******************************/
+.mg_1 { margin: 1px; }
+.mg_2 { margin: 2px; }
+.mg_3 { margin: 3px; }
+.mg_4 { margin: 4px; }
+.mg_5 { margin: 5px; }
+.mg_10 { margin: 10px; }
+.mg_15 { margin: 15px; }
+.mg_20 { margin: 20px; }
+.mg_25 { margin: 25px; }
+.mg_30 { margin: 30px; }
+.mg_35 { margin: 35px; }
+.mg_40 { margin: 40px; }
+.mg_45 { margin: 45px; }
+.mg_50 { margin: 50px; }
+.mg_55 { margin: 55px; }
+.mg_60 { margin: 60px; }
+.mg_65 { margin: 65px; }
+.mg_70 { margin: 70px; }
+.mg_75 { margin: 75px; }
+.mg_80 { margin: 80px; }
+.mg_85 { margin: 85px; }
+.mg_90 { margin: 90px; }
+.mg_95 { margin: 95px; }
+.mg_100 { margin: 100px; }
+
+.mgt_-15 { margin-top:-15px; }
+.mgt_0 { margin-top: 0px; }
+.mgt_5 { margin-top: 5px; }
+.mgt_10 { margin-top: 10px; }
+.mgt_15 { margin-top: 15px; }
+.mgt_20 { margin-top: 20px; }
+.mgt_25 { margin-top: 25px; }
+.mgt_30 { margin-top: 30px; }
+.mgt_35 { margin-top: 35px; }
+.mgt_40 { margin-top: 40px; }
+.mgt_45 { margin-top: 45px; }
+.mgt_50 { margin-top: 50px; }
+.mgt_55 { margin-top: 55px; }
+.mgt_60 { margin-top: 60px; }
+.mgt_65 { margin-top: 65px; }
+.mgt_70 { margin-top: 70px; }
+.mgt_75 { margin-top: 75px; }
+.mgt_80 { margin-top: 80px; }
+.mgt_85 { margin-top: 85px; }
+.mgt_90 { margin-top: 90px; }
+.mgt_95 { margin-top: 95px; }
+.mgt_100 { margin-top: 100px; }
+
+.mgr_0 { margin-right: 0px; }
+.mgr_2 { margin-right: 2px; }
+.mgr_3 { margin-right: 3px; }
+.mgr_4 { margin-right: 4px; }
+.mgr_5 { margin-right: 5px; }
+.mgr_10 { margin-right: 10px; }
+.mgr_15 { margin-right: 15px; }
+.mgr_20 { margin-right: 20px; }
+.mgr_25 { margin-right: 25px; }
+.mgr_30 { margin-right: 30px; }
+.mgr_35 { margin-right: 35px; }
+.mgr_40 { margin-right: 40px; }
+.mgr_45 { margin-right: 45px; }
+.mgr_50 { margin-right: 50px; }
+.mgr_55 { margin-right: 55px; }
+.mgr_60 { margin-right: 60px; }
+.mgr_65 { margin-right: 65px; }
+.mgr_70 { margin-right: 70px; }
+.mgr_75 { margin-right: 75px; }
+.mgr_80 { margin-right: 80px; }
+.mgr_85 { margin-right: 85px; }
+.mgr_90 { margin-right: 90px; }
+.mgr_95 { margin-right: 95px; }
+.mgr_100 { margin-right: 100px; }
+
+.mgb_3 { margin-bottom: 3px; }
+.mgb_5 { margin-bottom: 5px; }
+.mgb_10 { margin-bottom: 10px; }
+.mgb_15 { margin-bottom: 15px; }
+.mgb_20 { margin-bottom: 20px; }
+.mgb_25 { margin-bottom: 25px; }
+.mgb_30 { margin-bottom: 30px; }
+.mgb_35 { margin-bottom: 35px; }
+.mgb_40 { margin-bottom: 40px; }
+.mgb_45 { margin-bottom: 45px; }
+.mgb_50 { margin-bottom: 50px; }
+.mgb_55 { margin-bottom: 55px; }
+.mgb_60 { margin-bottom: 60px; }
+.mgb_65 { margin-bottom: 65px; }
+.mgb_70 { margin-bottom: 70px; }
+.mgb_75 { margin-bottom: 75px; }
+.mgb_80 { margin-bottom: 80px; }
+.mgb_85 { margin-bottom: 85px; }
+.mgb_90 { margin-bottom: 90px; }
+.mgb_95 { margin-bottom: 95px; }
+.mgb_100 { margin-bottom: 100px; }
+
+.mgl_2 { margin-left: 2px; }
+.mgl_5 { margin-left: 5px; }
+.mgl_10 { margin-left: 10px; }
+.mgl_15 { margin-left: 15px; }
+.mgl_20 { margin-left: 20px; }
+.mgl_25 { margin-left: 25px; }
+.mgl_30 { margin-left: 30px; }
+.mgl_35 { margin-left: 35px; }
+.mgl_40 { margin-left: 40px; }
+.mgl_45 { margin-left: 45px; }
+.mgl_50 { margin-left: 50px; }
+.mgl_55 { margin-left: 55px; }
+.mgl_60 { margin-left: 60px; }
+.mgl_65 { margin-left: 65px; }
+.mgl_70 { margin-left: 70px; }
+.mgl_75 { margin-left: 75px; }
+.mgl_80 { margin-left: 80px; }
+.mgl_85 { margin-left: 85px; }
+.mgl_90 { margin-left: 90px; }
+.mgl_95 { margin-left: 95px; }
+.mgl_100 { margin-left: 100px; }
+
+/********************************
+ text
+ *******************************/
+.t_left {text-align:left;}
+.t_right {text-align:right;}
+.t_center {text-align:center;}
+.t_bold {font-weight:700;}
+.t_bigbold {font-weight:800;}
+.t_red{color:#f00054;}
+.t_blue{color:#003eff;}
+
+.clearfix:after{content: ""; display: block; clear: both;}

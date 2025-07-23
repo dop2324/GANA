@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.memb.service.impl.MembMapper">
+
+	<sql id="whereMembMngList">
+		FROM TM_MEMB_INFO A
+		WHERE 1=1
+		<if test="srchSe != null and srchSe != '' and srchKwd != null and srchKwd != ''">
+			AND ${srchSe} LIKE '%' || #{srchKwd} || '%'
+		</if>
+		
+		<if test="srchLngtm != null and srchLngtm !=''">
+			<choose>
+				<when test=" srchLngtm.equals('FRST') ">
+					AND EML_SND_DT1 IS NOT NULL AND EML_SND_DT2 IS NULL
+				</when>
+				<when test=" srchLngtm.equals('SCND') ">
+					AND (EML_SND_DT1 IS NOT NULL AND EML_SND_DT2 IS NOT NULL )
+				</when>
+				<otherwise>
+					AND (EML_SND_DT1 IS NOT NULL OR EML_SND_DT2 IS NOT NULL )
+				</otherwise>
+			</choose>
+		</if>
+		
+		<if test="srchWdrw != null and srchWdrw!= ''">
+			AND WDRW_DT IS NOT NULL
+		</if>
+	</sql>
+
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT COUNT(1)
+	]]>
+		<include refid="whereMembMngList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembInfoVO">
+		SELECT T.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY MEMB_UNQ_ID DESC) AS RNUM,
+				MEMB_UNQ_ID AS membUnqId
+				, MEMB_ID AS membId
+				, MEMB_TYPE AS membType
+				, MEMB_NM AS membNm
+				, PSWD AS pswd
+				, PSWD_CHG_DT AS pswdChgDt
+				, MBTLNUM AS mbtlnum
+				, EML_ADDR AS emlAddr
+				, ZIP AS zip
+				, ADDR AS addr
+				, DTL_ADDR AS dtlAddr
+				, BRTHDY AS brthdy
+				, SEXDSTN AS sexdstn
+				, AUTH_MTHD AS authMthd
+				, AUTH_DT AS authDt
+				, CI_VAL AS ciVal
+				, DI_VAL AS diVal
+				, JOIN_DT AS joinDt
+				, LAST_LGN_DT AS lastLgnDt
+				, LGN_FAIL_CNT AS lgnFailCnt
+				, MEMB_STAT_CD AS membStatCd
+				, TRMS_AGRE_DT AS trmsAgreDt
+				, PRSNL_INFO_CLCT_AGRE_DT AS prsnlInfoClctAgreDt
+				, THRDP_INFO_PROV_AGRE_DT AS thrdpInfoProvAgreDt
+				, SALT AS salt
+				, to_char(EML_SND_DT1, 'YYYY-MM-DD HH24:MI:SS') AS emlSndDt1
+				, to_char(EML_SND_DT2, 'YYYY-MM-DD HH24:MI:SS') AS emlSndDt2
+				, WDRW_DT AS wdrwDt
+				, WDRW_CN AS wdrwCn
+				, LGL_RPRSNT_NM AS lglRprsntNm
+				, LGL_RPRSNT_MBTLNUM AS lglRprsntMbtlnum
+				, LGL_RPRSNT_EML_ADDR AS lglRprsntEmlAddr
+				, LGL_RPRSNT_CI AS lglRprsntCi
+				, LGL_RPRSNT_DI AS lglRprsntDi
+			<include refid="whereMembMngList" />
+		) T
+	<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+	]]>
+	</select>
+	
+	<select id="select" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		SELECT
+			MEMB_UNQ_ID AS membUnqId
+			, MEMB_ID AS membId
+			, MEMB_TYPE AS membType
+			, MEMB_NM AS membNm
+			, PSWD AS pswd
+			, PSWD_CHG_DT AS pswdChgDt
+			, MBTLNUM AS mbtlnum
+			, EML_ADDR AS emlAddr
+			, ZIP AS zip
+			, ADDR AS addr
+			, DTL_ADDR AS dtlAddr
+			, BRTHDY AS brthdy
+			, SEXDSTN AS sexdstn
+			, AUTH_MTHD AS authMthd
+			, AUTH_DT AS authDt
+			, JOIN_DT AS joinDt
+			, LAST_LGN_DT AS lastLgnDt
+			, LGN_FAIL_CNT AS lgnFailCnt
+			, MEMB_STAT_CD AS membStatCd
+			, TRMS_AGRE_DT AS trmsAgreDt
+			, PRSNL_INFO_CLCT_AGRE_DT AS prsnlInfoClctAgreDt
+			, THRDP_INFO_PROV_AGRE_DT AS thrdpInfoProvAgreDt
+			, SALT AS salt
+			, to_char(EML_SND_DT1, 'YYYY-MM-DD HH24:MI:SS') AS emlSndDt1
+			, to_char(EML_SND_DT2, 'YYYY-MM-DD HH24:MI:SS') AS emlSndDt2
+			, WDRW_DT AS wdrwDt
+			, WDRW_CN AS wdrwCn
+			, LGL_RPRSNT_NM AS lglRprsntNm
+			, LGL_RPRSNT_MBTLNUM AS lglRprsntMbtlnum
+			, LGL_RPRSNT_EML_ADDR AS lglRprsntEmlAddr
+			, LGL_RPRSNT_CI AS lglRprsntCi
+			, LGL_RPRSNT_DI AS lglRprsntDi
+		FROM TM_MEMB_INFO
+		WHERE MEMB_UNQ_ID = #{membUnqId}
+	]]>
+	</select>
+	
+	<select id="selectMembInfo" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		SELECT
+			MEMB_UNQ_ID AS membUnqId
+			, MEMB_ID AS membId
+			, MEMB_TYPE AS membType
+			, MEMB_NM AS membNm
+			, PSWD AS pswd
+			, PSWD_CHG_DT AS pswdChgDt
+			, MBTLNUM AS mbtlnum
+			, EML_ADDR AS emlAddr
+			, ZIP AS zip
+			, ADDR AS addr
+			, DTL_ADDR AS dtlAddr
+			, BRTHDY AS brthdy
+			, SEXDSTN AS sexdstn
+			, AUTH_MTHD AS authMthd
+			, AUTH_DT AS authDt
+			, CI_VAL AS ciVal
+			, DI_VAL AS diVal
+			, JOIN_DT AS joinDt
+			, LAST_LGN_DT AS lastLgnDt
+			, LGN_FAIL_CNT AS lgnFailCnt
+			, MEMB_STAT_CD AS membStatCd
+			, TRMS_AGRE_DT AS trmsAgreDt
+			, PRSNL_INFO_CLCT_AGRE_DT AS prsnlInfoClctAgreDt
+			, THRDP_INFO_PROV_AGRE_DT AS thrdpInfoProvAgreDt
+			, SALT AS salt
+			, EML_SND_DT1 AS emlSndDt1
+			, EML_SND_DT2 AS emlSndDt2
+			, WDRW_DT AS wdrwDt
+			, WDRW_CN AS wdrwCn
+			, LGL_RPRSNT_NM AS lglRprsntNm
+			, LGL_RPRSNT_MBTLNUM AS lglRprsntMbtlnum
+			, LGL_RPRSNT_EML_ADDR AS lglRprsntEmlAddr
+			, LGL_RPRSNT_CI AS lglRprsntCi
+			, LGL_RPRSNT_DI AS lglRprsntDi
+		FROM TM_MEMB_INFO
+		WHERE MEMB_STAT_CD IN ('P', 'S')
+	]]>
+		<if test=" ciVal != null and ciVal != '' ">
+			AND CI_VAL = #{ciVal}
+		</if>
+	</select>
+	
+	<select id="selectLogin" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		SELECT
+			MEMB_UNQ_ID AS membUnqId
+			, MEMB_ID AS membId
+			, MEMB_TYPE AS membType
+			, MEMB_NM AS membNm
+			, PSWD AS pswd
+			, PSWD_CHG_DT AS pswdChgDt
+			, MBTLNUM AS mbtlnum
+			, EML_ADDR AS emlAddr
+			, ZIP AS zip
+			, ADDR AS addr
+			, DTL_ADDR AS dtlAddr
+			, BRTHDY AS brthdy
+			, SEXDSTN AS sexdstn
+			, AUTH_MTHD AS authMthd
+			, AUTH_DT AS authDt
+			, JOIN_DT AS joinDt
+			, DI_VAL as diVal
+			, CI_VAL as ciVal
+			, LAST_LGN_DT AS lastLgnDt
+			, LGN_FAIL_CNT AS lgnFailCnt
+			, MEMB_STAT_CD AS membStatCd
+			, TRMS_AGRE_DT AS trmsAgreDt
+			, PRSNL_INFO_CLCT_AGRE_DT AS prsnlInfoClctAgreDt
+			, THRDP_INFO_PROV_AGRE_DT AS thrdpInfoProvAgreDt
+			, SALT AS salt
+			, EML_SND_DT1 AS emlSndDt1
+			, EML_SND_DT2 AS emlSndDt2
+			, WDRW_DT AS wdrwDt
+			, WDRW_CN AS wdrwCn
+			, LGL_RPRSNT_NM AS lglRprsntNm
+			, LGL_RPRSNT_MBTLNUM AS lglRprsntMbtlnum
+			, LGL_RPRSNT_EML_ADDR AS lglRprsntEmlAddr
+			, LGL_RPRSNT_CI AS lglRprsntCi
+			, LGL_RPRSNT_DI AS lglRprsntDi
+		FROM TM_MEMB_INFO
+		WHERE MEMB_ID = #{membId}
+	]]>
+	</select>
+
+	<select id="isDuplicate" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO" resultType="int">
+	<![CDATA[
+		SELECT 
+			count(*) AS CNT
+		FROM TM_MEMB_INFO 
+	]]>
+		<trim prefix="WHERE" prefixOverrides="OR">
+			<if test="membId != null and membId != ''">
+				OR MEMB_ID = #{membId}
+			</if>
+			<if test="emlAddr != null and emlAddr != ''">
+				OR EML_ADDR = #{emlAddr}
+			</if>
+			<if test="ciVal != null and ciVal != ''">
+				OR CI_VAL = #{ciVal}
+			</if>
+			<if test="diVal != null and diVal != ''">
+				OR DI_VAL = #{diVal}
+			</if>
+			<if test="mbtlnum != null and mbtlnum != ''">
+				OR MBTLNUM = #{mbtlnum}
+			</if>
+		</trim>
+	</select>
+	
+	<insert id="createDataMemb" parameterType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		INSERT INTO TM_MEMB_INFO(
+			MEMB_UNQ_ID
+			, MEMB_ID
+			, MEMB_TYPE
+			, MEMB_NM
+			, PSWD
+			, PSWD_CHG_DT
+			, MBTLNUM
+			, EML_ADDR
+			, ZIP
+			, ADDR
+			, DTL_ADDR
+			, BRTHDY
+			, SEXDSTN
+			, AUTH_MTHD
+			, AUTH_DT
+			, CI_VAL
+			, DI_VAL
+			, JOIN_DT
+			, LAST_LGN_DT
+			, LGN_FAIL_CNT
+			, MEMB_STAT_CD
+			, TRMS_AGRE_DT
+			, PRSNL_INFO_CLCT_AGRE_DT
+			, THRDP_INFO_PROV_AGRE_DT
+			, SALT
+			, LGL_RPRSNT_NM
+			, LGL_RPRSNT_MBTLNUM
+			, LGL_RPRSNT_EML_ADDR
+			, LGL_RPRSNT_CI
+			, LGL_RPRSNT_DI
+		) VALUES (
+			#{membUnqId}
+			, #{membId}
+			, #{membType}
+			, #{membNm}
+			, #{pswd}
+			, SYSDATE
+			, #{mbtlnum}
+			, #{emlAddr}
+			, #{zip}
+			, #{addr}
+			, #{dtlAddr}
+			, #{brthdy}
+			, #{sexdstn}
+			, #{authMthd}
+			, SYSDATE
+			, #{ciVal}
+			, #{diVal}
+			, SYSDATE
+			, SYSDATE
+			, 0
+			, 'P'
+			, SYSDATE
+			, SYSDATE
+			, SYSDATE
+			, #{salt}
+			, #{lglRprsntNm}
+			, #{lglRprsntMbtlnum}
+			, #{lglRprsntEmlAddr}
+			, #{lglRprsntCi}
+			, #{lglRprsntDi}
+		)
+	]]>
+	</insert>
+	
+	<update id="updateMembStatCd" parameterType="Map">
+	<![CDATA[
+		UPDATE TM_MEMB_INFO SET
+			MEMB_STAT_CD = #{membStatCd}
+		WHERE MEMB_ID = #{membId}
+	]]>
+	</update>
+	
+	<update id="updatePswd" parameterType="Map">
+	<![CDATA[
+		UPDATE TM_MEMB_INFO SET
+			PSWD = #{pswd}
+			, PSWD_CHG_DT = SYSDATE
+			, LGN_FAIL_CNT = 0
+			, MEMB_STAT_CD = CASE WHEN MEMB_STAT_CD = 'E' THEN 'P' ELSE MEMB_STAT_CD END
+		WHERE MEMB_ID = #{membId}
+	]]>
+	</update>
+	
+	<update id="updateLgnFailCnt" parameterType="Map">
+	<![CDATA[
+		UPDATE TM_MEMB_INFO SET
+			LGN_FAIL_CNT = LGN_FAIL_CNT + 1 
+			, MEMB_STAT_CD = CASE WHEN LGN_FAIL_CNT + 1 >= 5 THEN 'E' ELSE MEMB_STAT_CD END
+		WHERE MEMB_ID = #{membId}
+	]]>
+	</update>
+	
+	<update id="updateLgnSucc" parameterType="Map">
+	<![CDATA[
+		UPDATE TM_MEMB_INFO SET
+			LGN_FAIL_CNT = 0
+			, LAST_LGN_DT = SYSDATE
+			, MEMB_STAT_CD = 'P'
+			, EML_SND_DT1 = NULL
+			, EML_SND_DT2 = NULL
+		WHERE MEMB_ID = #{membId}
+	]]>
+	</update>
+	
+	<update id="updateMembInfo" parameterType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		UPDATE TM_MEMB_INFO SET
+			EML_ADDR=#{emlAddr}
+			, ZIP=#{zip}
+			, ADDR=#{addr}
+			, DTL_ADDR=#{dtlAddr}
+	]]>
+		<if test=" membNm != null and membNm != '' ">
+			, MEMB_NM = #{membNm}
+		</if>
+		<if test=" mbtlnum != null and mbtlnum != '' ">	
+			, MBTLNUM=#{mbtlnum}
+		</if>
+		<if test=" authMthd != null and authMthd != '' ">
+			, DI_VAL = #{diVal}
+			, AUTH_MTHD = #{authMthd}
+			, AUTH_DT = SYSDATE
+		</if>
+	<![CDATA[
+		WHERE MEMB_UNQ_ID = #{membUnqId}
+	]]>
+	</update>
+	
+	<select id="selectLngtmList" parameterType="Map" resultType="egovframework.dnworks.func.memb.service.MembInfoVO">
+	<![CDATA[
+		SELECT 
+			MEMB_UNQ_ID AS membUnqId
+			, MEMB_ID AS membId
+			, MEMB_TYPE AS membType
+			, MEMB_NM AS membNm
+			, PSWD AS pswd
+			, PSWD_CHG_DT AS pswdChgDt
+			, MBTLNUM AS mbtlnum
+			, EML_ADDR AS emlAddr
+			, ZIP AS zip
+			, ADDR AS addr
+			, DTL_ADDR AS dtlAddr
+			, BRTHDY AS brthdy
+			, SEXDSTN AS sexdstn
+			, AUTH_MTHD AS authMthd
+			, AUTH_DT AS authDt
+			, JOIN_DT AS joinDt
+			, DI_VAL as diVal
+			, CI_VAL as ciVal
+			, LAST_LGN_DT AS lastLgnDt
+			, LGN_FAIL_CNT AS lgnFailCnt
+			, MEMB_STAT_CD AS membStatCd
+			, TRMS_AGRE_DT AS trmsAgreDt
+			, PRSNL_INFO_CLCT_AGRE_DT AS prsnlInfoClctAgreDt
+			, THRDP_INFO_PROV_AGRE_DT AS thrdpInfoProvAgreDt
+			, SALT AS salt
+			, EML_SND_DT1 AS emlSndDt1
+			, EML_SND_DT2 AS emlSndDt2
+			, WDRW_DT AS wdrwDt
+			, WDRW_CN AS wdrwCn
+			, LGL_RPRSNT_NM AS lglRprsntNm
+			, LGL_RPRSNT_MBTLNUM AS lglRprsntMbtlnum
+			, LGL_RPRSNT_EML_ADDR AS lglRprsntEmlAddr
+			, LGL_RPRSNT_CI AS lglRprsntCi
+			, LGL_RPRSNT_DI AS lglRprsntDi
+		FROM TM_MEMB_INFO
+	]]>
+		<if test=" srchLngtm.equals('FRST') ">
+			WHERE MEMB_STAT_CD = 'P'
+			  <![CDATA[ AND LAST_LGN_DT <= TRUNC(SYSDATE) - 365 ]]>
+			  AND EML_SND_DT1 IS NULL
+		</if>
+		<if test=" srchLngtm.equals('SCND') ">
+			WHERE MEMB_STAT_CD IN ('P', 'S')
+			  <![CDATA[ AND LAST_LGN_DT <= TRUNC(SYSDATE) - 730 ]]>
+			 AND EML_SND_DT1 IS NOT NULL
+			 AND EML_SND_DT2 IS NULL
+		</if>
+		ORDER BY MEMB_UNQ_ID ASC
+	</select>
+	
+	<update id="updateLngtmMemb" parameterType="Map">
+		UPDATE TM_MEMB_INFO SET
+		<if test=" srchLngtm.equals('FRST') ">
+			EML_SND_DT1 = SYSDATE
+		</if>
+		<if test=" srchLngtm.equals('SCND') ">
+			EML_SND_DT2 = SYSDATE
+		</if>
+			, MEMB_STAT_CD = 'S'
+		WHERE MEMB_UNQ_ID = #{membUnqId}
+	</update>
+
+</mapper>

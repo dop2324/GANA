@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- converted -->
+<mapper namespace="egovframework.dnworks.cms.stats.service.impl.SessionMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		INSERT INTO WEB_Session
+		SELECT
+			#{ses_id}
+			, #{site_code}
+			, systimestamp
+			, #{ses_sesID}
+			, #{ses_agent}
+			, #{ses_clientIP}
+			, #{ses_serverIP}
+			, #{ses_referer}
+			, #{ses_lang}
+		FROM DUAL
+		WHERE NOT EXISTS (SELECT ses_id FROM WEB_Session WHERE ses_id = #{ses_id})
+	</update>
+	
+	<update id="insertTrack" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		INSERT INTO WEB_SessionTrack
+		SELECT
+			#{mnu_code}
+			, #{ses_id}
+			, systimestamp
+		FROM DUAL
+		WHERE EXISTS (SELECT ses_id FROM WEB_Session WHERE ses_id = #{ses_id})
+	</update>
+	
+	<update id="update" parameterType="egovframework.dnworks.cms.stats.service.SessionVo">
+		UPDATE WEB_Session SET
+			ses_sesID = #{ses_sesID}
+		WHERE ses_id = #{ses_id}
+	</update>
+	
+	<sql id="whereSessionList">
+		FROM
+		(
+			SELECT * FROM WEB_Session
+			UNION ALL
+			SELECT * FROM WEB_SessionLog
+		) A
+		WHERE ses_joinDt BETWEEN TO_TIMESTAMP(#{srchSDate}||' 00:00:00.000', 'YYYY-MM-DD HH24:MI:SS.FF3') AND TO_TIMESTAMP(#{srchEDate}||' 23:59:59.999', 'YYYY-MM-DD HH24:MI:SS.FF3' )
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		ses_userID LIKE '%'||#{srchKwd}||'%'  
+				OR ses_clientIP LIKE '%'||#{srchKwd}||'%' 
+				OR ses_agent LIKE '%'||#{srchKwd}||'%' 
+				)
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT COUNT(1)
+		<include refid="whereSessionList"/>
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.stats.service.SessionVo">
+		SELECT *
+		 FROM ( 
+			SELECT ROW_NUMBER() OVER (ORDER BY ses_joinDt DESC) AS RNUM , ses_id, site_code
+					, ses_joinDt, ses_sesID, ses_agent, ses_clientIP, ses_serverIP
+					, ses_referer, ses_lang
+					, (SELECT site_nm FROM WEB_Site WHERE site_code = A.site_code) As site_nm
+		
+			<include refid="whereSessionList"/>
+		 ) T
+		<![CDATA[
+		WHERE RNUM > ((#{pageNo} - 1) * #{pageSize} ) AND ROWNUM <= #{pageSize}
+		]]> 
+	</select>
+	
+</mapper>

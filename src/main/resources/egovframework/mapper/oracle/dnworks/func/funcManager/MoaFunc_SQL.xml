@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.cmm.service.impl.MoaFuncMapper">
+
+	<select id="getcodeNm" parameterType="Map" resultType="string">
+	<![CDATA[
+		SELECT CODE_NM FROM WEB_CMMNCD WHERE CODE_UPRSN=#{codeUprSn} AND CODE_VAL=#{codeVal}
+	]]>
+	</select>
+	
+	<select id="getCodeList" parameterType="map" resultType="map">
+	<![CDATA[
+		SELECT 
+			CODE_SN
+			, CODE_UPRSN
+			, CODE_NM
+			, CODE_VAL
+			, CODE_TY
+			, CODE_LEVEL
+			, CODE_SORT
+			, CODE_STTUS
+			, CODE_MDFCNID
+			, CODE_MDFCNDT
+		FROM WEB_CMMNCD 
+		WHERE CODE_UPRSN IN ( SELECT CODE_SN FROM WEB_CMMNCD WHERE CODE_VAL = #{codeVal} )
+		ORDER BY CODE_SORT 
+	]]>
+	</select>
+	
+	<select id="getGroupInfo" parameterType="egovframework.dnworks.cms.member.service.GroupVo" resultType="egovframework.dnworks.cms.member.service.GroupVo">
+	<![CDATA[
+		SELECT
+			GRP_ID, GRP_UPRID, GRP_NM, GRP_DESC, GRP_STTUS, GRP_LEVEL, GRP_SORT, GRP_MDFCNID, GRP_MDFCNDT
+		FROM WEB_GROUP
+		WHERE GRP_ID = #{grp_id}
+	]]>
+	</select>
+	
+	<select id="getUseOrgList" resultType="egovframework.dnworks.func.memb.service.MembAgentVO">
+	<![CDATA[
+		SELECT 
+			USE_ORG_ID AS useOrgId
+			, USE_ORG_NM AS useOrgNm
+			, HMPG_NM AS hmpgNm
+			, HMPG_URL AS hmpgUrl
+			, CALLBACK_URL AS callbackUrl
+			, ORG_PIC_NM AS orgPicNm
+			, ORG_PIC_EML_ADDR AS orgPicEml
+			, ORG_PIC_TELNO AS orgPicTelno
+			, CLIENT_ID AS clientId
+			, USE_YN AS useYn
+			, REG_DT AS regDt
+			, REG_ID AS regId
+			, MDFCN_DT AS mdfcnDt
+			, MDFCN_ID AS mdfcnId
+			, DEL_YN AS delYn
+			, DEL_DT AS delDt
+			, DEL_ID AS delId
+		FROM TN_USE_ORG_INFO
+		WHERE DEL_YN = 'N' AND USE_YN = 'Y'
+		ORDER BY USE_ORG_ID ASC 
+	]]>
+	</select>
+	
+	<select id="getUseOrgNm" parameterType="egovframework.dnworks.func.memb.service.MembAgentVO" resultType="string">
+	<![CDATA[
+		SELECT
+			USE_ORG_NM||' '||HMPG_NM AS useOrgNm
+		FROM TN_USE_ORG_INFO
+		WHERE USE_ORG_ID = #{useOrgId}
+	]]>
+	</select>
+
+</mapper>

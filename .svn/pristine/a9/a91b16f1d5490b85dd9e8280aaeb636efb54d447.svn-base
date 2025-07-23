@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardVoteMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardVoteVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardVote
+		VALUE (
+			#{con_sn}
+			, #{vote_id}
+			, #{vote_ty}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			vote_ty		= #{vote_ty}
+			, vote_regDt	= SYSDATE()
+	]]>
+	</update>
+	
+	<select id="selectVoteType" parameterType="egovframework.dnworks.cms.board.service.BoardVoteVo" resultType="int">
+		<![CDATA[
+			SELECT IFNULL(vote_ty, 0)
+			FROM WEB_BoardVote
+			WHERE con_sn 	= #{con_sn} 
+			AND vote_id 	= #{vote_id} 
+		]]>
+	</select>
+	
+	<select id="checkBoardVote" parameterType="egovframework.dnworks.cms.board.service.BoardVoteVo" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			FROM WEB_BoardVote
+			WHERE con_sn 	= #{con_sn} 
+			AND vote_id 	= #{vote_id} 
+		]]>
+	</select>
+	
+	<select id="selectSumVoteCnt" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardVoteVo">
+		<![CDATA[
+			SELECT con_sn
+				, SUM(CASE vote_ty WHEN 1 THEN 1 ELSE 0 END) vote_yesCnt
+				, SUM(CASE vote_ty WHEN 0 THEN 1 ELSE 0 END) vote_noCnt
+			FROM WEB_BoardVote
+			WHERE con_sn 	= #{con_sn} 
+			GROUP BY con_sn
+		]]>
+	</select>
+	
+</mapper>

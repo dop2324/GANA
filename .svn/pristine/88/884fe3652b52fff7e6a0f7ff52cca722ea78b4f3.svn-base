@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.blacklist.service.impl.BlockLogMapper">
+
+	<update id="insert" parameterType="egovframework.dnworks.cms.blacklist.service.BlockLogVo">
+		<![CDATA[
+			INSERT INTO WEB_BlockLog
+			VALUES 
+			(
+				NULL
+				, #{log_id}
+				, #{log_nm}
+				, #{log_ip}
+				, #{log_url}
+				, #{log_se}
+				, SYSDATE(3)
+				, #{site_code}
+			)
+		]]>
+	</update>
+	
+	<sql id="whereLogList">
+		WHERE 1 = 1 
+		<if test="srchKwd != null and srchKwd != ''">
+		   AND (	
+		   		log_id LIKE CONCAT('%',#{srchKwd},'%')  
+				OR log_nm LIKE CONCAT('%',#{srchKwd},'%') 
+				OR log_ip LIKE CONCAT('%',#{srchKwd},'%') 
+				OR log_url LIKE CONCAT('%',#{srchKwd},'%') 
+				)
+		</if>
+		
+		<if test="srchSdate != null and srchSdate != '' ">
+			<if test="srchEdate != null and srchEdate != ''">
+				AND DATE_FORMAT(log_regDt, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{srchSdate}, '%Y-%m-%d') AND DATE_FORMAT(#{srchEdate}, '%Y-%m-%d')
+			</if>
+			<if test="srchEdate == null or srchEdate == ''">
+				AND DATE_FORMAT(log_regDt, '%Y-%m-%d') >= DATE_FORMAT(#{srchSdate}, '%Y-%m-%d')
+			</if>
+		</if>	
+		
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if> 
+
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		<![CDATA[
+			SELECT COUNT(1)
+			FROM WEB_BlockLog A
+		]]>
+		<include refid="whereLogList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.blacklist.service.BlockLogVo">
+		SELECT log_sn, log_id
+				, log_nm
+				, log_ip
+				, log_url
+				, log_se
+				, log_regDt
+				, B.site_code
+				, B.site_nm
+		FROM WEB_BlockLog A
+		JOIN WEB_Site B ON A.site_code = B.site_code 
+		<include refid="whereLogList" />
+		ORDER BY log_sn DESC
+		LIMIT #{pageSize} OFFSET  #{offset} 
+	</select> 
+		
+</mapper>

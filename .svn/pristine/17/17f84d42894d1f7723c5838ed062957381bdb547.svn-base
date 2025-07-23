@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.member.service.impl.MemberMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.member.service.MemberVo">
+		INSERT INTO WEB_Member
+		VALUE (
+			#{site_code}
+			, #{mem_id}
+			, #{mem_pw}
+			, NVL(#{mem_salt}, mem_salt)
+			, #{mem_nm}
+			, #{mem_mail}
+			, #{mem_birth}
+			, #{mem_telno}
+			, #{mem_moblphone}
+			, #{mem_gender}
+			, #{mem_zip}
+			, #{mem_addr}
+			, #{mem_addrDtl}
+			, #{mem_company}
+			, #{mem_pos}
+			, #{mem_emlYn}
+			, #{mem_joinCnt}
+			, #{mem_sttus}
+			, #{mem_param}
+			, NULL
+			, 0
+			, SYSDATE()
+			, SYSDATE()
+			, NULL
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			mem_mdfcnDt		= SYSDATE()
+			, mem_sttus		= #{mem_sttus}
+		
+		<if test="site_code != null and site_code != ''">
+			, site_code	= #{site_code}
+		</if>
+		<if test="mem_company != null and mem_company != ''">
+			, mem_company	= #{mem_company}
+		</if>
+		<if test="mem_pos != null and mem_pos != ''">
+			, mem_pos		= #{mem_pos}
+		</if>
+		<if test="mem_param != null and mem_param != ''">
+			, mem_param		= #{mem_param}
+		</if>
+
+		<if test="mem_nm != null and mem_nm != ''">
+			, mem_nm		= #{mem_nm}
+		</if>
+		<if test="mem_birth != null and mem_birth != ''">
+			, mem_birth		= #{mem_birth}
+		</if>
+		<if test="mem_mail != null and mem_mail != ''">
+			, mem_mail		= #{mem_mail}
+		</if>
+		<if test="mem_telno != null and mem_telno != ''">
+			, mem_telno		= #{mem_telno}
+		</if>
+		<if test="mem_moblphone != null and mem_moblphone != ''">
+			, mem_moblphone	= #{mem_moblphone}
+		</if>
+		<if test="mem_gender != null and mem_gender != ''">
+			, mem_gender	= #{mem_gender}
+		</if>
+		<if test="mem_zip != null and mem_zip != ''">
+			, mem_zip		= #{mem_zip}
+		</if>
+		<if test="mem_addr != null and mem_addr != ''">
+			, mem_addr		= #{mem_addr}
+		</if>
+		<if test="mem_addrDtl != null and mem_addrDtl != ''">
+			, mem_addrDtl	= #{mem_addrDtl}
+		</if>
+		<if test="mem_emlYn != null and mem_emlYn != ''">
+			, mem_emlYn		= #{mem_emlYn}
+		</if>
+	</update>
+
+	<update id="updatePassword" parameterType="egovframework.dnworks.cms.member.service.MemberVo">
+		UPDATE WEB_Member SET
+		    mem_pw = #{mem_pw}
+			, mem_chgPwDt = SYSDATE()
+		WHERE mem_id = #{mem_id}
+	</update>
+
+	<update id="updateJoinCount" parameterType="String">
+		UPDATE WEB_Member SET
+		    mem_joinCnt = mem_joinCnt + 1
+			, mem_lastLoginDt = SYSDATE()
+		WHERE mem_id = #{mem_id}
+	</update>
+
+	<update id="updateFailCount" parameterType="String">
+		UPDATE WEB_Member SET
+			mem_loginFailCnt = mem_loginFailCnt+1
+		WHERE mem_id = #{mem_id}
+	</update>
+
+	<update id="initLoginFailCnt" parameterType="String">
+		UPDATE WEB_Member SET
+			mem_loginFailCnt = 0
+		WHERE mem_id = #{mem_id}
+	</update>
+	
+
+	<update id="updateDisable" parameterType="String">
+		UPDATE WEB_Member SET
+			mem_sttus = 0
+		WHERE mem_id = #{mem_id}
+	</update>
+	
+	<update id="delete" parameterType="String">
+		UPDATE WEB_Member SET
+			mem_pw 			= 'null'
+			, mem_salt		= 'null'
+			, mem_nm 		= '삭제계정'
+			, mem_mail 		= NULL
+			, mem_birth 	= NULL
+			, mem_telno 	= NULL
+			, mem_moblphone = NULL
+			, mem_gender 	= 0
+			, mem_zip 		= NULL
+			, mem_addr 		= NULL
+			, mem_addrDtl 	= NULL
+			, mem_company 	= NULL
+			, mem_pos 		= NULL
+			, mem_emlYn 	= 0
+			, mem_sttus 	= 9
+			, mem_param 	= NULL
+			, mem_mdfcnDt 	= SYSDATE()
+		WHERE mem_id = #{mem_id}
+	</update>
+
+	<!-- 
+	<delete id="delete" parameterType="String">
+		DELETE FROM WEB_Member WHERE mem_id = #{mem_id}
+	</delete>
+	-->
+	
+	<sql id="selectMemberCol">
+		A.site_code, site_nm
+		, A.mem_id, mem_pw, mem_salt, mem_nm
+		, mem_mail, mem_birth, mem_telno, mem_moblphone, mem_gender
+		, mem_zip, mem_addr, mem_addrDtl
+		, mem_company, mem_pos
+		, mem_emlYn, mem_joinCnt, mem_sttus, mem_param
+		, mem_lastLoginDt, mem_loginFailCnt
+		, NVL(mem_chgPwDt, mem_regDt) As mem_chgPwDt
+		, DATEDIFF(SYSDATE(), NVL(mem_chgPwDt, mem_regDt)) As mem_chgPwDtDiff
+		, mem_regDt, mem_mdfcnDt
+		, D.grp_id, D.grp_nm
+	</sql>
+	
+	<select id="select" parameterType="String" resultType="egovframework.dnworks.cms.member.service.MemberVo">
+		SELECT 
+		<include refid="selectMemberCol" />
+		FROM WEB_Member A 
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		LEFT JOIN WEB_GroupMember C ON A.mem_id = C.mem_id
+		LEFT JOIN WEB_Group D ON C.grp_id = D.grp_id
+		WHERE A.mem_id = #{mem_id}
+	</select>
+	
+	<select id="selectMap" parameterType="Map" resultType="egovframework.dnworks.cms.member.service.MemberVo">
+		SELECT 
+		<include refid="selectMemberCol" />
+		FROM WEB_Member A 
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		JOIN WEB_GroupMember C ON A.mem_id = C.mem_id
+		JOIN WEB_Group D ON C.grp_id = D.grp_id
+		WHERE 1=1
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		<if test="mem_nm != null and mem_nm != ''">
+			AND A.mem_nm = #{mem_nm}
+		</if>
+		<if test="mem_birth != null and mem_birth != ''">
+			AND A.mem_birth = #{mem_birth}
+		</if>
+		<if test="mem_moblphone != null and mem_moblphone != ''">
+			AND A.mem_moblphone = #{mem_moblphone}
+		</if>
+	</select>
+	
+	<sql id="whereMemberList">
+		FROM WEB_Member A 
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		LEFT JOIN WEB_GroupMember C ON A.mem_id = C.mem_id
+		LEFT JOIN WEB_Group D ON C.grp_id = D.grp_id
+ 		
+		WHERE 1=1
+		
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		
+ 
+		<if test="srchGroup != null and srchGroup != '' and srchGroup != 'ROOT'">
+			AND D.grp_id IN (	
+							WITH RECURSIVE cte As 
+							( 
+								SELECT grp_id, 1 AS level 
+								FROM WEB_Group 
+								WHERE grp_id = #{srchGroup}
+							
+								UNION ALL 
+								SELECT p.grp_id, 1+level as level 
+								FROM WEB_Group p 
+								INNER JOIN cte ON p.grp_uprID = cte.grp_id 
+							) 
+							SELECT grp_id FROM cte
+						 )
+		</if>
+
+		
+		<if test="srchKwd != null and srchKwd != ''">
+			AND (
+				A.mem_id LIKE CONCAT('%',#{srchKwd},'%')
+				OR mem_nm LIKE CONCAT('%',#{srchKwd},'%')  
+				OR mem_company LIKE CONCAT('%',#{srchKwd},'%')
+				OR mem_moblphone LIKE CONCAT('%',#{srchEncKwd},'%') 
+			)
+		</if>
+		
+		<if test="srchSttus != null and srchSttus != ''">
+			AND mem_sttus = #{srchSttus}
+		</if>
+	</sql>
+	
+	<select id="selectListCnt" parameterType="Map" resultType="int">
+		SELECT 	COUNT(1)
+		<include refid="whereMemberList" />
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.member.service.MemberVo">
+		SELECT 
+		<include refid="selectMemberCol" />
+		<include refid="whereMemberList" />
+		ORDER BY mem_regDt DESC, mem_sttus DESC
+		LIMIT #{pageSize} OFFSET #{offset} 
+	</select>
+	
+	<select id="login" parameterType="Map" resultType="egovframework.dnworks.cms.member.service.MemberVo">
+		SELECT 
+		<include refid="selectMemberCol" />
+		FROM WEB_Member A 
+		JOIN WEB_Site B ON A.site_code = B.site_code
+		JOIN WEB_GroupMember C ON A.mem_id = C.mem_id
+		JOIN WEB_Group D ON C.grp_id = D.grp_id
+		WHERE A.mem_id = #{mem_id}
+		AND mem_sttus != 9
+		
+		<if test="site_code != null and site_code != ''">
+			AND A.site_code = #{site_code}
+		</if>
+		
+		<if test="mem_sttus != null and mem_sttus != ''">
+			AND mem_sttus = #{mem_sttus}
+		</if>
+		
+		<if test="mem_pw != null and mem_pw != ''">
+			AND mem_pw = #{mem_pw}
+		</if>
+	</select>
+	
+	<select id="existID" parameterType="String" resultType="int">
+		SELECT COUNT(1) FROM WEB_Member WHERE mem_id = #{mem_id}
+	</select>
+	
+	<select id="existMail" parameterType="String" resultType="int">
+		SELECT COUNT(1) FROM WEB_Member WHERE mem_mail = #{mem_mail}
+	</select>
+	
+	<select id="existMobl" parameterType="String" resultType="int">
+		SELECT COUNT(1) FROM WEB_Member WHERE mem_moblphone = #{mem_moblphone}
+	</select>
+
+</mapper>

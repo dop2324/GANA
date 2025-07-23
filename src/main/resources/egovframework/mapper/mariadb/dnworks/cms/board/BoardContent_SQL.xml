@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.service.impl.BoardContentMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.service.BoardContentVo">
+		INSERT INTO WEB_BoardContent
+		VALUE (
+			IF(#{con_sn} = -1, NULL, #{con_sn})
+			, #{bod_sn}
+			, #{con_id}
+			, #{con_nm}
+			, #{con_pw}
+			, #{con_eml}
+			, #{con_telno}
+			, #{con_regip}
+			, #{con_cn}
+			, #{con_addCn}
+			, 0
+			, 0
+			, #{con_ty}
+			, #{con_point}
+			, #{con_html}
+			, #{con_zip}
+			, #{con_addr}
+			, #{con_regDI}
+			, #{con_linkUrl}
+			, SYSDATE()
+			, NULL
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			con_id		= #{con_id}
+			, con_nm		= #{con_nm}
+		<if test="con_pw != null and con_pw != ''">
+			, con_pw		= #{con_pw}
+		</if>
+			, con_eml		= #{con_eml}
+			, con_telno		= #{con_telno}
+			, con_regip		= #{con_regip}
+			, con_cn		= #{con_cn}
+			, con_addCn		= #{con_addCn}
+			, con_point		= #{con_point}
+			, con_html		= #{con_html}
+			, con_zip		= #{con_zip}
+			, con_addr		= #{con_addr}
+			, con_regDI		= #{con_regDI}
+			, con_linkUrl	= #{con_linkUrl}
+			, con_mdfcnDt	= SYSDATE()
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardContent WHERE con_sn = #{con_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.board.service.BoardContentVo">
+		SELECT con_sn, bod_sn, con_id, con_nm, con_pw, con_eml, con_telno, con_regip, con_cn, con_addCn, con_ty
+				, con_point, con_html, con_zip, con_addr, con_regDI
+				, con_linkUrl
+				, con_regDt, con_mdfcnDt
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = A.con_sn AND vote_ty = 1) As con_yesCnt
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = A.con_sn AND vote_ty = 0) As con_noCnt
+		FROM WEB_BoardContent A 
+		WHERE con_sn = #{con_sn}
+	</select>
+	
+	<select id="selectList" parameterType="Map" resultType="egovframework.dnworks.cms.board.service.BoardContentVo">
+		SELECT con_sn, bod_sn, con_id, con_nm, con_pw, con_eml, con_telno, con_regip, con_cn, con_addCn, con_ty
+				, con_point, con_html, con_zip, con_addr, con_regDI
+				, con_linkUrl
+				, con_regDt, con_mdfcnDt
+				
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = A.con_sn AND vote_ty = 1) As con_yesCnt
+				, (SELECT COUNT(1) FROM WEB_BoardVote WHERE con_sn = A.con_sn AND vote_ty = 0) As con_noCnt
+		FROM WEB_BoardContent A
+		WHERE bod_sn = #{bod_sn}
+		AND con_ty = #{con_ty}
+		ORDER BY con_sn DESC
+	</select>
+	
+</mapper>

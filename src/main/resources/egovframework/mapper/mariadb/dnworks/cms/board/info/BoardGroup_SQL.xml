@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.board.info.service.impl.BoardGroupMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.board.info.service.BoardGroupVo">
+	<![CDATA[
+		INSERT INTO WEB_BoardGroup
+		VALUE (
+			IF(#{bgp_sn} = -1, NULL, #{bgp_sn})
+			, #{mnu_code}
+			, #{bgp_nm}
+			, IFNULL(#{bgp_sort}, 0)
+
+		)
+		ON DUPLICATE KEY
+		UPDATE
+			bgp_nm 		= #{bgp_nm}
+			, bgp_sort 	= IFNULL(#{bgp_sort}, bgp_sort)
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM WEB_BoardGroup WHERE bgp_sn = #{bgp_sn}
+	</delete>
+	
+	<select id="select" parameterType="int" resultType="egovframework.dnworks.cms.board.info.service.BoardGroupVo">
+		SELECT bgp_sn
+				, mnu_code
+				, bgp_nm
+				, bgp_sort
+		FROM WEB_BoardGroup A 
+		WHERE bgp_sn = #{bgp_sn}
+	</select>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.board.info.service.BoardGroupVo">
+		SELECT bgp_sn
+				, mnu_code
+				, bgp_nm
+				, bgp_sort
+		FROM WEB_BoardGroup
+		WHERE mnu_code = #{mnu_code}
+		ORDER BY bgp_sort
+	</select>
+	
+</mapper>

@@ -1,0 +1,182 @@
+package egovframework.dnworks.func.org.service;
+
+import egovframework.dnworks.func.cmm.vo.CommonVO;
+
+public class OrgInfoVO extends CommonVO {
+
+	/** 기관 고유 ID */
+	private String orgUnqId;
+
+	/** 기관명 */
+	private String orgNm;
+
+	/** 우편번호 */
+	private String zip;
+
+	/** 도로명 주소 */
+	private String roadNmAddr;
+
+	/** 도로명 상세주소 */
+	private String dtlAddr;
+
+	/** 대표전화번호 */
+	private String rprsntTelno;
+
+	/** SMS 발신번호 */
+	private String smsSndngTelno;
+
+	/** 상점ID_온라인 */
+	private String onlStoreId;
+
+	/** 마트키_온라인 */
+	private String onlMartKey;
+	
+	/** api키_온라인 */
+	private String onlApiKey;
+
+	/** 상점ID_오프라인 */
+	private String offStoreId;
+
+	/** 마트키_오프라인 */
+	private String offMartKey;
+	
+	/** 마트키_오프라인 */
+	private String offApiKey;
+
+	/** 사용유무 */
+	private String useYn;
+
+	/** 생성자ID */
+	private String regId;
+
+	/** 수정자ID */
+	private String mdfcnId;
+
+	public String getOrgUnqId() {
+		return orgUnqId;
+	}
+
+	public void setOrgUnqId(String orgUnqId) {
+		this.orgUnqId = orgUnqId;
+	}
+
+	public String getOrgNm() {
+		return orgNm;
+	}
+
+	public void setOrgNm(String orgNm) {
+		this.orgNm = orgNm;
+	}
+
+	public String getZip() {
+		return zip;
+	}
+
+	public void setZip(String zip) {
+		this.zip = zip;
+	}
+
+	public String getRoadNmAddr() {
+		return roadNmAddr;
+	}
+
+	public void setRoadNmAddr(String roadNmAddr) {
+		this.roadNmAddr = roadNmAddr;
+	}
+
+	public String getDtlAddr() {
+		return dtlAddr;
+	}
+
+	public void setDtlAddr(String dtlAddr) {
+		this.dtlAddr = dtlAddr;
+	}
+
+	public String getRprsntTelno() {
+		return rprsntTelno;
+	}
+
+	public void setRprsntTelno(String rprsntTelno) {
+		this.rprsntTelno = rprsntTelno;
+	}
+
+	public String getSmsSndngTelno() {
+		return smsSndngTelno;
+	}
+
+	public void setSmsSndngTelno(String smsSndngTelno) {
+		this.smsSndngTelno = smsSndngTelno;
+	}
+
+	public String getOnlStoreId() {
+		return onlStoreId;
+	}
+
+	public void setOnlStoreId(String onlStoreId) {
+		this.onlStoreId = onlStoreId;
+	}
+
+	public String getOnlMartKey() {
+		return onlMartKey;
+	}
+
+	public void setOnlMartKey(String onlMartKey) {
+		this.onlMartKey = onlMartKey;
+	}
+
+	public String getOffStoreId() {
+		return offStoreId;
+	}
+
+	public void setOffStoreId(String offStoreId) {
+		this.offStoreId = offStoreId;
+	}
+
+	public String getOffMartKey() {
+		return offMartKey;
+	}
+
+	public void setOffMartKey(String offMartKey) {
+		this.offMartKey = offMartKey;
+	}
+
+	public String getUseYn() {
+		return useYn;
+	}
+
+	public void setUseYn(String useYn) {
+		this.useYn = useYn;
+	}
+
+	public String getRegId() {
+		return regId;
+	}
+
+	public void setRegId(String regId) {
+		this.regId = regId;
+	}
+
+	public String getMdfcnId() {
+		return mdfcnId;
+	}
+
+	public void setMdfcnId(String mdfcnId) {
+		this.mdfcnId = mdfcnId;
+	}
+
+	public String getOnlApiKey() {
+		return onlApiKey;
+	}
+
+	public void setOnlApiKey(String onlApiKey) {
+		this.onlApiKey = onlApiKey;
+	}
+
+	public String getOffApiKey() {
+		return offApiKey;
+	}
+
+	public void setOffApiKey(String offApiKey) {
+		this.offApiKey = offApiKey;
+	}
+} 

@@ -1,0 +1,104 @@
+<%@ include file="/library/lib_base.jsp"%>
+<%@ page contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+
+<div class="c-wrap mgb_40">
+
+
+    <!-- step indicator -->
+    <!-- 스텝 -->
+    <ol class="krds-step-wrap">
+        <li class="active">
+            <span>
+                <em class="sr-only">현재단계</em>
+                <i class="step">1단계</i>
+                <span class="step-tit">회원유형 선택</span>
+            </span>
+        </li>
+        <li>
+            <span>
+                <i class="step">2단계</i>
+                <span class="step-tit">이용약관 확인</span>
+            </span>
+        </li>
+        <li>
+            <span>
+                <i class="step">3단계</i>
+                <span class="step-tit">본인인증</span>
+            </span>
+        </li>
+        <li>
+            <span>
+                <i class="step">4단계</i>
+                <span class="step-tit">개인정보작성</span>
+            </span>
+        </li>
+        <li>
+            <span>
+                <i class="step">5단계</i>
+                <span class="step-tit">가입완료</span>
+            </span>
+        </li>
+    </ol>
+    <!-- //스텝 -->
+
+	<form name="writeFrm" id="writeFrm" method="post" action="<c:url value='/member/page.do' />?mnu_code=<c:out value='${mnu_code }' />">
+	<input type="hidden" name="step" value="step02" />
+	<input type="hidden" name="membType" value="" />
+	
+		<div class="krds-structured-list">
+            <li class="structured-item">
+                <div class="card-body">
+                    <div>
+                        <h3 class="c-tit">일반회원</h3>
+                        <p class="t_center mgt_10">
+                            <img src="img/sub/member_type_01.png" alt="일반회원 아이콘">
+                        </p>
+                    </div>
+                    <div class="txt">만 14세 이상 내국인</div>
+                </div>
+                <div class="card-btm krds-center">
+                    <buttton type="button" class="krds-btn secondary" onclick="selectMembType('A');">가입하기</buttton>
+                </div>
+            </li>
+            <li class="structured-item">
+                <div class="card-body">
+                    <div>
+                        <h3 class="c-tit">어린이회원</h3>
+                        <p class="t_center mgt_10">
+                            <img src="img/sub/member_type_02.png" alt="어린이회원 아이콘">
+                        </p>
+                    </div>
+                    <p class="txt">만 14세 미만 내국인</p>
+                </div>
+                <div class="card-btm krds-center">
+                    <buttton type="button" class="krds-btn secondary" onclick="selectMembType('C');">가입하기</buttton>
+                </div>
+            </li>
+            <li class="structured-item">
+                <div class="card-body">
+                    <div>
+                        <h3 class="c-tit">외국인회원</h3>
+                        <p class="t_center mgt_10">
+                            <img src="img/sub/member_type_03.png" alt="외국인회원 아이콘">
+                        </p>
+                    </div>
+                    <br class="pc">
+                </div>
+                <div class="card-btm krds-center">
+                    <buttton type="button" class="krds-btn secondary" onclick="selectMembType('C');">가입하기</buttton>
+                </div>
+            </li>
+		</div>
+	</form>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+	function selectMembType(type){
+		const f = document.forms.writeFrm;
+		f.membType.value = type;
+		f.submit();
+	}
+//]]>
+</script>

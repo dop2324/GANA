@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.cms.menu.service.impl.PermissionMapper">
+
+	<update id="save" parameterType="egovframework.dnworks.cms.menu.service.PermissionVo">
+	<![CDATA[
+		INSERT INTO WEB_Permission
+		VALUES 
+		(
+			#{mnu_code}
+			, #{prm_id}
+			, #{prm_alwAdm}
+			, #{prm_alwDel}
+			, #{prm_alwUpd}
+			, #{prm_alwRpl}
+			, #{prm_alwIns}
+			, #{prm_alwSel}
+			, #{prm_alwLst}
+			, #{prm_dnyAdm}
+			, #{prm_dnyDel}
+			, #{prm_dnyUpd}
+			, #{prm_dnyRpl}
+			, #{prm_dnyIns}
+			, #{prm_dnySel}
+			, #{prm_dnyLst}
+			, #{prm_mdfcnID}
+			, SYSDATE()
+		)
+		ON DUPLICATE KEY UPDATE
+			prm_alwAdm		= #{prm_alwAdm}
+			, prm_alwDel	= #{prm_alwDel}
+			, prm_alwUpd	= #{prm_alwUpd}
+			, prm_alwRpl	= #{prm_alwRpl}
+			, prm_alwIns	= #{prm_alwIns}
+			, prm_alwSel	= #{prm_alwSel}
+			, prm_alwLst	= #{prm_alwLst}
+			, prm_dnyAdm	= #{prm_dnyAdm}
+			, prm_dnyDel	= #{prm_dnyDel}
+			, prm_dnyUpd	= #{prm_dnyUpd}
+			, prm_dnyRpl	= #{prm_dnyRpl}
+			, prm_dnyIns	= #{prm_dnyIns}
+			, prm_dnySel	= #{prm_dnySel}
+			, prm_dnyLst	= #{prm_dnyLst}
+			, prm_mdfcnID	= #{prm_mdfcnID}
+			, prm_mdfcnDt	= SYSDATE()
+	]]>
+	</update>
+	
+	<update id="saveSubPermission" parameterType="egovframework.dnworks.cms.menu.service.PermissionVo">
+	<![CDATA[
+		INSERT INTO WEB_Permission
+			SELECT 
+				A.mnu_code
+				, #{prm_id}
+				, #{prm_alwAdm}
+				, #{prm_alwDel}
+				, #{prm_alwUpd}
+				, #{prm_alwRpl}
+				, #{prm_alwIns}
+				, #{prm_alwSel}
+				, #{prm_alwLst}
+				, #{prm_dnyAdm}
+				, #{prm_dnyDel}
+				, #{prm_dnyUpd}
+				, #{prm_dnyRpl}
+				, #{prm_dnyIns}
+				, #{prm_dnySel}
+				, #{prm_dnyLst}
+				, #{prm_mdfcnID}
+				, SYSDATE()
+			FROM (
+				WITH RECURSIVE cte As 
+				( 
+					SELECT mnu_code, 1 AS level 
+					FROM WEB_Menu 
+					WHERE mnu_uprCode = #{mnu_code}
+		
+					UNION ALL 
+					SELECT p.mnu_code, 1+level as level 
+					FROM WEB_Menu p 
+					INNER JOIN cte ON p.mnu_uprCode = cte.mnu_code 
+				) 
+				SELECT mnu_code FROM cte
+			) A
+		ON DUPLICATE KEY UPDATE
+			prm_alwAdm		= #{prm_alwAdm}
+			, prm_alwDel	= #{prm_alwDel}
+			, prm_alwUpd	= #{prm_alwUpd}
+			, prm_alwRpl	= #{prm_alwRpl}
+			, prm_alwIns	= #{prm_alwIns}
+			, prm_alwSel	= #{prm_alwSel}
+			, prm_alwLst	= #{prm_alwLst}
+			, prm_dnyAdm	= #{prm_dnyAdm}
+			, prm_dnyDel	= #{prm_dnyDel}
+			, prm_dnyUpd	= #{prm_dnyUpd}
+			, prm_dnyRpl	= #{prm_dnyRpl}
+			, prm_dnyIns	= #{prm_dnyIns}
+			, prm_dnySel	= #{prm_dnySel}
+			, prm_dnyLst	= #{prm_dnyLst}
+			, prm_mdfcnID	= #{prm_mdfcnID}
+			, prm_mdfcnDt	= SYSDATE()
+	]]>
+	</update>
+	
+	<delete id="delete" parameterType="Map">
+		DELETE
+		FROM WEB_Permission
+		WHERE prm_id = #{prm_id}
+		AND mnu_code = #{mnu_code}
+	</delete>
+	
+	<delete id="deleteSubPermission" parameterType="Map">
+		DELETE
+		FROM WEB_Permission
+		WHERE prm_id = #{prm_id}
+		AND mnu_code IN (
+							WITH RECURSIVE cte As 
+							( 
+								SELECT mnu_code, 1 AS level 
+								FROM WEB_Menu 
+								WHERE mnu_uprCode = #{mnu_code}
+					
+								UNION ALL 
+								SELECT p.mnu_code, 1+level as level 
+								FROM WEB_Menu p 
+								INNER JOIN cte ON p.mnu_uprCode = cte.mnu_code 
+							) 
+							SELECT mnu_code FROM cte
+						)
+	</delete>
+	
+	<delete id="deletePrmId" parameterType="String">
+		DELETE FROM WEB_Permission WHERE prm_id = #{prm_id}
+	</delete>
+	
+	<select id="selectList" parameterType="String" resultType="egovframework.dnworks.cms.menu.service.PermissionVo">
+		SELECT mnu_code
+			 , prm_id
+			 , prm_alwAdm
+			 , prm_alwDel
+			 , prm_alwUpd
+			 , prm_alwRpl
+			 , prm_alwIns
+			 , prm_alwSel
+			 , prm_alwLst
+			 , prm_dnyAdm
+			 , prm_dnyDel
+			 , prm_dnyUpd
+			 , prm_dnyRpl
+			 , prm_dnyIns
+			 , prm_dnySel
+			 , prm_dnyLst
+			 , prm_mdfcnID
+			 , prm_mdfcnDt
+			 , (SELECT mnu_nm FROM WEB_Menu M WHERE M.mnu_code = P.mnu_code LIMIT 1) AS mnu_name
+			 , B.org_name
+			 , B.org_type
+		FROM WEB_Permission P
+		LEFT JOIN (
+				SELECT 
+					CASE 
+						WHEN org_type = '직원' THEN CONCAT('emp_', org_id)
+						ELSE org_id
+					END
+					As org_id
+					, org_name, org_type
+				FROM VIEW_Organization				
+		) B ON P.prm_id = B.org_id
+		WHERE mnu_code = #{mnu_code}
+		ORDER BY org_type ASC, prm_id ASC
+	</select>
+	
+	<select id="getPermission" parameterType="Map" resultType="int">
+	<![CDATA[
+		SELECT (PrmAdm+PrmDel+PrmUpd+PrmRpl+PrmIns+PrmSel+PrmLst) As prmVal
+		FROM
+		(
+			SELECT	(MAX(prm_alwAdm) &  ~MAX(prm_dnyAdm)) * 64	AS PrmAdm
+					,	(MAX(prm_alwDel) &  ~MAX(prm_dnyDel)) * 32	AS PrmDel
+					,	(MAX(prm_alwUpd) &  ~MAX(prm_dnyUpd)) * 16	AS PrmUpd 
+					,	(MAX(prm_alwRpl) &  ~MAX(prm_dnyRpl)) * 8	AS PrmRpl 
+					,	(MAX(prm_alwIns) &  ~MAX(prm_dnyIns)) * 4	AS PrmIns 
+					,	(MAX(prm_alwSel) &  ~MAX(prm_dnySel)) * 2	AS PrmSel 
+					,	(MAX(prm_alwLst) &  ~MAX(prm_dnyLst)) * 1	AS PrmLst
+			FROM WEB_Permission  
+	]]>
+			WHERE mnu_code = #{mnu_code}
+			AND (
+				<!-- 통합회원 회원ID 권한은 여기서 체크된다 -->
+					prm_id IN (#{usr_id}, #{dpt_id} )
+					OR prm_id IN (
+									SELECT grp_id
+									FROM WEB_Group
+									WHERE grp_sttus = 1
+									AND grp_id IN (	SELECT grp_id 
+													FROM WEB_GroupMember 
+													WHERE mem_id IN (#{usr_id}, #{dpt_id} )
+													UNION
+													SELECT #{grp_id} AS grp_id 
+													FROM DUAL
+												)
+							 )
+					<!-- 통합회원 그룹 상위 그룹 권한 확인-->
+					OR prm_id IN (
+				        			WITH RECURSIVE cte As 
+									( 
+										SELECT grp_id, grp_uprID, grp_nm, 1 AS level 
+												, grp_sttus, grp_sort
+										FROM WEB_Group 
+										WHERE grp_id = #{grp_id}
+										UNION ALL 
+										SELECT p.grp_id, p.grp_uprID, p.grp_nm, 1+level as level 
+												, p.grp_sttus, p.grp_sort
+										FROM WEB_Group p 
+										INNER JOIN cte ON p.grp_id = cte.grp_uprID
+										where p.grp_uprID is not null
+									) 
+									SELECT grp_id
+									FROM cte
+								)
+			)
+		) T
+	</select>
+	
+</mapper>

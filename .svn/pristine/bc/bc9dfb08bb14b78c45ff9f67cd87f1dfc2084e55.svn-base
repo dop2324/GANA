@@ -1,0 +1,130 @@
+package egovframework.dnworks.func.cal.service;
+
+import java.io.Serializable;
+import java.util.Date;
+
+
+
+public class CalInfoVO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private String calId;
+    private String orgUnqId;
+    private String mid;
+    private String orderId;
+    private String method;
+    private String amount;
+    private Long fee;
+    private Long interestFee;
+    private Long supplyAmount;
+    private Long vat;
+    private Long payoutAmount;
+    private String approvedAt;
+    private String soldDate;
+    private String payoutDate;
+    private Date createdAt;
+    private String calSeCd;
+    
+	public String getCalId() {
+		return calId;
+	}
+	public void setCalId(String calId) {
+		this.calId = calId;
+	}
+	public String getOrgUnqId() {
+		return orgUnqId;
+	}
+	public void setOrgUnqId(String orgUnqId) {
+		this.orgUnqId = orgUnqId;
+	}
+	public String getMid() {
+		return mid;
+	}
+	public void setMid(String mid) {
+		this.mid = mid;
+	}
+	public String getOrderId() {
+		return orderId;
+	}
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+	public String getMethod() {
+		return method;
+	}
+	public void setMethod(String method) {
+		this.method = method;
+	}
+	public String getAmount() {
+		return amount;
+	}
+	public void setAmount(String amount) {
+		this.amount = amount;
+	}
+	public Long getFee() {
+		return fee;
+	}
+	public void setFee(Long fee) {
+		this.fee = fee;
+	}
+	public Long getInterestFee() {
+		return interestFee;
+	}
+	public void setInterestFee(Long interestFee) {
+		this.interestFee = interestFee;
+	}
+	public Long getSupplyAmount() {
+		return supplyAmount;
+	}
+	public void setSupplyAmount(Long supplyAmount) {
+		this.supplyAmount = supplyAmount;
+	}
+	public Long getVat() {
+		return vat;
+	}
+	public void setVat(Long vat) {
+		this.vat = vat;
+	}
+	public Long getPayoutAmount() {
+		return payoutAmount;
+	}
+	public void setPayoutAmount(Long payoutAmount) {
+		this.payoutAmount = payoutAmount;
+	}
+	
+	public String getCalSeCd() {
+		return calSeCd;
+	}
+	public void setCalSeCd(String calSeCd) {
+		this.calSeCd = calSeCd;
+	}
+	public String getSoldDate() {
+		return soldDate;
+	}
+	public void setSoldDate(String soldDate) {
+		this.soldDate = soldDate;
+	}
+	public String getApprovedAt() {
+		return approvedAt;
+	}
+	public void setApprovedAt(String approvedAt) {
+		this.approvedAt = approvedAt;
+	}
+	public String getPayoutDate() {
+		return payoutDate;
+	}
+	public void setPayoutDate(String payoutDate) {
+		this.payoutDate = payoutDate;
+	}
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+    
+    
+
+}

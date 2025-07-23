@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.dnworks.func.cal.service.impl.CalInfoMapper">
+
+    <!-- 목록 조건 공통 SQL -->
+    <sql id="whereCalList">
+        FROM TN_CAL_INFO
+        WHERE 1=1
+        <if test="orgUnqId != null and orgUnqId != ''">
+            AND ORG_UNQ_ID = #{orgUnqId}
+        </if>
+    </sql>
+
+    <!-- 목록 총 개수 -->
+    <select id="selectListCnt" parameterType="map" resultType="int">
+        SELECT COUNT(1)
+        <include refid="whereCalList"/>
+    </select>
+
+    <!-- 목록 조회 -->
+    <select id="selectList" parameterType="map" resultType="egovframework.dnworks.func.cal.service.CalInfoVO">
+		        SELECT T.* 
+		    FROM (
+		        SELECT 
+		            ROW_NUMBER() OVER (ORDER BY PAYOUT_DATE DESC, ORDER_ID) AS RNUM,
+		            CAL_ID AS calId,
+		            ORG_UNQ_ID AS orgUnqId,
+		            CAL_SE_CD AS calSeCd,
+		            MID AS mid,
+		            ORDER_ID AS orderId,
+		            METHOD AS method,
+		            AMOUNT AS amount,
+		            FEE AS fee,
+		            INTEREST_FEE AS interestFee,
+		            SUPPLY_AMOUNT AS supplyAmount,
+		            VAT AS vat,
+		            PAYOUT_AMOUNT AS payoutAmount,
+		            TO_CHAR(APPROVED_AT, 'YYYY-MM-DD') AS approvedAt,
+		            TO_CHAR(SOLD_DATE, 'YYYY-MM-DD') AS soldDate,
+		            TO_CHAR(PAYOUT_DATE, 'YYYY-MM-DD') AS payoutDate,
+		            TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+		        <include refid="whereCalList"/>
+		    ) T
+		    <![CDATA[
+		    WHERE RNUM > ((#{pageNo} - 1) * #{pageSize})
+		      AND RNUM <= (#{pageNo} * #{pageSize})
+		    ]]>
+    </select>
+
+    <!-- 단건 조회 (중복 체크용) -->
+    <select id="selectCalInfo" parameterType="egovframework.dnworks.func.cal.service.CalInfoVO" resultType="egovframework.dnworks.func.cal.service.CalInfoVO">
+        SELECT
+            CAL_ID,
+            ORG_UNQ_ID,
+            ORDER_ID,
+            TO_CHAR(PAYOUT_DATE, 'YYYY-MM-DD') AS payoutDate
+        FROM TN_CAL_INFO
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+          AND ORDER_ID = #{orderId}
+    </select>
+
+    <!-- 정산 데이터 삭제 (재수집용) -->
+    <delete id="deleteCalInfoByDate" parameterType="map">
+        DELETE FROM TN_CAL_INFO
+        WHERE ORG_UNQ_ID = #{orgUnqId}
+           AND TRUNC(PAYOUT_DATE) = TO_DATE(#{payoutDate}, 'YYYY-MM-DD')
+    </delete>
+
+    <!-- 정산 데이터 저장 -->
+    <insert id="insertCalInfo" parameterType="egovframework.dnworks.func.cal.service.CalInfoVO">
+        INSERT INTO TN_CAL_INFO (
+            CAL_ID,
+            ORG_UNQ_ID,
+            CAL_SE_CD,
+            MID,
+            ORDER_ID,
+            METHOD,
+            AMOUNT,
+            FEE,
+            INTEREST_FEE,
+            SUPPLY_AMOUNT,
+            VAT,
+            PAYOUT_AMOUNT,
+            APPROVED_AT,
+            SOLD_DATE,
+            PAYOUT_DATE,
+            CREATED_AT
+        ) VALUES (
+            #{calId},
+            #{orgUnqId},
+            #{calSeCd}, 
+            #{mid},
+            #{orderId},
+            #{method},
+            #{amount},
+            #{fee},
+            #{interestFee},
+            #{supplyAmount},
+            #{vat},
+            #{payoutAmount},
+            TO_DATE(#{approvedAt}, 'YYYY-MM-DD'),
+            TO_DATE(#{soldDate}, 'YYYY-MM-DD'),
+            TO_DATE(#{payoutDate}, 'YYYY-MM-DD'),
+            SYSDATE
+        )
+    </insert>
+
+</mapper>
+
